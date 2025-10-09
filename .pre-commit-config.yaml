@@ -59,6 +59,7 @@ repos:
     rev: v0.5.4
     hooks:
       - id: tex-fmt
+        args: [--wraplen=100]
     # - repo: https://github.com/PyCQA/flake8
     #   rev: 7.2.0
     #   hooks:
