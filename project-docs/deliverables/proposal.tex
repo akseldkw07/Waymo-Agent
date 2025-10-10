@@ -1,6 +1,5 @@
 \documentclass[12pt]{article}
 
-% % line below. Maximum of two collaborators per problem set.
 \newcommand{\collaborators}{Aksel Kretsinger-Walters (\texttt{adk2164}), Alena Chan
 (\texttt{ac5477}), Andrey Aksyutkin (\texttt{aa5499}), Blake Sisson (\texttt{mbs2246})}
 
@@ -26,7 +25,7 @@
 
 \subsection*{Problem Statement}
 One of the most promising and revolutionary applications of reinforcement learning is in
-the domain of autonomous robots, specifically self-driving cars. The challenges facing the
+the domain of autonomous robots, specifically self-driving cars logistics. The challenges facing the
 autonomous car community span multiple dimensions: including intellectual, ethical, financial,
 and technical hurdles. For our project, we narrow our focus on optimizing the profitability
 of robo-taxi fleets.
@@ -39,14 +38,23 @@ problems. Jointly optimizing across all of these dimensions and adapting to dist
 is an even more challenging problem, and the interactive nature of the problem makes it a natural
 fit for reinforcement learning and agentic approaches.
 
+\subsection*{RL formulation}
+
 We plan to simulate a fleet of self-driving cars as a Markov Decision Process (MDP), and
 develop reinforcement learning algorithms to optimize the fleet's operations and profitability.
+
+The state includes the number of cars available in each city region, the number of
+current rides, weather conditions, high-low intraday demand conditions, and fuel reserve
+for each car, distance to the nearest charge station. Action includes where to send the
+car when it is not with a user inside, when to go to gas station, and what price to
+demand for each user/district to balance demand.
 
 \subsection*{Interest and Relevance}
 This is an area of active research and development, with many companies investing heavily in
 self-driving technology. For this technology to reach the market, it is critical to resolve the
 safety and reliability challenges that currently exist; however, the economic viability must
-also be solved for self-driving to reach its full potential.
+also be solved for self-driving to reach its full potential. Given rapid introduction of
+Waymo in multiple cities, this problem is increasingly relevant.
 
 For the purposes of this course, we believe that the interactive nature of the
 ride-sharing environment,
@@ -54,12 +62,38 @@ the high dimensionality of the state and action spaces, the data and research pu
 available, and the potential of performing far better than a heuristic algorithm make the
 robotaxi optimization challenge a good fit for our semester project.
 
-\subsection*{Data}
+\subsection*{Previous Research}
 Ride-sharing in general is an active area of research in the reinforcement learning
 community \cite{ridesharing_survey}. There are existing data sets and open simulation environments.
 
-We base our research on publicly available datasets. We need to model crowd behavior,
-weather conditions and seasonal effects. For crowd behavior
+\subsection*{Environment Data}
+
+Our research is based on publicly available datasets to model crowd behavior, weather
+conditions, and seasonal effects.
+
+To model crowd behavior, we will utilize data from the Longitudinal Employer-Household
+Dynamics (LEHD) program of the U.S. Census Bureau. The LEHD data provide valuable
+information on workforce dynamics, which can serve as a proxy for crowd movement and
+density. Specifically, we will leverage the following public-use data products:
+\begin{itemize}
+		\item \textbf{LEHD Origin-Destination Employment Statistics (LODES):} This data set
+				provides detailed spatial information on job locations and worker residential
+				locations, which is crucial to understanding commuting patterns and daytime
+				population distributions.
+		\item \textbf{Quarterly Workforce Indicators (QWI):} QWIs offer statistics on
+				employment, job creation, and earnings for various demographic groups and industries.
+				This data will be used to analyze the composition and temporal dynamics of the workforce.
+\end{itemize}
+
+For weather conditions, we will use historical meteorological data from the National
+Weather Service. This data will include variables such as temperature, precipitation, and
+wind speed.
+
+\subsection*{Proposed solution}
+We use a simulation environment to produce states (traffic, demand, weather conditions)
+and develop reward model to balance wait times, profit and coverage. We plan to compare
+multiple algorithms: policy gradient, mulit-agent RL and other. We will evaluate
+efficiency of our approach against heuristic distribution policies.
 
 \begin{thebibliography}{9}
 
@@ -80,9 +114,12 @@ weather conditions and seasonal effects. For crowd behavior
 		Neural Network}. arXiv preprint arXiv:2011.06175. \url{https://arxiv.org/abs/2011.06175}
 		\bibitem{omahony2015} O’Mahony, E., \& Shmoys, D. (2015). \textit{Data Analysis and
 		Optimization for (Citi)Bike Sharing}. Proceedings of the Twenty-Ninth AAAI Conference
+		on Artificial Intelligence (AAAI 2015).
 		\bibitem{xu2021} Xu, Y., Zhang, R., Li, X., \& Wang, F. (2021). \textit{Towards More
 		Efficient Shared Autonomous Mobility: A Learning-Based Fleet Repositioning Approach}.
 		Proceedings of the AAAI Conference on Artificial Intelligence, 35(1), 1166-1174.
 		\url{https://ojs.aaai.org/index.php/AAAI/article/view/16033}
+
+		% https://www.sciencedirect.com/science/article/pii/S2772424724000246?via%3Dihub
 \end{thebibliography}
 \end{document}

@@ -27,7 +27,10 @@ Time steps are 1 minute long
 
 \subsection*{Environment}
 \begin{itemize}
-		\item Static class - no state changes
+		\item Static class - no state changes (mostly)
+		\item weather conditions (sunny, rainy, snowy, etc)
+		\item time of day (could be encoded as a float from 0 to 24)
+		\item day of week (could be encoded as an int from 0 to 6)
 		\item Embedded into $l_2$
 		\item Graph:
 				\begin{itemize}
@@ -74,7 +77,7 @@ agent. I'm learning towards the former for a few reasons
 If we do explicitly model it
 \begin{itemize}
 		\item Location
-		\item Expected demand (number of requests) in next time step
+		\item Expected demand (number of requests) in next $n$ time steps
 \end{itemize}
 
 \medskip
@@ -106,6 +109,9 @@ probabilistic model. This would allow the agent to learn to price rides optimall
 provide a bound on the maximum price the agent could set (since the agent would learn to just rise
 prices without bound if the customer always accepted).
 
+In this proposed process, the price recommendation would be part of the action space, and the
+customer's decision would be encoded in the transition probability.
+
 \begin{itemize}
     % The variable $n_v$ represents a random variable following a Poisson distribution,
 				% typically denoted as $n_v \sim \mathrm{Poisson}(\Lambda)$, where $\Lambda$ is the
@@ -114,11 +120,139 @@ prices without bound if the customer always accepted).
 		\item $n_v \sim \mathrm{Poisson}(\Lambda)$ new requests per time step (this lives in Demand class)
 		\item Each request:
 				\begin{itemize}
+						\item Account ID (drawn from a pool of $u$ users)
 						\item Request ID
 						\item Pickup location
-						\item Dropoff location
+						\item Dropoff location (!= pickup location). This could be modeled as a uniform
+								distribution at first, but ideally would be learned from historical data.
 						\item Request time
-						\item Status (pending, assigned, completed, cancelled)
+						\item Status (categorical)
+								\begin{itemize}
+										\item Price suggestion pending (brand new request generated between $t$ and
+												$t-1$). Agent must suggest a price before next time step
+										\item Price suggested, pending customer acceptance/rejection (customer
+												immediately accepts/rejects based on probabilistic model)
+										\item Accepted, pending assignment to vehicle (this state only exists if there
+												are no available vehicles)
+										\item Assigned to vehicle, pending pickup (vehicle is en route to pickup location)
+										\item Cancelled by customer (optional - if pickup time is too long)
+										\item Active (joined with Vehicle class as Active Ride)
+										\item Completed
+								\end{itemize}
 				\end{itemize}
 \end{itemize}
+Note that we don't need to "explicitly" model aggregate supply demand imbalance,
+hopefully the agent will learn
+the notion of surge pricing on its own. However, a simple float variable representing the
+current ratio
+of supply to demand could be added to the state to accelerate learning.
+
+\newpage
+\section*{Actions}
+\subsection*{Per Vehicle}
+\begin{itemize}
+		\item Move (velocity vector) (always happens unless vehicle is charging)
+		\item bool flip\_charging\_state (go to / from charging station)
+\end{itemize}
+
+\subsection*{Global}
+\begin{itemize}
+		\item $\bp = [p_1, p_2, \ldots, p_{n_v}]$ price vector for all pending requests
+		\item Assign accepted requests to vehicles (if any are available)
+\end{itemize}
+
+% \newpage
+\section*{Transitions}
+\subsection*{Environment}
+Static, no transitions (unless we want to model traffic \& speed)
+\subsection*{Fleet}
+\begin{itemize}
+		\item Location - updated based on velocity vector, speed limits, and road network
+		\item Battery level - decreases based on distance traveled, increases when at charging station
+		\item Status - updated based on actions and ride assignments
+\end{itemize}
+\subsection*{Demand}
+\begin{itemize}
+		\item Updated based on historical data (e.g. time of day, day of week, weather conditions)
+\end{itemize}
+\subsection*{Active Rides}
+\begin{itemize}
+		\item Status - updated based on vehicle status and ride progress
+		\item Time to pickup - decreases as vehicle approaches pickup location
+		\item Duration of ride - increases as ride progresses
+		\item Estimated remaining time - updated based on current time to pickup and duration of ride
+\end{itemize}
+\subsection*{Ride Requests}
+\begin{itemize}
+		\item New requests - generated based on Poisson distribution with rate parameter $\Lambda$
+		\item Status - updated based on customer acceptance/rejection and ride assignments
+				\begin{itemize}
+						\item Expired requests - removed if not accepted within a certain time frame
+						\item Cancelled requests - removed if customer cancels before assignment
+						\item Completed requests - removed once ride is finished
+						\item Price acceptance - probabilistic model based on suggested price and customer sensitivity
+				\end{itemize}
+		\item $p_{accept} = \tfrac{1}{1 + e^{-z}}$ (logistic function)
+		\item z-features:
+				\begin{itemize}
+						\item customer bias (base acceptance rate per customer)
+						\item pickup \& destination location bias (proxy for neighborhood wealth, proximity
+								to public transit)
+								\begin{itemize}
+										\item how connected node is $\sim$ subway proximity
+										\item avg income in neighborhood $\sim$ census data (or just random manifold)
+								\end{itemize}
+						\item price offered by agent
+						\item distance
+						\item global supply-demand imbalance
+						\item date \& time
+						\item weather conditions
+				\end{itemize}
+\end{itemize}
+
+\newpage
+\section*{Rewards \& Costs}
+\subsection*{Rewards}
+\begin{itemize}
+		\item Revenue from completed rides
+		\item \tit{stretch:} customer loyalty / retention
+\end{itemize}
+\subsection*{Costs}
+\tit{Explicit}
+\begin{itemize}
+		\item Operational costs (electricity) - per mile cost
+				\begin{itemize}
+						\item Cost not paid when vehicle is charging
+						\item Cost proportionate to distance (hence speed)
+				\end{itemize}
+		\item Customer dissatisfaction
+				\begin{itemize}
+						\item Rejected rides (long term effect on customer loyalty, hard to learn
+								implicitly due to credit assignment problem)
+						\item Long wait times
+				\end{itemize}
+\end{itemize}
+\tit{Implicit / Learned}
+\begin{itemize}
+		\item Rejected ride requests (lost revenue)
+		\item Unfulfilled demand (due to supply shortage; lost revenue)
+		\item Long wait times (due to supply shortage | uneven vehicle distribution | traffic |
+				underpricing (hence excess load))
+		\item Non-shortest path routing (traffic, geography)
+\end{itemize}
+
+\newpage
+\section*{Implementation Miscellany \& Thoughts}
+\begin{itemize}
+		\item Leverage OpenAI Gym framework
+		\item Leverage existing graph libraries (e.g. NetworkX) for road network?
+		\item Instant distribution of amortized costs \& rewards at each time step (speed up learning)
+		\item Start incredibly simple (shrink dimensionality)
+		\item Initialize with heuristic policy (e.g. nearest vehicle, price = cost * (1 + margin))
+		\item Log metrics (rewards, costs, wait times, rejection rates, etc) for analysis,
+				visualization, debugging \& final presentation
+		\item Strict and thoughtful versioning of both code and experiments (match up version
+				of code with results, reduce ambiguity in analysis)
+\end{itemize}
+
 \end{document}
