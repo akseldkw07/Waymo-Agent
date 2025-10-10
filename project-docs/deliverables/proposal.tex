@@ -1,8 +1,8 @@
 \documentclass[12pt]{article}
 
+% % line below. Maximum of two collaborators per problem set.
 \newcommand{\collaborators}{Aksel Kretsinger-Walters (\texttt{adk2164}), Alena Chan
 (\texttt{ac5477}), Andrey Aksyutkin (\texttt{aa5499}), Blake Sisson (\texttt{mbs2246})}
-% No collaborators on PS 0
 
 \makeatletter
 \def\input@path{{../}{../../}{../../../}} % add as many parents as you need
@@ -11,7 +11,7 @@
 
 % Override the template margins to be less than 1 inch
 % Load geometry after the template so it takes precedence.
-\usepackage[margin=0.8in]{geometry}
+\usepackage[margin=0.6in]{geometry}
 
 \title{Waymo Fleet Profitability Optimizer}
 \author{
@@ -26,10 +26,10 @@
 
 \subsection*{Problem Statement}
 One of the most promising and revolutionary applications of reinforcement learning is in
-the domain of autonomous robots, specifically self-driving cars. There are many challenges
-in this domain: intellectual, ethical, technical, and more. For our project, we've decided
-to narrow our focus to the specific problem of optimizing the profitability of a fleet of
-self-driving cars.
+the domain of autonomous robots, specifically self-driving cars. The challenges facing the
+autonomous car community span multiple dimensions: including intellectual, ethical, financial,
+and technical hurdles. For our project, we narrow our focus on optimizing the profitability
+of robo-taxi fleets.
 
 Monitoring, maintaining, and optimizing a large fleet of self driving cars is a complex
 problem, and one can quickly think of many dimensions that the problem takes on.
@@ -44,19 +44,34 @@ develop reinforcement learning algorithms to optimize the fleet's operations and
 
 \subsection*{Interest and Relevance}
 This is an area of active research and development, with many companies investing heavily in
-self-driving technology. For this technology to reach the market, it is absolutely
-critical to resolve the safety and reliability challenges that currently exist; however, the
-economic viability must also be solved for self-driving to reach its full potential.
+self-driving technology. For this technology to reach the market, it is critical to resolve the
+safety and reliability challenges that currently exist; however, the economic viability must
+also be solved for self-driving to reach its full potential.
 
-For the purposes of this course, we think that the interactive nature of the state with its
-ecosystem, the high dimensionality of the state and action spaces, the data and research publicly
-available and the possibility of performing far better than a heuristic algorithm make the
-project a good fit for our semester project.
+For the purposes of this course, we believe that the interactive nature of the
+ride-sharing environment,
+the high dimensionality of the state and action spaces, the data and research publicly
+available, and the potential of performing far better than a heuristic algorithm make the
+robotaxi optimization challenge a good fit for our semester project.
+
+\subsection*{Data}
+Ride-sharing in general is an active area of research in the reinforcement learning
+community \cite{ridesharing_survey}. There are existing data sets and open simulation environments.
+
+We base our research on publicly available datasets. We need to model crowd behavior,
+weather conditions and seasonal effects. For crowd behavior
 
 \begin{thebibliography}{9}
+
 		\bibitem{lehd} U.S. Census Bureau. "LEHD Origin-Destination Employment Statistics
 		(LODES)." \url{https://lehd.ces.census.gov/data/}
+		\bibitem{suttonbarto} Sutton, R. S., \& Barto, A. G. "Reinforcement Learning: An
+		Introduction." MIT Press, 2018.
 		\bibitem{waymoopen} Waymo. "Waymo Open Dataset." \url{https://waymo.com/open/}
+		\bibitem{citibike_rl} Xiao, I. "Reinforcement Learning Project: CitiBike."
+		\url{https://github.com/ianxxiao/reinforcement_learning_project/blob/master/Reports/Presentation_RL_citiBike_20180514.pdf}
+		\bibitem{ridesharing_survey} Li, J., Li, X., \& Wang, F. "Reinforcement Learning for
+		Ridesharing: An Extended Survey." arXiv preprint arXiv:2102.11896, 2021.
 		\bibitem{lin2018} Lin, K., Zhou, M., Wang, J., \& Li, L. (2018). \textit{Efficient
 		Large-Scale Fleet Management via Multi-Agent Deep Reinforcement Learning}. Proceedings
 		of the 24th ACM SIGKDD International Conference on Knowledge Discovery \& Data Mining (KDD 2018).
@@ -65,6 +80,9 @@ project a good fit for our semester project.
 		Neural Network}. arXiv preprint arXiv:2011.06175. \url{https://arxiv.org/abs/2011.06175}
 		\bibitem{omahony2015} O’Mahony, E., \& Shmoys, D. (2015). \textit{Data Analysis and
 		Optimization for (Citi)Bike Sharing}. Proceedings of the Twenty-Ninth AAAI Conference
-		on Artificial Intelligence (AAAI 2015).
+		\bibitem{xu2021} Xu, Y., Zhang, R., Li, X., \& Wang, F. (2021). \textit{Towards More
+		Efficient Shared Autonomous Mobility: A Learning-Based Fleet Repositioning Approach}.
+		Proceedings of the AAAI Conference on Artificial Intelligence, 35(1), 1166-1174.
+		\url{https://ojs.aaai.org/index.php/AAAI/article/view/16033}
 \end{thebibliography}
 \end{document}

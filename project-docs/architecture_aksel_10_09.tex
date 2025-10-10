@@ -20,28 +20,35 @@
 \begin{document}
 \psetheader %% DO NOT CHANGE THIS LINE
 
-\section*{Modeling Setup}
-\subsection*{State}
+\section*{State}
 Discrete-Time Markov Decision Process (MDP)
 
 Time steps are 1 minute long
 
-\tbf{Environment}
+\subsection*{Environment}
 \begin{itemize}
 		\item Static class - no state changes
 		\item Embedded into $l_2$
-		\item Graph -
+		\item Graph:
 				\begin{itemize}
 						\item Nodes - intersections
 						\item Edges - roads
 				\end{itemize}
-		\item Vertices -
+		\item Nodes:
 				\begin{itemize}
-						\item Static class - no state changes
-						\item Embedded into $l_2$
+						\item Only places rides can start/end
+						\item $l_2$ coordinates
+						\item bool is\_charging\_station
+						\item int num\_available\_chargers
+				\end{itemize}
+		\item Edges:
+				\begin{itemize}
+						\item Length
+						\item 2-way speed limit, possibly asymmetric
+						\item \tit{potentially:} 2-way current speed, possibly asymmetric (this would be dynamic)
 				\end{itemize}
 \end{itemize}
-\tbf{Fleet}
+\subsection*{Fleet}
 \begin{itemize}
 		\item n=10? vehicles
 		\item Per vehicle:
@@ -54,7 +61,7 @@ Time steps are 1 minute long
 \end{itemize}
 
 \medskip
-\tbf{Demand}
+\subsection*{Demand}
 I'm a little unsure about whether this should be \tit{explicitly} modeled in the state or
 "learned" by the
 agent. I'm learning towards the former for a few reasons
@@ -71,7 +78,34 @@ If we do explicitly model it
 \end{itemize}
 
 \medskip
-\tbf{Ride Requests}
+\subsection*{Active Rides}
+I think that this class should mostly serve as an enriched tuple between a vehicle and a
+ride request (described below)
+\begin{itemize}
+		\item Matched Vehicle ID
+		\item Request ID
+		\item Status (en route to pickup, with passenger)
+		\item Time to pickup (minutes)
+		\item Duration of ride (minutes)
+		\item Estimated remaining time (minutes)
+\end{itemize}
+
+\medskip
+\subsection*{Ride Requests}
+
+There's one part of this process that I believe is non-trivial. In the real world, the
+platform (e.g. Uber, Lyft) suggests a menu of prices to the rider, who then selects one.
+Subsequently, all (nearby) drivers are notified of the ride request, and one can accept it.
+
+In our simulation, if the agent recommends prices, intuitively it would be a price that the agent
+would accept. So that transition probability is 1. However, you could make a case that riders
+should "bid" on rides, and the agent can (1) accept (2) reject (3) counter-offer. For the sake
+of simplicity, I would rather model the process as (1) customer requests a ride (2) the agent
+suggests a price (3) the customer either accepts or rejects the price based on some
+probabilistic model. This would allow the agent to learn to price rides optimally. It would also
+provide a bound on the maximum price the agent could set (since the agent would learn to just rise
+prices without bound if the customer always accepted).
+
 \begin{itemize}
     % The variable $n_v$ represents a random variable following a Poisson distribution,
 				% typically denoted as $n_v \sim \mathrm{Poisson}(\Lambda)$, where $\Lambda$ is the
@@ -86,19 +120,5 @@ If we do explicitly model it
 						\item Request time
 						\item Status (pending, assigned, completed, cancelled)
 				\end{itemize}
-\end{itemize}
-
-\medskip
-\tbf{Active Rides}
-I'm a little less sure about this one, but I think that this class should mostly serve as
-an enriched
-tuple between a vehicle and a ride request
-\begin{itemize}
-		\item Matched Vehicle ID
-		\item Request ID
-		\item Status (en route to pickup, with passenger)
-		\item Time to pickup (minutes)
-		\item Duration of ride (minutes)
-		\item Estimated remaining time (minutes)
 \end{itemize}
 \end{document}
