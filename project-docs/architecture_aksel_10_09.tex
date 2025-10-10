@@ -28,8 +28,18 @@ Time steps are 1 minute long
 
 \tbf{Environment}
 \begin{itemize}
-		\item Locations will be represented either/or as latitude/longitude coordinates or as
-				nodes on a graph (any point on vertex is proportional distance between endpoints)
+		\item Static class - no state changes
+		\item Embedded into $l_2$
+		\item Graph -
+				\begin{itemize}
+						\item Nodes - intersections
+						\item Edges - roads
+				\end{itemize}
+		\item Vertices -
+				\begin{itemize}
+						\item Static class - no state changes
+						\item Embedded into $l_2$
+				\end{itemize}
 \end{itemize}
 \tbf{Fleet}
 \begin{itemize}
@@ -43,17 +53,31 @@ Time steps are 1 minute long
     \end{itemize}
 \end{itemize}
 
+\medskip
 \tbf{Demand}
+I'm a little unsure about whether this should be \tit{explicitly} modeled in the state or
+"learned" by the
+agent. I'm learning towards the former for a few reasons
+\begin{enumerate}
+		\item It's relatively independent of the actions of the agent
+		\item It can be estimated from historical data
+		\item Both assumptions above are likely to be true in the real world
+		\item It greatly simplifies the learning problem
+\end{enumerate}
+If we do explicitly model it
 \begin{itemize}
-		\item
+		\item Location
+		\item Expected demand (number of requests) in next time step
 \end{itemize}
+
+\medskip
 \tbf{Ride Requests}
 \begin{itemize}
     % The variable $n_v$ represents a random variable following a Poisson distribution,
 				% typically denoted as $n_v \sim \mathrm{Poisson}(\Lambda)$, where $\Lambda$ is the
 				% rate parameter
     % (expected value) of the distribution.
-		\item $n_v \sim \mathrm{Poisson}(\Lambda)$ new requests per time step
+		\item $n_v \sim \mathrm{Poisson}(\Lambda)$ new requests per time step (this lives in Demand class)
 		\item Each request:
 				\begin{itemize}
 						\item Request ID
@@ -63,6 +87,8 @@ Time steps are 1 minute long
 						\item Status (pending, assigned, completed, cancelled)
 				\end{itemize}
 \end{itemize}
+
+\medskip
 \tbf{Active Rides}
 I'm a little less sure about this one, but I think that this class should mostly serve as
 an enriched
@@ -74,36 +100,5 @@ tuple between a vehicle and a ride request
 		\item Time to pickup (minutes)
 		\item Duration of ride (minutes)
 		\item Estimated remaining time (minutes)
-\end{itemize}
-\newpage
-We model the state as a tuple $(t, F, R, D)$ where:
-\begin{itemize}
-		\item $t$ is the current time step (discretized to 10 minute intervals)
-		\item $F$ is a list of all vehicles in the fleet, where each vehicle is represented as
-				a tuple $(id, loc, status, battery, time\_to\_maintenance)$
-    \begin{itemize}
-						\item $id$ is a unique identifier for the vehicle
-						\item $loc$ is the current location of the vehicle (latitude, longitude)
-						\item $status$ is the current status of the vehicle (available, en route to pickup,
-								with passenger, en route to charging station, en route to maintenance)
-						\item $battery$ is the current battery level of the vehicle (percentage)
-						\item $time\_   to\_maintenance$ is the time remaining until the vehicle requires
-								maintenance (in hours)
-    \end{itemize}
-		\item $R$ is a list of all ride requests, where each request is represented as a tuple
-				$(id, pickup\_loc, dropoff\_loc, request\_time, status)$
-    \begin{itemize}
-						\item $id$ is a unique identifier for the request
-						\item $pickup\_loc$ is the location of the pickup (latitude, longitude)
-						\item $dropoff\_loc$ is the location of the dropoff (latitude, longitude)
-						\item $request\_time$ is the time the request was made
-						\item $status$ is the current status of the request (pending, assigned, completed, cancelled)
-    \end{itemize}
-		\item $D$ is a list of all demand hotspots, where each hotspot is represented as a
-				tuple $(loc, expected\_demand)$
-    \begin{itemize}
-						\item $loc$ is the location of the hotspot (latitude, longitude)
-						\item $expected\_demand$ is the expected number of ride requests in the next time step
-    \end{itemize}
 \end{itemize}
 \end{document}
