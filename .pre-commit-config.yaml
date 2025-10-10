@@ -3,6 +3,11 @@ minimum_pre_commit_version: 3.0.0
 # on pre-commit hooks and configuration.
 exclude: \.(html|svg|ipynb)$
 repos:
+  - repo: https://github.com/WGUNDERWOOD/tex-fmt
+    rev: v0.5.4
+    hooks:
+      - id: tex-fmt
+        args: ["--wraplen=100"]
   - repo: https://github.com/myint/autoflake
     rev: v2.2.1
     hooks:
@@ -55,10 +60,6 @@ repos:
   #   rev: v2.3.2
   #   hooks:
   #     - id: autopep8
-  - repo: https://github.com/WGUNDERWOOD/tex-fmt
-    rev: v0.5.4
-    hooks:
-      - id: tex-fmt
     # - repo: https://github.com/PyCQA/flake8
     #   rev: 7.2.0
     #   hooks:
