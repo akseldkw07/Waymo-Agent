@@ -1,0 +1,308 @@
+\documentclass[12pt]{article}
+
+\newcommand{\duedate}{10/09/2025}
+\newcommand{\assignment}{Architecture 10/09} % Change to "Problem Set X"
+
+% Change the following to your name and UNI.
+\newcommand{\name}{Team Waymo}
+\newcommand{\email}{waymo-rl@columbia.edu}
+
+% NOTE: Defining collaborators is optional; to not list collaborators, comment out the
+% line below. Maximum of two collaborators per problem set.
+%\newcommand{\collaborators}{Vig Vigerton (\texttt{UNI}), Alice Bob (\texttt{UNI})}
+% No collaborators on PS 0
+
+\makeatletter
+\def\input@path{{../}{../../}{../../../}} % add as many parents as you need
+\makeatother
+\input{pset_template.tex} %% DO NOT CHANGE THIS LINE
+
+\begin{document}
+\psetheader %% DO NOT CHANGE THIS LINE
+
+\section*{State}
+Discrete-Time Markov Decision Process (MDP)
+
+Time steps are 1 minute long
+
+\subsection*{Environment}
+\begin{itemize}
+		\item Static class - no state changes (mostly)
+		\item weather conditions (sunny, rainy, snowy, etc)
+		\item time of day (could be encoded as a float from 0 to 24)
+		\item day of week (could be encoded as an int from 0 to 6)
+		\item Embedded into $l_2$
+		\item Graph:
+				\begin{itemize}
+						\item Nodes - intersections
+						\item Edges - roads
+				\end{itemize}
+		\item Nodes:
+				\begin{itemize}
+						\item Only places rides can start/end
+						\item $l_2$ coordinates
+						\item bool is\_charging\_station
+						\item int num\_available\_chargers
+				\end{itemize}
+		\item Edges:
+				\begin{itemize}
+						\item Length
+						\item 2-way speed limit, possibly asymmetric
+						\item \tit{potentially:} 2-way current speed, possibly asymmetric (this would be dynamic)
+				\end{itemize}
+\end{itemize}
+\subsection*{Fleet}
+\begin{itemize}
+		\item n=10? vehicles
+		\item Per vehicle:
+    \begin{itemize}
+						\item Vehicle ID
+						\item Location
+						\item Battery level (percentage)
+						\item Status (available, en route to pickup, with passenger, en route to charging station)
+    \end{itemize}
+\end{itemize}
+
+\medskip
+\subsection*{Demand}
+I'm a little unsure about whether this should be \tit{explicitly} modeled in the state or
+"learned" by the
+agent. I'm learning towards the former for a few reasons
+\begin{enumerate}
+		\item It's relatively independent of the actions of the agent
+		\item It can be estimated from historical data
+		\item Both assumptions above are likely to be true in the real world
+		\item It greatly simplifies the learning problem
+\end{enumerate}
+If we do explicitly model it
+\begin{itemize}
+		\item Location
+		\item Expected demand (number of requests) in next $n$ time steps
+\end{itemize}
+
+\medskip
+\subsection*{Active Rides}
+I think that this class should mostly serve as an enriched tuple between a vehicle and a
+ride request (described below)
+\begin{itemize}
+		\item Matched Vehicle ID
+		\item Request ID
+		\item Status (en route to pickup, with passenger)
+		\item Time to pickup (minutes)
+		\item Duration of ride (minutes)
+		\item Estimated remaining time (minutes)
+\end{itemize}
+
+\medskip
+\subsection*{Ride Requests}
+
+There's one part of this process that I believe is non-trivial. In the real world, the
+platform (e.g. Uber, Lyft) suggests a menu of prices to the rider, who then selects one.
+Subsequently, all (nearby) drivers are notified of the ride request, and one can accept it.
+
+In our simulation, if the agent recommends prices, intuitively it would be a price that the agent
+would accept [extension]. So that transition probability is 1. However, you could make a
+case that riders
+should "bid" on rides, and the agent can (1) accept (2) reject (3) counter-offer. For the sake
+of simplicity, I would rather model the process as (1) customer requests a ride (2) the agent
+suggests a price (3) the customer either accepts or rejects the price based on some
+probabilistic model. This would allow the agent to learn to price rides optimally. It would also
+provide a bound on the maximum price the agent could set (since the agent would learn to just rise
+prices without bound if the customer always accepted).
+
+In this proposed process, the price recommendation would be part of the action space, and the
+customer's decision would be encoded in the transition probability.
+
+\begin{itemize}
+    % The variable $n_v$ represents a random variable following a Poisson distribution,
+				% typically denoted as $n_v \sim \mathrm{Poisson}(\Lambda)$, where $\Lambda$ is the
+				% rate parameter
+    % (expected value) of the distribution.
+		\item $n_v \sim \mathrm{Poisson}(\Lambda)$ new requests per time step (this lives in Demand class)
+		\item Each request:
+				\begin{itemize}
+						\item Account ID (drawn from a pool of $u$ users)
+								% why does account id matter?
+						\item Request ID
+						\item Pickup location
+						\item Dropoff location (!= pickup location). This could be modeled as a uniform
+								distribution at first, but ideally would be learned from historical data.
+						\item Request time
+						\item Status (categorical)
+								\begin{itemize}
+										\item Price suggestion pending (brand new request generated between $t$ and
+												$t-1$). Agent must suggest a price before next time step
+										\item Price suggested, pending customer acceptance/rejection (customer
+												immediately accepts/rejects based on probabilistic model)
+										\item Accepted, pending assignment to vehicle (this state only exists if there
+												are no available vehicles)
+										\item Assigned to vehicle, pending pickup (vehicle is en route to pickup location)
+										\item Cancelled by customer (optional - if pickup time is too long)
+										\item Active (joined with Vehicle class as Active Ride)
+										\item Completed
+								\end{itemize}
+				\end{itemize}
+\end{itemize}
+Note that we don't need to "explicitly" model aggregate supply demand imbalance,
+hopefully the agent will learn
+the notion of surge pricing on its own. However, a simple float variable representing the
+current ratio
+of supply to demand could be added to the state to accelerate learning.
+
+\newpage
+\section*{Actions}
+\subsection*{Per Vehicle}
+\begin{itemize}
+		\item Move (velocity vector) (always happens unless vehicle is charging)
+		\item bool flip\_charging\_state (go to / from charging station)
+\end{itemize}
+
+\subsection*{Global}
+\begin{itemize}
+		\item $\bp = [p_1, p_2, \ldots, p_{n_v}]$ price vector for all pending requests
+		\item Assign accepted requests to vehicles (if any are available)
+\end{itemize}
+
+% \newpage
+\section*{Transitions}
+\subsection*{Environment}
+Proposition 1: Static, no transitions (unless we want to model traffic \& speed) \\
+Proposition 2: Transition model learnt implicitly using model-free algorithm.
+\subsection*{Fleet}
+Set of cars is represented as \[\{ \mathbf{c}_i \}_{i=1}^{n} \subset \mathbb{R}^{[n]
+\times [0,1] \times [4]} \] where each $\mathbf{c}_i = (\text{position}, \text{charge},
+\text{status})$.\\
+\begin{itemize}
+		\item Location - updated based on velocity vector, speed limits, and road network
+				\begin{itemize}
+						\item Proposition 1: Model location as a Cartesian grid (easier zoning, but more states).
+						\item Proposition 2: Model location as a node in graph (natural weighted edge
+								representation for traffic).
+				\end{itemize}
+		\item Battery level - decreases based on distance traveled, increases when at charging station
+		\item Status - updated based on actions and ride assignments: occupied, repositioning,
+				idle, charging
+\end{itemize}
+\subsection*{Demand}
+\begin{itemize}
+		\item Updated based on historical data (e.g. time of day, day of week, weather conditions)
+				\begin{itemize}
+						\item Proposition: feed historical distribution of demand as prior to algorithm
+								input. Note: to keep policy stationary, we can initialize rewards according to
+								area popularity.
+				\end{itemize}
+\end{itemize}
+\subsection*{Active Rides}
+\begin{itemize}
+		\item Status - updated based on vehicle status and ride progress
+		\item Time to pickup - decreases as vehicle approaches pickup location
+		\item Duration of ride - increases as ride progresses
+				\begin{itemize}
+						\item Note: traffic changes as ride progresses, does it mean that car should change
+								its action during the ride? That exponentially increases amount of decisions to
+								be made (hence longer exploration time) although it's unlikely that car needs to
+								change the route.
+				\end{itemize}
+		\item Estimated remaining time - updated based on current time to pickup and duration of ride
+\end{itemize}
+\subsection*{Ride Requests}
+\begin{itemize}
+		\item New requests - generated based on Poisson distribution with rate parameter $\Lambda$
+		\item Status - updated based on customer acceptance/rejection and ride assignments
+				\begin{itemize}
+						\item Expired requests - removed if not accepted within a certain time frame
+						\item Cancelled requests - removed if customer cancels before assignment
+						\item Completed requests - removed once ride is finished
+						\item Price acceptance - probabilistic model based on suggested price and customer sensitivity
+				\end{itemize}
+		\item $p_{accept} = \tfrac{1}{1 + e^{-z}}$ (logistic function)
+		\item z-features:
+				\begin{itemize}
+						\item customer bias (base acceptance rate per customer)
+						\item pickup \& destination location bias (proxy for neighborhood wealth, proximity
+								to public transit)
+								\begin{itemize}
+										\item how connected node is $\sim$ subway proximity
+										\item avg income in neighborhood $\sim$ census data (or just random manifold)
+								\end{itemize}
+						\item price offered by agent
+						\item distance
+						\item global supply-demand imbalance
+						\item date \& time
+						\item weather conditions
+				\end{itemize}
+\end{itemize}
+
+\newpage
+\section*{Rewards \& Costs}
+\subsection*{Rewards}
+\begin{itemize}
+		\item Revenue from completed rides
+		\item \tit{stretch:} customer loyalty / retention
+\end{itemize}
+\subsection*{Costs}
+\tit{Explicit}
+\begin{itemize}
+		\item Operational costs (electricity) - per mile cost
+				\begin{itemize}
+						\item Cost not paid when vehicle is charging
+						\item Cost proportionate to distance (hence speed)
+						\item Repositioning costs
+				\end{itemize}
+		\item Customer dissatisfaction
+				\begin{itemize}
+						\item Rejected rides (long term effect on customer loyalty, hard to learn
+								implicitly due to credit assignment problem)
+						\item Long wait times
+						\item Incomplete area coverage
+				\end{itemize}
+\end{itemize}
+\tit{Implicit / Learned}
+\begin{itemize}
+		\item Rejected ride requests (lost revenue)
+		\item Unfulfilled demand (due to supply shortage; lost revenue)
+		\item Long wait times (due to supply shortage | uneven vehicle distribution | traffic |
+				underpricing (hence excess load))
+		\item Non-shortest path routing (traffic, geography)
+\end{itemize}
+
+\newpage
+\section*{Implementation Miscellany \& Thoughts}
+\begin{itemize}
+		\item Leverage OpenAI Gym framework
+		\item Leverage existing graph libraries (e.g. NetworkX) for road network?
+		\item Instant distribution of amortized costs \& rewards at each time step (speed up learning)
+		\item Start incredibly simple (shrink dimensionality)
+		\item Initialize with heuristic policy (e.g. nearest vehicle, price = cost * (1 + margin))
+		\item Log metrics (rewards, costs, wait times, rejection rates, etc) for analysis,
+				visualization, debugging \& final presentation
+		\item Strict and thoughtful versioning of both code and experiments (match up version
+				of code with results, reduce ambiguity in analysis)
+		\item Burning question: is algorithm a centralized dispatcher or multi-agent? I think
+				multi-agent is too complicated, slides for Multi-Agent RL only cover 2-player Nash equilibrium
+\end{itemize}
+
+\section*{Policy Search Approaches}
+\begin{itemize}
+		\item Q-learning
+		\item Monte-Carlo
+		\item (benchmark) Heuristics: nearest idle, least recently busy
+		\item (benchmark) Robo-taxi's Network Flow solution
+				\href{https://arxiv.org/html/2504.06125v2#S4:~:text=4.2,Flow%20Problem%20Formulation}{Section
+						% 4.2} % https://arxiv.org/html/2504.06125v2#S4
+				\item Policy Gradient
+				\item Actor-Critic
+				\item Deep Q-Network [extension]
+				\item Multi-Agent
+						%\item Find nearest Uber and follow it haha
+		\end{itemize}
+
+		\section*{Timeline}
+		\begin{itemize}
+    \item Set up environment for demand and traffic model
+    \item Determine policy for car dispatch
+    \item Add pricing suggestions
+    \item Add charging
+		\end{itemize}
+
+		\end{document}
