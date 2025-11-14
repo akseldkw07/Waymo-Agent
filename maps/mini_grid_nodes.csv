@@ -1,0 +1,9 @@
+node_id,x,y,is_charger,num_chargers,zone
+N0,0.0,0.0,True,4,central
+N1,1.0,0.0,False,0,central
+N2,2.0,0.0,False,0,east
+N3,1.0,1.0,True,2,north
+N4,1.0,-1.0,False,0,south
+N5,0.0,1.5,False,0,north
+N6,2.5,0.5,False,0,east
+N7,-0.5,0.5,False,0,west
