@@ -1,0 +1,10 @@
+edge_id,src,dst,length_km,speed_limit_kmh,is_two_way
+E0,N0,N1,1.0,40,True
+E1,N1,N2,1.1,40,True
+E2,N1,N3,1.0,35,True
+E3,N1,N4,1.0,35,True
+E4,N3,N5,0.7,30,False
+E5,N2,N6,0.8,45,True
+E6,N0,N7,0.8,30,True
+E7,N3,N6,1.0,35,False
+E8,N4,N2,1.5,35,False

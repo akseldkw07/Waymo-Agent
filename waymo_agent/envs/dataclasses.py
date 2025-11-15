@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import enum
 from dataclasses import dataclass
+from pathlib import Path
 
 
 class VehicleStatus(enum.IntEnum):
@@ -22,10 +23,10 @@ class RequestStatus(enum.IntEnum):
 
 @dataclass
 class EnvConfig:
-    map_name: str | None = "mini_grid"
-    map_dir: str = "data/maps"
+    map_name: str | None = "manhattan_shaped"
+    map_dir: str | Path = "maps"
     num_nodes: int = 8
-    num_vehicles: int = 10
+    num_vehicles: int = 4
     max_pending_requests: int = 12
     demand_rate: float = 2.5
     minutes_per_step: int = 1
