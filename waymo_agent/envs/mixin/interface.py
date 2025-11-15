@@ -9,9 +9,18 @@ import gymnasium as gym
 import networkx as nx
 import numpy as np
 from gymnasium import spaces
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
-from matplotlib.lines import Line2D
+
+if t.TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+    from matplotlib.lines import Line2D
+
+    AxesLike = Axes
+    FigureLike = Figure
+    Line2DType = type[Line2D]
+else:
+    AxesLike = FigureLike = t.Any  # type: ignore
+    Line2DType = t.Any  # type: ignore
 
 """Gymnasium environment that mirrors the proposal architecture for the Waymo RL project."""
 
@@ -54,11 +63,11 @@ class GraphMixinInterface(gym.Env, ABC):
     weather_idx: int
     metrics: dict[str, float]
     _mpl: t.Any | None
-    _figure = Figure | None
-    _axes = Axes | None
-    _line_cls = Line2D | None
+    _figure: FigureLike | None
+    _axes: AxesLike | None
+    _line_cls: Line2DType | None
 
-    # TODO
+    # TODO remove these
     @abstractmethod
     def _distance(self, *args, **kwargs) -> float: ...
 

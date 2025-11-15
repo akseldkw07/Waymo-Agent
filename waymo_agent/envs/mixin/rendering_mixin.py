@@ -1,10 +1,16 @@
 from __future__ import annotations
 
 import typing as t
+from pathlib import Path
 
 import numpy as np
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
+
+if t.TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+else:
+    Axes = t.Any  # type: ignore
+    Figure = t.Any  # type: ignore
 
 from ..dataclasses import RequestStatus, VehicleState, VehicleStatus
 from .interface import GraphMixinInterface
@@ -23,6 +29,17 @@ class RideShareRenderingMixin(GraphMixinInterface):
             return self._render_text()
         return None
 
+    def save_render(self, path: str | Path):
+        path = Path(path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        prev_mode = self.render_mode
+        try:
+            if prev_mode != "human":
+                self.render_mode = "human"
+            self._render_matplotlib(save_path=path)
+        finally:
+            self.render_mode = prev_mode
+
     def close(self):
         if self._figure is not None and self._mpl is not None:
             self._mpl.close(self._figure)
@@ -31,7 +48,7 @@ class RideShareRenderingMixin(GraphMixinInterface):
         self._mpl = None
         self._line_cls = None
 
-    def _render_matplotlib(self):
+    def _render_matplotlib(self, save_path: Path | None = None):
         try:
             if self._mpl is None:
                 import matplotlib.pyplot as plt
@@ -61,6 +78,9 @@ class RideShareRenderingMixin(GraphMixinInterface):
             raise ImportError("Matplotlib is required for human render mode.") from exc
 
         ax = t.cast(Axes, self._axes)
+        line_cls = self._line_cls
+        if line_cls is None:
+            raise RuntimeError("Matplotlib Line2D class not initialized.")
         ax.clear()
         node_x = self.node_coords[:, 0]
         node_y = self.node_coords[:, 1]
@@ -163,7 +183,7 @@ class RideShareRenderingMixin(GraphMixinInterface):
         ax.axis("off")
 
         legend_handles = [
-            self._line_cls(
+            line_cls(
                 [0],
                 [0],
                 marker="o",
@@ -173,7 +193,7 @@ class RideShareRenderingMixin(GraphMixinInterface):
                 markersize=6,
                 label="Node",
             ),
-            self._line_cls(
+            line_cls(
                 [0],
                 [0],
                 marker="s",
@@ -183,7 +203,7 @@ class RideShareRenderingMixin(GraphMixinInterface):
                 markersize=6,
                 label="Charging",
             ),
-            self._line_cls(
+            line_cls(
                 [0],
                 [0],
                 marker="^",
@@ -193,11 +213,11 @@ class RideShareRenderingMixin(GraphMixinInterface):
                 markersize=6,
                 label="Request",
             ),
-            self._line_cls([0], [0], color="#d62728", linewidth=2.0, label="Active Ride"),
+            line_cls([0], [0], color="#d62728", linewidth=2.0, label="Active Ride"),
         ]
         for status, color in status_colors.items():
             legend_handles.append(
-                self._line_cls(
+                line_cls(
                     [0],
                     [0],
                     marker="o",
@@ -230,6 +250,8 @@ class RideShareRenderingMixin(GraphMixinInterface):
         fig = t.cast(Figure, self._figure)
         fig.canvas.draw()
         fig.canvas.flush_events()
+        if save_path is not None:
+            fig.savefig(save_path, bbox_inches="tight", dpi=300)
         self._mpl.pause(0.001)
         return None
 

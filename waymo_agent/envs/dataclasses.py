@@ -23,7 +23,7 @@ class RequestStatus(enum.IntEnum):
 
 @dataclass
 class EnvConfig:
-    map_name: str | None = "manhattan"
+    map_name: str | None = "manhattan_shaped"
     map_dir: str | Path = "maps"
     num_nodes: int = 8
     num_vehicles: int = 4
