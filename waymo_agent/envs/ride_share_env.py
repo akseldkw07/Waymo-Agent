@@ -14,6 +14,25 @@ from .mixin import RideShareDynamicsMixin, RideShareGraphMixin, RideShareObserva
 class RideShareEnv(RideShareRenderingMixin, RideShareObservationMixin, RideShareDynamicsMixin, RideShareGraphMixin):
     """Gymnasium environment that mirrors the proposal architecture for the Waymo RL project."""
 
+    """
+    TODO: GRAPH
+    sparsify graph
+        - Save script
+        - Run script
+        - Save new .graphml
+        - Load new .graphml
+    enrich graph
+        - add lambda parameter per node
+        - save out color mappings for rendering
+    TODO: rework RideShareGraphMixin to use osmnx for loading graphs
+        - Remove all the csv code
+        - Redo all the rendering code
+    TODO: Clean up interface
+        - No abstract methods?
+    TODO: Demand function remodel
+        - should be per node, not global
+    """
+
     def __init__(self, config: EnvConfig | None = None, render_mode: t.Literal["human", "ansi"] = "human"):
         super().__init__()
         self.config = config or EnvConfig()
