@@ -1,7 +1,15 @@
-import random
+"""
+Notebook functions for inspecting OSMnx graphs.
+"""
 
+import random
+import typing as t
 import networkx as nx
 from matplotlib.axes import Axes
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def inspect_graph(G: nx.MultiDiGraph) -> None:
@@ -75,3 +83,24 @@ def plot_maxspeed(G: nx.MultiDiGraph, ax: Axes | None = None):
         ax.set_title("Max Speed Distribution")
     else:
         ax.text(0.5, 0.5, "No plottable speed data", ha="center", va="center", transform=ax.transAxes)
+
+
+def collect_unique_graph_attr(G: nx.MultiDiGraph, attr: str) -> set[t.Any]:
+    """Helper to collect all unique values of a given edge attribute in the graph."""
+    values = set()
+    for u, v, k, data in G.edges(keys=True, data=True):
+        value = data.get(attr)
+        if value is not None:
+            if isinstance(value, list):
+                values.update(value)
+            else:
+                values.add(value)
+
+    if not values:
+        attrs = set()
+        for i in range(5):
+            sample_edge = random.choice(list(G.edges(data=True)))
+            attrs.update(sample_edge[2].keys())
+
+        logger.warning(f"No values found for attribute '{attr}'. Sample edge attributes: {attrs}")
+    return values
