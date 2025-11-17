@@ -45,26 +45,34 @@ def sparsify_graph(G: nx.MultiDiGraph) -> nx.MultiDiGraph:
     largest_component = max(components, key=len)
     G_sparsified = t.cast(nx.MultiDiGraph, G_major.subgraph(largest_component).copy())
 
-    print(f"Graph after edge removal: {G_sparsified.number_of_nodes()} nodes")
+    print(f"Graph after edge removal: {G_sparsified.number_of_nodes()=}, {G_sparsified.number_of_edges()=}")
 
-    # 4. *** FIX: PRE-CLEANING STEP ***
-    # We must run this again to prevent the 'unhashable type: list'
-    # error in the simplify_graph step.
-    print("Cleaning edge attributes before simplification...")
+    print("Cleaning all edge attributes before simplification...")
+    keys_merged = set()
     for u, v, key, data in G_sparsified.edges(keys=True, data=True):
-        if isinstance(data.get("highway"), list):
-            data["highway"] = data["highway"][0]
-        if isinstance(data.get("name"), list):
-            data["name"] = data["name"][0]
+        for attr_key, attr_value in data.items():
+            if isinstance(attr_value, list):
+                keys_merged.add(attr_key)
+                if attr_key in {"highway", "maxspeed", "reversed", "tunnel"}:
+                    print(
+                        f"Cleaning list attribute '{attr_key}' on edge ({u}, {v}, {key}). Original value: {attr_value}"
+                    )
+                # If it's a list, just take the first item.
+                # This is a safe assumption for our simplification goal.
+                try:
+                    data[attr_key] = attr_value[0]
+                except IndexError:
+                    # Handle empty lists, though rare
+                    data[attr_key] = None
+            elif isinstance(attr_value, dict):
+                # Dictionaries are also unhashable
+                data[attr_key] = str(attr_value)
 
-    # 5. *** CRITICAL STEP: SIMPLIFY TOPOLOGY AGAIN ***
-    # This removes all the "pass-through" nodes we created
-    # by deleting the minor roads. This is what will
-    # get your node count down.
+    print(f"Merged attributes: {keys_merged}")
     print("Simplifying topology...")
     G_sparsified.graph["simplified"] = False
     G_simplified = ox.simplify_graph(G_sparsified)
 
     assert isinstance(G_simplified, nx.MultiDiGraph)
-    print(f"Final simplified graph: {G_simplified.number_of_nodes()} nodes")
+    print(f"Final simplified graph: {G_simplified.number_of_nodes()=}, {G_simplified.number_of_edges()=}")
     return G_simplified
