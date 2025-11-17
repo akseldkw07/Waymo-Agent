@@ -236,27 +236,171 @@ class ManhattanCsvBuilder:
         eased /= eased[-1]
         return eased
 
-    def write_csv(self, nodes_path: Path, edges_path: Path, nodes, edges):
-        nodes_path.parent.mkdir(parents=True, exist_ok=True)
-        edges_path.parent.mkdir(parents=True, exist_ok=True)
-        with nodes_path.open("w", newline="") as node_file:
-            writer = csv.DictWriter(
-                node_file,
-                fieldnames=["node_id", "x", "y", "is_charger", "num_chargers", "zone"],
+
+@dataclass
+class OsmManhattanBuilder:
+    """Generates a Manhattan map directly from the OpenStreetMap street graph."""
+
+    place_query: str = "Manhattan, New York, USA"
+    network_type: str = "drive"
+    tolerance_m: float = 17.0
+    charger_spacing_m: float = 1200.0
+    charger_capacity: int = 12
+
+    def build(self):
+        import osmnx as ox
+
+        ox.settings.log_console = False
+        graph = ox.graph_from_place(self.place_query, network_type=self.network_type, simplify=True)
+        graph = ox.utils_graph.get_largest_component(graph, strongly=True)
+        graph = ox.add_edge_speeds(graph)
+        graph = ox.project_graph(graph)
+        graph = ox.consolidate_intersections(graph, tolerance=self.tolerance_m, rebuild_graph=True, dead_ends=False)
+        graph = ox.add_edge_travel_times(graph)
+        return self._graph_to_rows(graph)
+
+    def _graph_to_rows(self, graph):
+        nodes: list[dict[str, object]] = []
+        node_map: dict[int, str] = {}
+        coords = np.array([[float(data["x"]), float(data["y"])] for _, data in graph.nodes(data=True)])
+        min_x = float(coords[:, 0].min())
+        min_y = float(coords[:, 1].min())
+        scale = 1.0 / 1000.0  # meters to kilometers
+
+        charger_nodes = self._select_chargers(graph)
+        for idx, (node, data) in enumerate(graph.nodes(data=True)):
+            node_id = f"N{idx:05d}"
+            node_map[node] = node_id
+            x_km = (float(data["x"]) - min_x) * scale
+            y_km = (float(data["y"]) - min_y) * scale
+            is_charger = node in charger_nodes
+            nodes.append(
+                {
+                    "node_id": node_id,
+                    "x": round(x_km, 4),
+                    "y": round(y_km, 4),
+                    "is_charger": "true" if is_charger else "false",
+                    "num_chargers": self.charger_capacity if is_charger else 0,
+                    "zone": "manhattan_osm",
+                }
             )
-            writer.writeheader()
-            writer.writerows(nodes)
-        with edges_path.open("w", newline="") as edge_file:
-            writer = csv.DictWriter(
-                edge_file,
-                fieldnames=["edge_id", "src", "dst", "length_km", "speed_limit_kmh", "is_two_way"],
+
+        edges = self._build_edges(graph, node_map)
+        return nodes, edges
+
+    def _select_chargers(self, graph) -> set[int]:
+        degrees = dict(graph.degree())
+        ordered_nodes = sorted(degrees.items(), key=lambda item: (item[1], item[0]), reverse=True)
+        target = max(35, len(ordered_nodes) // 150)
+        spacing = max(1, len(ordered_nodes) // target)
+        chargers: set[int] = set()
+        for idx, (node, _) in enumerate(ordered_nodes):
+            if idx % spacing == 0:
+                chargers.add(node)
+            if len(chargers) >= target:
+                break
+        return chargers
+
+    def _build_edges(self, graph, node_map: dict[int, str]):
+        edges: list[dict[str, object]] = []
+        seen_pairs: set[tuple[str, str]] = set()
+        edge_idx = 0
+        for u, v, data in graph.edges(data=True):
+            src = node_map.get(u)
+            dst = node_map.get(v)
+            if not src or not dst:
+                continue
+            oneway = self._is_oneway(data)
+            if not oneway:
+                pair = tuple(sorted((src, dst)))
+                if pair in seen_pairs:
+                    continue
+                seen_pairs.add(pair)
+            length_m = float(data.get("length") or self._fallback_length(graph, u, v))
+            length_km = length_m / 1000.0
+            speed = self._edge_speed(data)
+            edges.append(
+                {
+                    "edge_id": f"E{edge_idx:06d}",
+                    "src": src,
+                    "dst": dst,
+                    "length_km": round(length_km, 4),
+                    "speed_limit_kmh": round(speed, 1),
+                    "is_two_way": "false" if oneway else "true",
+                }
             )
-            writer.writeheader()
-            writer.writerows(edges)
+            edge_idx += 1
+        return edges
+
+    def _edge_speed(self, data: dict) -> float:
+        speed = data.get("speed_kph")
+        if isinstance(speed, list):
+            speed = speed[0]
+        if speed is None:
+            highway = data.get("highway")
+            speed = self._highway_defaults().get(highway if isinstance(highway, str) else str(highway), 35.0)
+        return float(speed)
+
+    def _fallback_length(self, graph, u: int, v: int) -> float:
+        src = graph.nodes[u]
+        dst = graph.nodes[v]
+        dx = float(dst["x"]) - float(src["x"])
+        dy = float(dst["y"]) - float(src["y"])
+        return float(np.hypot(dx, dy))
+
+    @staticmethod
+    def _is_oneway(data: dict) -> bool:
+        value = data.get("oneway")
+        if isinstance(value, str):
+            value = value.lower()
+        return value in {True, "yes", "true", "1", "y"}
+
+    @staticmethod
+    def _highway_defaults():
+        return {
+            "motorway": 80.0,
+            "motorway_link": 60.0,
+            "trunk": 65.0,
+            "trunk_link": 55.0,
+            "primary": 50.0,
+            "primary_link": 45.0,
+            "secondary": 40.0,
+            "secondary_link": 38.0,
+            "tertiary": 35.0,
+            "tertiary_link": 32.0,
+            "residential": 30.0,
+            "living_street": 25.0,
+            "unclassified": 28.0,
+        }
+
+
+def write_csv(nodes_path: Path, edges_path: Path, nodes, edges):
+    nodes_path.parent.mkdir(parents=True, exist_ok=True)
+    edges_path.parent.mkdir(parents=True, exist_ok=True)
+    with nodes_path.open("w", newline="") as node_file:
+        writer = csv.DictWriter(
+            node_file,
+            fieldnames=["node_id", "x", "y", "is_charger", "num_chargers", "zone"],
+        )
+        writer.writeheader()
+        writer.writerows(nodes)
+    with edges_path.open("w", newline="") as edge_file:
+        writer = csv.DictWriter(
+            edge_file,
+            fieldnames=["edge_id", "src", "dst", "length_km", "speed_limit_kmh", "is_two_way"],
+        )
+        writer.writeheader()
+        writer.writerows(edges)
 
 
 def parse_args(argv: Sequence[str] | None = None):
     parser = argparse.ArgumentParser(description="Generate Manhattan-like map CSVs.")
+    parser.add_argument(
+        "--mode",
+        choices=("osm", "synthetic"),
+        default="osm",
+        help="Choose 'osm' for the OpenStreetMap-derived map or 'synthetic' for the parametric grid (default: osm).",
+    )
     parser.add_argument(
         "--nodes-path",
         type=Path,
@@ -274,11 +418,14 @@ def parse_args(argv: Sequence[str] | None = None):
 
 def main(argv: Sequence[str] | None = None):
     args = parse_args(argv)
-    builder = ManhattanCsvBuilder()
+    if args.mode == "synthetic":
+        builder = ManhattanCsvBuilder()
+    else:
+        builder = OsmManhattanBuilder()
     nodes, edges = builder.build()
-    builder.write_csv(args.nodes_path, args.edges_path, nodes, edges)
+    write_csv(args.nodes_path, args.edges_path, nodes, edges)
     print(
-        f"Wrote {len(nodes)} nodes to {args.nodes_path} and {len(edges)} edges to {args.edges_path}",
+        f"[{args.mode}] Wrote {len(nodes)} nodes to {args.nodes_path} and {len(edges)} edges to {args.edges_path}",
     )
 
 
