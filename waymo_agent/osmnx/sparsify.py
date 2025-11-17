@@ -1,6 +1,7 @@
+import typing as t
+
 import networkx as nx
 import osmnx as ox
-import typing as t
 
 # 1. Define the road types you want to KEEP
 # Try removing 'secondary' if this is still too dense

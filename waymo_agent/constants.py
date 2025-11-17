@@ -9,6 +9,13 @@ MAP_DIR = ROOT_DIR / "maps"
 IMG_DIR = ROOT_DIR / "img"
 MODEL_WEIGHT_DIR = ROOT_DIR / "model_weights"
 
+
+# IMG Paths
+MANHATTAN_BASIC = "manhattan-full-basic.png"
+
+# Map Names
+MANHATTAN_FULL = "manhattan_full.graphml"
+
 # WANDB
 WANDB_TEAM_NAME = "rl-project-F25"
 WANDB_PROJECT_NAME = "Waymo-Agent-Phase1"
