@@ -9,12 +9,14 @@ MAP_DIR = ROOT_DIR / "maps"
 IMG_DIR = ROOT_DIR / "img"
 MODEL_WEIGHT_DIR = ROOT_DIR / "model_weights"
 
-
 # IMG Paths
 MANHATTAN_BASIC = "manhattan-full-basic.png"
+MANHATTAN_COLORFUL = "manhattan-full-colorful.png"
+MANHATTAN_SPARSE_COLORFUL = "manhattan-sparse-colorful.png"
 
 # Map Names
-MANHATTAN_FULL = "manhattan_full.graphml"
+MANHATTAN_RAW_GRAPH = "manhattan-raw.graphml"
+MANHATTAN_PROCESSED_GRAPH = "manhattan-processed.graphml"
 
 # WANDB
 WANDB_TEAM_NAME = "rl-project-F25"

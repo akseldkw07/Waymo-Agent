@@ -1,11 +1,10 @@
 import random
-import typing as t
 
 import networkx as nx
 from matplotlib.axes import Axes
 
 
-def inspect(G: nx.MultiDiGraph) -> None:
+def inspect_graph(G: nx.MultiDiGraph) -> None:
     """
     Inspects the graph by printing basic information about nodes and edges.
 
@@ -30,7 +29,7 @@ def inspect(G: nx.MultiDiGraph) -> None:
         print(f"Sample edge attributes: {sample_edge[2]}")
 
 
-def max_speed_distribution(G: nx.MultiDiGraph) -> t.Dict[str, int]:
+def max_speed_distribution(G: nx.MultiDiGraph) -> dict[str, int]:
     """
     Computes the distribution of maximum speed limits in the graph.
 
@@ -40,7 +39,7 @@ def max_speed_distribution(G: nx.MultiDiGraph) -> t.Dict[str, int]:
     Returns:
         Dict[str, int]: A dictionary with speed limits as keys and their counts as values.
     """
-    speed_counts: t.Dict[str, int] = {}
+    speed_counts: dict[str, int] = {}
     for u, v, k, data in G.edges(keys=True, data=True):
         maxspeed = data.get("maxspeed")
         if isinstance(maxspeed, list):
@@ -51,4 +50,28 @@ def max_speed_distribution(G: nx.MultiDiGraph) -> t.Dict[str, int]:
     return speed_counts
 
 
-def plot_maxspeed(G: nx.MultiDiGraph, ax: Axes | None = None): ...
+def plot_maxspeed(G: nx.MultiDiGraph, ax: Axes | None = None):
+    speed_counts = max_speed_distribution(G)
+
+    if ax is None:
+        import matplotlib.pyplot as plt
+
+        fig, ax = plt.subplots()
+
+    # Collect speeds as list for histogram
+    speeds = []
+    for speed, count in speed_counts.items():
+        assert isinstance(speed, int)
+        try:
+            speeds.extend([speed] * count)
+        except (ValueError, IndexError, AttributeError):
+            # Skip unparseable speeds
+            pass
+
+    if speeds:
+        ax.hist(speeds, bins=20, edgecolor="black")
+        ax.set_xlabel("Max Speed")
+        ax.set_ylabel("Frequency")
+        ax.set_title("Max Speed Distribution")
+    else:
+        ax.text(0.5, 0.5, "No plottable speed data", ha="center", va="center", transform=ax.transAxes)
