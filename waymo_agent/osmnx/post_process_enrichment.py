@@ -3,6 +3,8 @@ Assign charging stations, lambda values
 """
 
 import networkx as nx
+
+from .inspect import sum_graph_attr
 from ..envs.dataclasses import EnvConfig
 import numpy as np
 
@@ -73,3 +75,6 @@ def _assign_lambda_values(G: nx.MultiDiGraph, config: EnvConfig):
 
         lambda_values[node] = max(0.0, lambda_values[node] + noise)
         G.nodes[node]["lambda"] = lambda_values[node]
+
+    sum_lambda = sum_graph_attr(G, "lambda", "node")
+    print(f"Assigned lambda values to nodes. Total lambda: {sum_lambda:.4f} (target: {total_lambda:.4f})")

@@ -48,10 +48,8 @@ class RideShareEnv(RideShareRenderingMixin, RideShareObservationMixin, RideShare
         self.graph_edges: list[tuple[int, int]] = []
         self.charging_nodes: list[int] = []
         self._build_graph()
-        self.num_nodes = int(self.node_coords.shape[0])
         if self.num_nodes == 0:
             raise ValueError("Map must contain at least one node.")
-        self.config.num_nodes = self.num_nodes
         self._build_observation_space()
         self._build_action_space()
         self.np_random: np.random.Generator = np.random.default_rng()

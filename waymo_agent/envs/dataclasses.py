@@ -24,7 +24,7 @@ class RequestStatus(enum.IntEnum):
 @dataclass
 class EnvConfig:
     # Map and environment parameters
-    map_name: str = "manhattan-sparse-772-nodes.graphml"
+    map_name: str = "manhattan-sparse-772-nodes-enriched.graphml"
     map_dir: str | Path = "maps"
     vehicle_per_node: float = 0.25
     max_pending_requests: int = 12

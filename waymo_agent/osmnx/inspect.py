@@ -69,7 +69,7 @@ def plot_maxspeed(G: nx.MultiDiGraph, ax: Axes | None = None):
     # Collect speeds as list for histogram
     speeds = []
     for speed, count in speed_counts.items():
-        assert isinstance(speed, float), f"Unexpected speed type: {type(speed)}"
+        assert isinstance(speed, (int, float)), f"Unexpected speed type: {type(speed)}"
         try:
             speeds.extend([speed] * count)
         except (ValueError, IndexError, AttributeError):

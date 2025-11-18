@@ -23,7 +23,7 @@
 <key id="d2" for="graph" attr.name="crs" attr.type="string"/>
 <key id="d1" for="graph" attr.name="created_with" attr.type="string"/>
 <key id="d0" for="graph" attr.name="created_date" attr.type="string"/>
-<graph edgedefault="directed"><data key="d0">2025-11-17 23:30:08</data>
+<graph edgedefault="directed"><data key="d0">2025-11-18 00:02:01</data>
 <data key="d1">OSMnx 2.0.6</data>
 <data key="d2">epsg:4326</data>
 <data key="d3">True</data>
@@ -4496,7 +4496,7 @@
 <edge source="42421737" target="42443381" id="0">
   <data key="d9">1052940920</data>
   <data key="d10">primary</data>
-  <data key="d17">(('4', '3'), '3')</data>
+  <data key="d17">('3', ('4', '3'))</data>
   <data key="d11">25</data>
   <data key="d12">Columbus Avenue</data>
   <data key="d13">True</data>
@@ -4528,7 +4528,7 @@
 <edge source="42421741" target="42442569" id="0">
   <data key="d9">957049320</data>
   <data key="d10">primary</data>
-  <data key="d17">(('4', '3'), '3')</data>
+  <data key="d17">('3', ('4', '3'))</data>
   <data key="d12">Amsterdam Avenue</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
@@ -4648,7 +4648,7 @@
 <edge source="42422283" target="42426747" id="0">
   <data key="d9">1410480704</data>
   <data key="d10">primary</data>
-  <data key="d17">('4', ('4', '3'), '2', '3')</data>
+  <data key="d17">('4', '3', ('4', '3'), '2')</data>
   <data key="d11">20</data>
   <data key="d12">('Water Street', 'Pearl Street')</data>
   <data key="d13">False</data>
@@ -4738,7 +4738,7 @@
   <data key="d9">[439801907, 169381964]</data>
   <data key="d10">secondary</data>
   <data key="d17">['4', '2']</data>
-  <data key="d12">['Riverside Drive', 'West 72nd Street']</data>
+  <data key="d12">['West 72nd Street', 'Riverside Drive']</data>
   <data key="d13">False</data>
   <data key="d14">[False, True]</data>
   <data key="d15">702.5584678450264</data>
@@ -4759,7 +4759,7 @@
 <edge source="42422899" target="42442918" id="0">
   <data key="d9">[368938760, 46201642]</data>
   <data key="d10">secondary</data>
-  <data key="d17">[('4', '3'), '3']</data>
+  <data key="d17">['3', ('4', '3')]</data>
   <data key="d11">25</data>
   <data key="d12">East 37th Street</data>
   <data key="d13">True</data>
@@ -4867,7 +4867,7 @@
 <edge source="42423170" target="42426135" id="0">
   <data key="d9">695644410</data>
   <data key="d10">motorway_link</data>
-  <data key="d17">('1', '3')</data>
+  <data key="d17">('3', '1')</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">173.3912064437343</data>
@@ -5099,7 +5099,7 @@
 <edge source="42424347" target="42434845" id="0">
   <data key="d9">421832648</data>
   <data key="d10">motorway_link</data>
-  <data key="d17">(('2', '1'), '2')</data>
+  <data key="d17">('2', ('2', '1'))</data>
   <data key="d11">22</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
@@ -5143,7 +5143,7 @@
 <edge source="42424408" target="4142105822" id="0">
   <data key="d9">1449408224</data>
   <data key="d10">trunk</data>
-  <data key="d17">(('2', '1'), '2')</data>
+  <data key="d17">('2', ('2', '1'))</data>
   <data key="d11">20</data>
   <data key="d12">Hudson Street</data>
   <data key="d13">True</data>
@@ -5198,7 +5198,7 @@
 <edge source="42424610" target="42424408" id="0">
   <data key="d9">46139042</data>
   <data key="d10">secondary</data>
-  <data key="d17">('5', '2')</data>
+  <data key="d17">('2', '5')</data>
   <data key="d11">20</data>
   <data key="d12">Hudson Street</data>
   <data key="d13">True</data>
@@ -5332,7 +5332,7 @@
   <data key="d15">345.1657945237711</data>
   <data key="d16">LINESTRING (-73.9760092 40.7954937, -73.9757989 40.7954481, -73.9737051 40.794589, -73.972399 40.7940312)</data>
   <data key="d11">28</data>
-  <data key="d17">(('2', '1'), '1')</data>
+  <data key="d17">('1', ('2', '1'))</data>
 </edge>
 <edge source="42425484" target="373760396" id="0">
   <data key="d9">958096263</data>
@@ -5391,7 +5391,7 @@
 <edge source="42426747" target="42422283" id="0">
   <data key="d9">1410480704</data>
   <data key="d10">primary</data>
-  <data key="d17">('4', ('4', '3'), '2', '3')</data>
+  <data key="d17">('4', '2', ('4', '3'), '3')</data>
   <data key="d11">20</data>
   <data key="d12">('Water Street', 'Pearl Street')</data>
   <data key="d13">False</data>
@@ -5482,7 +5482,7 @@
 <edge source="42427009" target="3631837584" id="0">
   <data key="d9">[953810802, 963982118]</data>
   <data key="d10">motorway</data>
-  <data key="d17">[('4', '3'), '3']</data>
+  <data key="d17">['3', ('4', '3')]</data>
   <data key="d11">40</data>
   <data key="d12">FDR Drive</data>
   <data key="d13">True</data>
@@ -5505,7 +5505,7 @@
 <edge source="42427316" target="42427324" id="0">
   <data key="d9">68668539</data>
   <data key="d10">secondary</data>
-  <data key="d17">(('2', '1'), '1')</data>
+  <data key="d17">('1', ('2', '1'))</data>
   <data key="d11">25</data>
   <data key="d12">Centre Street</data>
   <data key="d13">True</data>
@@ -5527,7 +5527,7 @@
 <edge source="42427324" target="42427327" id="0">
   <data key="d9">1147907300</data>
   <data key="d10">secondary</data>
-  <data key="d17">('1', '3')</data>
+  <data key="d17">('3', '1')</data>
   <data key="d11">25</data>
   <data key="d12">Centre Street</data>
   <data key="d13">True</data>
@@ -5647,7 +5647,7 @@
 <edge source="42427915" target="42440397" id="0">
   <data key="d9">760433120</data>
   <data key="d10">secondary</data>
-  <data key="d17">('4', '2', '3')</data>
+  <data key="d17">('4', '3', '2')</data>
   <data key="d11">25</data>
   <data key="d12">79th Street Transverse</data>
   <data key="d13">False</data>
@@ -5792,7 +5792,7 @@
 <edge source="42428007" target="42427970" id="0">
   <data key="d9">46211840</data>
   <data key="d10">secondary</data>
-  <data key="d17">('4', ('4', '5'), '6', '2')</data>
+  <data key="d17">('4', '2', ('4', '5'), '6')</data>
   <data key="d12">York Avenue</data>
   <data key="d13">False</data>
   <data key="d14">False</data>
@@ -5954,7 +5954,7 @@
 <edge source="42428391" target="4158740807" id="0">
   <data key="d9">[455501322, 122660458]</data>
   <data key="d10">trunk_link</data>
-  <data key="d17">[('2', '1'), ('2', '3')]</data>
+  <data key="d17">[('2', '3'), ('2', '1')]</data>
   <data key="d11">22</data>
   <data key="d12">Park Row</data>
   <data key="d13">True</data>
@@ -6034,7 +6034,7 @@
   <data key="d10">primary</data>
   <data key="d17">('4', '2')</data>
   <data key="d11">25</data>
-  <data key="d12">('Broome Street', 'Watts Street')</data>
+  <data key="d12">('Watts Street', 'Broome Street')</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">469.62637760698954</data>
@@ -6052,7 +6052,7 @@
 <edge source="42428447" target="4202908174" id="0">
   <data key="d9">5671608</data>
   <data key="d10">primary</data>
-  <data key="d17">('4', ('4', '3'), '2', '3')</data>
+  <data key="d17">('4', '2', ('4', '3'), '3')</data>
   <data key="d11">25</data>
   <data key="d12">West Houston Street</data>
   <data key="d13">True</data>
@@ -6462,7 +6462,7 @@
 <edge source="42429334" target="42447105" id="0">
   <data key="d9">1106469540</data>
   <data key="d10">secondary</data>
-  <data key="d17">(('4', '3'), '3')</data>
+  <data key="d17">('3', ('4', '3'))</data>
   <data key="d11">25</data>
   <data key="d12">Lexington Avenue</data>
   <data key="d13">True</data>
@@ -6732,7 +6732,7 @@
 <edge source="42430041" target="1918039897" id="0">
   <data key="d9">420358889</data>
   <data key="d10">secondary</data>
-  <data key="d17">(('2', '3'), '2', '1')</data>
+  <data key="d17">('2', '1', ('2', '3'))</data>
   <data key="d11">25</data>
   <data key="d12">('Lafayette Street', 'Cleveland Place')</data>
   <data key="d13">True</data>
@@ -6776,7 +6776,7 @@
 <edge source="42430143" target="3891963915" id="0">
   <data key="d9">256902826</data>
   <data key="d10">primary</data>
-  <data key="d17">('4', ('4', '3'), '3')</data>
+  <data key="d17">('4', '3', ('4', '3'))</data>
   <data key="d11">25</data>
   <data key="d12">6th Avenue</data>
   <data key="d13">True</data>
@@ -6809,7 +6809,7 @@
 <edge source="42430237" target="42430271" id="0">
   <data key="d9">196117090</data>
   <data key="d10">secondary</data>
-  <data key="d17">('4', ('4', '3'), ('4', '5'), '3', ('4', '6'), '5')</data>
+  <data key="d17">('3', ('4', '5'), ('4', '3'), ('4', '6'), '4', '5')</data>
   <data key="d11">25</data>
   <data key="d12">6th Avenue</data>
   <data key="d13">True</data>
@@ -6920,7 +6920,7 @@
 <edge source="42430314" target="42430333" id="0">
   <data key="d9">384649120</data>
   <data key="d10">secondary</data>
-  <data key="d17">('4', ('4', '5'), '3')</data>
+  <data key="d17">('4', '3', ('4', '5'))</data>
   <data key="d11">28</data>
   <data key="d12">6th Avenue</data>
   <data key="d13">True</data>
@@ -7119,7 +7119,7 @@
 <edge source="42430384" target="42430394" id="0">
   <data key="d9">1211049195</data>
   <data key="d10">secondary</data>
-  <data key="d17">(('4', '3'), '3')</data>
+  <data key="d17">('3', ('4', '3'))</data>
   <data key="d12">6th Avenue</data>
   <data key="d13">True</data>
   <data key="d21">18.5</data>
@@ -7165,9 +7165,9 @@
 <edge source="42430535" target="12554607194" id="0">
   <data key="d9">496990369</data>
   <data key="d10">secondary</data>
-  <data key="d17">(('2', '1'), '2', '1')</data>
+  <data key="d17">('2', '1', ('2', '1'))</data>
   <data key="d11">20</data>
-  <data key="d12">('Centre Street', 'Lafayette Street')</data>
+  <data key="d12">('Lafayette Street', 'Centre Street')</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">225.53976454264458</data>
@@ -7220,7 +7220,7 @@
 <edge source="42430607" target="246580466" id="0">
   <data key="d9">989267828</data>
   <data key="d10">secondary</data>
-  <data key="d17">('6', '3')</data>
+  <data key="d17">('3', '6')</data>
   <data key="d11">25</data>
   <data key="d12">11th Avenue</data>
   <data key="d13">True</data>
@@ -7372,7 +7372,7 @@
 <edge source="42430673" target="62915549" id="0">
   <data key="d9">169267538</data>
   <data key="d10">primary</data>
-  <data key="d17">('4', '5', '3')</data>
+  <data key="d17">('4', '3', '5')</data>
   <data key="d11">25</data>
   <data key="d12">West 42nd Street</data>
   <data key="d13">False</data>
@@ -7539,7 +7539,7 @@
   <data key="d9">420894368</data>
   <data key="d10">secondary</data>
   <data key="d17">('4', ('4', '5'), '5')</data>
-  <data key="d12">('11th Avenue', 'West End Avenue')</data>
+  <data key="d12">('West End Avenue', '11th Avenue')</data>
   <data key="d13">False</data>
   <data key="d14">False</data>
   <data key="d15">1205.7583215882182</data>
@@ -7560,7 +7560,7 @@
 <edge source="42430761" target="42445574" id="0">
   <data key="d9">46139034</data>
   <data key="d10">primary</data>
-  <data key="d17">('4', ('4', '3'), '3')</data>
+  <data key="d17">('4', '3', ('4', '3'))</data>
   <data key="d11">25</data>
   <data key="d12">Varick Street</data>
   <data key="d13">True</data>
@@ -7582,7 +7582,7 @@
 <edge source="42430828" target="42430761" id="0">
   <data key="d9">5669953</data>
   <data key="d10">secondary</data>
-  <data key="d17">('4', ('4', '3'), '3')</data>
+  <data key="d17">('4', '3', ('4', '3'))</data>
   <data key="d11">25</data>
   <data key="d12">7th Avenue South</data>
   <data key="d13">True</data>
@@ -7606,7 +7606,7 @@
   <data key="d10">secondary</data>
   <data key="d17">('4', ('4', '5'), '5')</data>
   <data key="d11">28</data>
-  <data key="d12">('11th Avenue', 'West End Avenue')</data>
+  <data key="d12">('West End Avenue', '11th Avenue')</data>
   <data key="d13">False</data>
   <data key="d14">False</data>
   <data key="d15">1205.7583215882187</data>
@@ -7617,7 +7617,7 @@
   <data key="d10">secondary</data>
   <data key="d17">['4', '2']</data>
   <data key="d11">28</data>
-  <data key="d12">['Riverside Drive', 'West 72nd Street']</data>
+  <data key="d12">['West 72nd Street', 'Riverside Drive']</data>
   <data key="d13">False</data>
   <data key="d14">[False, True]</data>
   <data key="d15">702.5584678450264</data>
@@ -7758,7 +7758,7 @@
 <edge source="42432564" target="42442451" id="0">
   <data key="d9">195743136</data>
   <data key="d10">primary</data>
-  <data key="d17">(('4', '3'), '3')</data>
+  <data key="d17">('3', ('4', '3'))</data>
   <data key="d12">Amsterdam Avenue</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
@@ -7770,7 +7770,7 @@
   <data key="d9">195743216</data>
   <data key="d10">primary</data>
   <data key="d17">('4', '3')</data>
-  <data key="d12">('Broadway', 'West 73rd Street')</data>
+  <data key="d12">('West 73rd Street', 'Broadway')</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">219.07962979747083</data>
@@ -7969,7 +7969,7 @@
 <edge source="42432706" target="42430685" id="0">
   <data key="d9">46482600</data>
   <data key="d10">secondary</data>
-  <data key="d17">('1', '3')</data>
+  <data key="d17">('3', '1')</data>
   <data key="d12">West 45th Street</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
@@ -8000,7 +8000,7 @@
 <edge source="42432818" target="42450426" id="0">
   <data key="d9">195743336</data>
   <data key="d10">secondary</data>
-  <data key="d17">(('5', '3'), '5')</data>
+  <data key="d17">('5', ('3', '5'))</data>
   <data key="d12">5th Avenue</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
@@ -8260,7 +8260,7 @@
   <data key="d19">FDR</data>
   <data key="d14">False</data>
   <data key="d15">2396.072168996175</data>
-  <data key="d20">['yes', 'building_passage']</data>
+  <data key="d20">['building_passage', 'yes']</data>
   <data key="d16">LINESTRING (-73.9435413 40.7792164, -73.9491341 40.7687032, -73.9507038 40.766801, -73.953183 40.7639358, -73.9561062 40.7610958)</data>
 </edge>
 <edge source="42433545" target="42457821" id="0">
@@ -8334,7 +8334,7 @@
   <data key="d10">secondary</data>
   <data key="d17">('2', '1')</data>
   <data key="d11">25</data>
-  <data key="d12">(('Samuel Dickstein Plaza', 'Montgomery Street'), 'Montgomery Street')</data>
+  <data key="d12">('Montgomery Street', ('Samuel Dickstein Plaza', 'Montgomery Street'))</data>
   <data key="d13">False</data>
   <data key="d14">False</data>
   <data key="d15">430.4925762743628</data>
@@ -8420,7 +8420,7 @@
 <edge source="42434074" target="596775840" id="0">
   <data key="d9">1106482768</data>
   <data key="d10">secondary</data>
-  <data key="d17">(('2', '1'), ('1', '3'))</data>
+  <data key="d17">(('3', '1'), ('2', '1'))</data>
   <data key="d11">28</data>
   <data key="d12">East 46th Street</data>
   <data key="d13">True</data>
@@ -8500,7 +8500,7 @@
 <edge source="42434092" target="595105499" id="0">
   <data key="d9">884400300</data>
   <data key="d10">primary</data>
-  <data key="d17">(('2', '1'), ('4', '3'), '3')</data>
+  <data key="d17">('3', ('4', '3'), ('2', '1'))</data>
   <data key="d11">25</data>
   <data key="d12">1st Avenue</data>
   <data key="d13">True</data>
@@ -8631,7 +8631,7 @@
 <edge source="42434845" target="42430126" id="0">
   <data key="d9">412174929</data>
   <data key="d10">primary</data>
-  <data key="d17">(('1', '3'), '1')</data>
+  <data key="d17">(('3', '1'), '1')</data>
   <data key="d11">20</data>
   <data key="d12">(('West Broadway', 'Beach Street'), 'Beach Street')</data>
   <data key="d13">True</data>
@@ -8642,7 +8642,7 @@
 <edge source="42434845" target="42445357" id="0">
   <data key="d9">[1022549185, 68675820]</data>
   <data key="d10">secondary</data>
-  <data key="d17">[('2', ('2', '3')), ('2', '3')]</data>
+  <data key="d17">[('2', '3'), ('2', ('2', '3'))]</data>
   <data key="d11">20</data>
   <data key="d12">['West Broadway', 'Varick Street']</data>
   <data key="d13">True</data>
@@ -8775,7 +8775,7 @@
 <edge source="42435359" target="42421737" id="0">
   <data key="d9">420625559</data>
   <data key="d10">primary</data>
-  <data key="d17">(('4', '3'), '3')</data>
+  <data key="d17">('3', ('4', '3'))</data>
   <data key="d11">25</data>
   <data key="d12">Columbus Avenue</data>
   <data key="d13">True</data>
@@ -8918,7 +8918,7 @@
 <edge source="42435650" target="42435663" id="0">
   <data key="d9">125479721</data>
   <data key="d10">secondary</data>
-  <data key="d17">('4', ('4', '3'), '3')</data>
+  <data key="d17">('4', '3', ('4', '3'))</data>
   <data key="d11">28</data>
   <data key="d12">8th Avenue</data>
   <data key="d13">True</data>
@@ -8941,7 +8941,7 @@
 <edge source="42435663" target="42437368" id="0">
   <data key="d9">1320290376</data>
   <data key="d10">primary</data>
-  <data key="d17">('5', '2')</data>
+  <data key="d17">('2', '5')</data>
   <data key="d11">25</data>
   <data key="d12">West 42nd Street</data>
   <data key="d13">False</data>
@@ -8952,7 +8952,7 @@
 <edge source="42435663" target="42432700" id="0">
   <data key="d9">1198594026</data>
   <data key="d10">secondary</data>
-  <data key="d17">('4', ('2', '3'), '3')</data>
+  <data key="d17">('4', '3', ('2', '3'))</data>
   <data key="d11">25</data>
   <data key="d12">8th Avenue</data>
   <data key="d13">True</data>
@@ -8974,7 +8974,7 @@
 <edge source="42435675" target="42432589" id="0">
   <data key="d9">1049888072</data>
   <data key="d10">secondary</data>
-  <data key="d17">(('4', '3'), '2')</data>
+  <data key="d17">('2', ('4', '3'))</data>
   <data key="d11">25</data>
   <data key="d12">8th Avenue</data>
   <data key="d13">True</data>
@@ -9149,9 +9149,9 @@
 <edge source="42436374" target="42435624" id="0">
   <data key="d9">[420598337, 663509729]</data>
   <data key="d10">secondary</data>
-  <data key="d17">[('3', '2', ('2', '3'), ('4', '2')), ('4', ('4', '3'), '3')]</data>
+  <data key="d17">[('4', '3', ('4', '3')), ('2', ('2', '3'), ('4', '2'), '3')]</data>
   <data key="d11">26</data>
-  <data key="d12">['8th Avenue', ('Hudson Street', '8th Avenue')]</data>
+  <data key="d12">[('8th Avenue', 'Hudson Street'), '8th Avenue']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">1949.5193194975104</data>
@@ -9269,7 +9269,7 @@
 <edge source="42436484" target="42447069" id="0">
   <data key="d9">1106469544</data>
   <data key="d10">secondary</data>
-  <data key="d17">(('4', '3'), '2', '3')</data>
+  <data key="d17">('2', '3', ('4', '3'))</data>
   <data key="d11">28</data>
   <data key="d12">Lexington Avenue</data>
   <data key="d13">True</data>
@@ -9368,7 +9368,7 @@
 <edge source="42436492" target="42456060" id="0">
   <data key="d9">421853952</data>
   <data key="d10">primary</data>
-  <data key="d17">('5', ('5', '6'))</data>
+  <data key="d17">(('5', '6'), '5')</data>
   <data key="d11">25</data>
   <data key="d12">1st Avenue</data>
   <data key="d13">True</data>
@@ -9401,7 +9401,7 @@
 <edge source="42436531" target="42436492" id="0">
   <data key="d9">968393472</data>
   <data key="d10">primary</data>
-  <data key="d17">('5', ('5', '6'))</data>
+  <data key="d17">(('5', '6'), '5')</data>
   <data key="d11">25</data>
   <data key="d12">1st Avenue</data>
   <data key="d13">True</data>
@@ -9444,7 +9444,7 @@
 <edge source="42436586" target="42445378" id="0">
   <data key="d9">1316299843</data>
   <data key="d10">primary</data>
-  <data key="d17">('5', ('5', '6'))</data>
+  <data key="d17">(('5', '6'), '5')</data>
   <data key="d11">25</data>
   <data key="d12">3rd Avenue</data>
   <data key="d13">True</data>
@@ -9656,7 +9656,7 @@
 <edge source="42437363" target="42439960" id="0">
   <data key="d9">1049920716</data>
   <data key="d10">secondary</data>
-  <data key="d17">(('4', '3'), '3')</data>
+  <data key="d17">('3', ('4', '3'))</data>
   <data key="d11">25</data>
   <data key="d12">7th Avenue</data>
   <data key="d13">True</data>
@@ -9702,7 +9702,7 @@
 <edge source="42437368" target="42435663" id="0">
   <data key="d9">1320290376</data>
   <data key="d10">primary</data>
-  <data key="d17">('5', '2')</data>
+  <data key="d17">('2', '5')</data>
   <data key="d11">25</data>
   <data key="d12">West 42nd Street</data>
   <data key="d13">False</data>
@@ -10069,7 +10069,7 @@
   <data key="d10">primary</data>
   <data key="d17">('2', '3')</data>
   <data key="d11">20</data>
-  <data key="d12">('Saint James Place', 'Oliver Street')</data>
+  <data key="d12">('Oliver Street', 'Saint James Place')</data>
   <data key="d13">False</data>
   <data key="d14">False</data>
   <data key="d15">237.8988842947439</data>
@@ -10100,7 +10100,7 @@
 <edge source="42437881" target="42437949" id="0">
   <data key="d9">889114531</data>
   <data key="d10">secondary</data>
-  <data key="d17">('2', ('2', '3'), '3')</data>
+  <data key="d17">('2', '3', ('2', '3'))</data>
   <data key="d11">25</data>
   <data key="d12">5th Avenue</data>
   <data key="d13">True</data>
@@ -10134,7 +10134,7 @@
 <edge source="42437890" target="42430828" id="0">
   <data key="d9">852992099</data>
   <data key="d10">secondary</data>
-  <data key="d17">('4', ('4', '3'), '3')</data>
+  <data key="d17">('4', '3', ('4', '3'))</data>
   <data key="d11">25</data>
   <data key="d12">7th Avenue</data>
   <data key="d13">True</data>
@@ -10167,7 +10167,7 @@
 <edge source="42437909" target="42445766" id="0">
   <data key="d9">[156994977, 46334602]</data>
   <data key="d10">secondary</data>
-  <data key="d17">[(('4', '3'), '2', '3'), '1']</data>
+  <data key="d17">['1', ('2', '3', ('4', '3'))]</data>
   <data key="d11">25</data>
   <data key="d12">['9th Avenue', 'West 15th Street']</data>
   <data key="d13">True</data>
@@ -10207,12 +10207,12 @@
   <data key="d14">False</data>
   <data key="d15">555.2228600122448</data>
   <data key="d16">LINESTRING (-74.0041638 40.7477028, -74.003684 40.748355, -74.003236 40.748974, -74.0027747 40.7496114, -74.0023139 40.7502291, -74.001882 40.750828, -74.0014183 40.7514585, -74.0009801 40.7520747)</data>
-  <data key="d21">('69.6 ft', '69.5 ft')</data>
+  <data key="d21">('69.5 ft', '69.6 ft')</data>
 </edge>
 <edge source="42437949" target="42428473" id="0">
   <data key="d9">5673089</data>
   <data key="d10">secondary</data>
-  <data key="d17">(('2', '1'), '2', '1')</data>
+  <data key="d17">('2', '1', ('2', '1'))</data>
   <data key="d11">25</data>
   <data key="d12">East 8th Street</data>
   <data key="d13">True</data>
@@ -10383,7 +10383,7 @@
   <data key="d10">secondary</data>
   <data key="d17">('2', '1')</data>
   <data key="d11">25</data>
-  <data key="d12">(('Samuel Dickstein Plaza', 'Montgomery Street'), 'Montgomery Street')</data>
+  <data key="d12">('Montgomery Street', ('Samuel Dickstein Plaza', 'Montgomery Street'))</data>
   <data key="d13">False</data>
   <data key="d14">False</data>
   <data key="d15">430.5461408641918</data>
@@ -10557,7 +10557,7 @@
 <edge source="42439464" target="9177424867" id="0">
   <data key="d9">705223737</data>
   <data key="d10">primary</data>
-  <data key="d17">(('4', '3'), '3')</data>
+  <data key="d17">('3', ('4', '3'))</data>
   <data key="d11">28</data>
   <data key="d12">Amsterdam Avenue</data>
   <data key="d13">True</data>
@@ -10843,7 +10843,7 @@
   <data key="d11">25</data>
   <data key="d12">10th Avenue</data>
   <data key="d13">True</data>
-  <data key="d21">('69\'6"', "60'")</data>
+  <data key="d21">("60'", '69\'6"')</data>
   <data key="d14">False</data>
   <data key="d15">238.61461400751523</data>
   <data key="d16">LINESTRING (-73.9917852 40.7646863, -73.9913292 40.7653085, -73.9908549 40.7659445, -73.9904136 40.7665639)</data>
@@ -10851,7 +10851,7 @@
 <edge source="42440397" target="42427915" id="0">
   <data key="d9">760433120</data>
   <data key="d10">secondary</data>
-  <data key="d17">('4', '2', '3')</data>
+  <data key="d17">('4', '3', '2')</data>
   <data key="d11">25</data>
   <data key="d12">79th Street Transverse</data>
   <data key="d13">False</data>
@@ -10908,7 +10908,7 @@
 <edge source="42440729" target="1773084402" id="0">
   <data key="d9">630828592</data>
   <data key="d10">primary</data>
-  <data key="d17">('4', '5', '6', ('4', '5'))</data>
+  <data key="d17">('4', ('4', '5'), '5', '6')</data>
   <data key="d11">25</data>
   <data key="d12">('3rd Avenue', 'Cooper Square')</data>
   <data key="d13">False</data>
@@ -11143,7 +11143,7 @@
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">2059.2276730645704</data>
-  <data key="d17">(('2', '1'), '2', '1')</data>
+  <data key="d17">('2', '1', ('2', '1'))</data>
   <data key="d16">LINESTRING (-73.9611688 40.8168887, -73.9621672 40.8160871, -73.9639023 40.8124025, -73.9640405 40.8113749, -73.9658901 40.8088597, -73.96657 40.8082601, -73.9670504 40.8076278, -73.9674745 40.8069791, -73.9681438 40.8057489, -73.9693692 40.8036829, -73.971271 40.8010737, -73.9717928 40.800475)</data>
   <data key="d11">30</data>
 </edge>
@@ -11236,7 +11236,7 @@
 <edge source="42442451" target="42442463" id="0">
   <data key="d9">895398384</data>
   <data key="d10">primary</data>
-  <data key="d17">(('5', '3'), ('4', '3'), '3')</data>
+  <data key="d17">('3', ('4', '3'), ('3', '5'))</data>
   <data key="d12">Amsterdam Avenue</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
@@ -11269,7 +11269,7 @@
 <edge source="42442463" target="42442469" id="0">
   <data key="d9">1025731514</data>
   <data key="d10">primary</data>
-  <data key="d17">(('4', '3'), '3')</data>
+  <data key="d17">('3', ('4', '3'))</data>
   <data key="d12">Amsterdam Avenue</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
@@ -11291,7 +11291,7 @@
 <edge source="42442469" target="42442480" id="0">
   <data key="d9">740085321</data>
   <data key="d10">primary</data>
-  <data key="d17">(('4', '3'), '3')</data>
+  <data key="d17">('3', ('4', '3'))</data>
   <data key="d12">Amsterdam Avenue</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
@@ -11324,7 +11324,7 @@
 <edge source="42442480" target="42442534" id="0">
   <data key="d9">1025731520</data>
   <data key="d10">primary</data>
-  <data key="d17">('3', ('4', '3'), ('2', '3'), ('4', '2'))</data>
+  <data key="d17">('3', ('2', '3'), ('4', '2'), ('4', '3'))</data>
   <data key="d11">28</data>
   <data key="d12">Amsterdam Avenue</data>
   <data key="d13">True</data>
@@ -11357,7 +11357,7 @@
 <edge source="42442534" target="42421741" id="0">
   <data key="d9">1025731525</data>
   <data key="d10">primary</data>
-  <data key="d17">(('4', '3'), '3')</data>
+  <data key="d17">('3', ('4', '3'))</data>
   <data key="d11">25</data>
   <data key="d12">Amsterdam Avenue</data>
   <data key="d13">True</data>
@@ -11396,7 +11396,7 @@
   <data key="d15">1322.6128567754038</data>
   <data key="d16">LINESTRING (-73.963849 40.8029617, -73.9633898 40.8036319, -73.9629314 40.8042605, -73.9624703 40.8048929, -73.9620084 40.8055262, -73.9615515 40.8061528, -73.9610565 40.8068316, -73.960109 40.8081275, -73.9596506 40.8087553, -73.959211 40.8093443, -73.958727 40.8100023, -73.9582686 40.8106334, -73.957805 40.8112717, -73.9568234 40.8126219, -73.9562717 40.8133809)</data>
   <data key="d11">30</data>
-  <data key="d17">('5', '3')</data>
+  <data key="d17">('3', '5')</data>
   <data key="d20">yes</data>
 </edge>
 <edge source="42442584" target="561035343" id="0">
@@ -11424,7 +11424,7 @@
 <edge source="42442584" target="42442569" id="0">
   <data key="d9">455689184</data>
   <data key="d10">secondary</data>
-  <data key="d17">('5', '3')</data>
+  <data key="d17">('3', '5')</data>
   <data key="d12">Amsterdam Avenue</data>
   <data key="d13">False</data>
   <data key="d14">True</data>
@@ -11568,7 +11568,7 @@
 <edge source="42442937" target="42442918" id="0">
   <data key="d9">420901673</data>
   <data key="d10">primary</data>
-  <data key="d17">('5', ('4', '3'), '6')</data>
+  <data key="d17">('6', ('4', '3'), '5')</data>
   <data key="d11">25</data>
   <data key="d12">2nd Avenue</data>
   <data key="d13">True</data>
@@ -11798,7 +11798,7 @@
 <edge source="42443118" target="42443116" id="0">
   <data key="d9">1086272873</data>
   <data key="d10">primary</data>
-  <data key="d17">('6', ('6', '3'))</data>
+  <data key="d17">(('3', '6'), '6')</data>
   <data key="d11">25</data>
   <data key="d12">2nd Avenue</data>
   <data key="d13">True</data>
@@ -11940,7 +11940,7 @@
 <edge source="42443336" target="3718672443" id="0">
   <data key="d9">1024458692</data>
   <data key="d10">primary</data>
-  <data key="d17">('4', ('4', '3'), '3')</data>
+  <data key="d17">('4', '3', ('4', '3'))</data>
   <data key="d11">25</data>
   <data key="d12">Columbus Avenue</data>
   <data key="d13">True</data>
@@ -11962,7 +11962,7 @@
 <edge source="42443347" target="42443336" id="0">
   <data key="d9">420897875</data>
   <data key="d10">primary</data>
-  <data key="d17">('4', ('4', '3'), '3')</data>
+  <data key="d17">('4', '3', ('4', '3'))</data>
   <data key="d11">25</data>
   <data key="d12">Columbus Avenue</data>
   <data key="d13">True</data>
@@ -12072,7 +12072,7 @@
 <edge source="42443975" target="42455751" id="0">
   <data key="d9">1041012064</data>
   <data key="d10">primary</data>
-  <data key="d17">('5', ('5', '6'))</data>
+  <data key="d17">(('5', '6'), '5')</data>
   <data key="d11">25</data>
   <data key="d12">10th Avenue</data>
   <data key="d13">True</data>
@@ -12106,7 +12106,7 @@
 <edge source="42444049" target="42444043" id="0">
   <data key="d9">727702632</data>
   <data key="d10">secondary</data>
-  <data key="d17">(('2', '1'), '2')</data>
+  <data key="d17">('2', ('2', '1'))</data>
   <data key="d12">East 45th Street</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
@@ -12241,7 +12241,7 @@
   <data key="d10">primary</data>
   <data key="d17">('2', '3')</data>
   <data key="d11">20</data>
-  <data key="d12">('Pike Slip', 'Pike Street')</data>
+  <data key="d12">('Pike Street', 'Pike Slip')</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">298.27278312321835</data>
@@ -12271,7 +12271,7 @@
 <edge source="42444453" target="42453246" id="0">
   <data key="d9">[420881457, 420881459]</data>
   <data key="d10">primary</data>
-  <data key="d12">['West 125th Street', 'East 125th Street']</data>
+  <data key="d12">['East 125th Street', 'West 125th Street']</data>
   <data key="d13">False</data>
   <data key="d14">[False, True]</data>
   <data key="d15">459.32664716965246</data>
@@ -12466,7 +12466,7 @@
 <edge source="42445033" target="1815133244" id="0">
   <data key="d9">420892272</data>
   <data key="d10">primary</data>
-  <data key="d17">('5', '3')</data>
+  <data key="d17">('3', '5')</data>
   <data key="d12">9th Avenue</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
@@ -12521,7 +12521,7 @@
 <edge source="42445356" target="42430126" id="0">
   <data key="d9">5669922</data>
   <data key="d10">secondary</data>
-  <data key="d17">('4', '2', ('2', '3'), '3')</data>
+  <data key="d17">('4', '3', ('2', '3'), '2')</data>
   <data key="d11">20</data>
   <data key="d12">('6th Avenue', 'Church Street')</data>
   <data key="d13">True</data>
@@ -12543,9 +12543,9 @@
 <edge source="42445357" target="42424610" id="0">
   <data key="d9">413045201</data>
   <data key="d10">secondary</data>
-  <data key="d17">('1', '3')</data>
+  <data key="d17">('3', '1')</data>
   <data key="d11">20</data>
-  <data key="d12">('Hudson Street', 'Reade Street')</data>
+  <data key="d12">('Reade Street', 'Hudson Street')</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">530.1696131012891</data>
@@ -12809,7 +12809,7 @@
   <data key="d10">primary</data>
   <data key="d17">('2', ('2', '3'), '3')</data>
   <data key="d11">25</data>
-  <data key="d12">('Lafayette Street', '4th Avenue', 'Park Avenue South', 'Union Square East')</data>
+  <data key="d12">('Lafayette Street', 'Park Avenue South', '4th Avenue', 'Union Square East')</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">1874.6221944210506</data>
@@ -12909,7 +12909,7 @@
 <edge source="42445867" target="42445365" id="0">
   <data key="d9">5671393</data>
   <data key="d10">secondary</data>
-  <data key="d17">('4', '2', '3')</data>
+  <data key="d17">('2', '3', '4')</data>
   <data key="d11">25</data>
   <data key="d12">Madison Avenue</data>
   <data key="d13">True</data>
@@ -12997,7 +12997,7 @@
 <edge source="42445916" target="42444043" id="0">
   <data key="d9">438384693</data>
   <data key="d10">secondary</data>
-  <data key="d17">(('4', '5'), ('5', '2'), '2')</data>
+  <data key="d17">('2', ('4', '5'), ('2', '5'))</data>
   <data key="d11">25</data>
   <data key="d12">Madison Avenue</data>
   <data key="d13">True</data>
@@ -13041,7 +13041,7 @@
 <edge source="42445936" target="42432825" id="0">
   <data key="d9">420906752</data>
   <data key="d10">secondary</data>
-  <data key="d17">('5', ('5', '2'))</data>
+  <data key="d17">(('2', '5'), '5')</data>
   <data key="d11">25</data>
   <data key="d12">Madison Avenue</data>
   <data key="d13">True</data>
@@ -13272,7 +13272,7 @@
 <edge source="42446138" target="42444453" id="0">
   <data key="d9">420883172</data>
   <data key="d10">secondary</data>
-  <data key="d17">(('5', '3'), '5', '2', '3')</data>
+  <data key="d17">('2', '5', ('3', '5'), '3')</data>
   <data key="d11">25</data>
   <data key="d12">Madison Avenue</data>
   <data key="d13">True</data>
@@ -13448,7 +13448,7 @@
 <edge source="42447060" target="42447020" id="0">
   <data key="d9">1106471568</data>
   <data key="d10">secondary</data>
-  <data key="d17">('4', ('4', '3'), '3')</data>
+  <data key="d17">('4', '3', ('4', '3'))</data>
   <data key="d11">25</data>
   <data key="d12">Lexington Avenue</data>
   <data key="d13">True</data>
@@ -13503,7 +13503,7 @@
 <edge source="42447105" target="42436484" id="0">
   <data key="d9">387128267</data>
   <data key="d10">secondary</data>
-  <data key="d17">(('4', '3'), '3')</data>
+  <data key="d17">('3', ('4', '3'))</data>
   <data key="d11">25</data>
   <data key="d12">Lexington Avenue</data>
   <data key="d13">True</data>
@@ -13536,7 +13536,7 @@
 <edge source="42447166" target="42429334" id="0">
   <data key="d9">1053630777</data>
   <data key="d10">secondary</data>
-  <data key="d17">(('4', '3'), '3')</data>
+  <data key="d17">('3', ('4', '3'))</data>
   <data key="d11">25</data>
   <data key="d12">Lexington Avenue</data>
   <data key="d13">True</data>
@@ -13569,7 +13569,7 @@
 <edge source="42447182" target="42447166" id="0">
   <data key="d9">993495873</data>
   <data key="d10">secondary</data>
-  <data key="d17">(('2', '1'), '2', '1', '3')</data>
+  <data key="d17">('2', '1', ('2', '1'), '3')</data>
   <data key="d11">28</data>
   <data key="d12">Lexington Avenue</data>
   <data key="d13">True</data>
@@ -13968,7 +13968,7 @@
 <edge source="42449683" target="561042199" id="0">
   <data key="d9">[68674961, 44165030]</data>
   <data key="d10">primary</data>
-  <data key="d17">['1', '3']</data>
+  <data key="d17">['3', '1']</data>
   <data key="d11">25</data>
   <data key="d12">Park Avenue</data>
   <data key="d13">True</data>
@@ -14235,7 +14235,7 @@
 <edge source="42450434" target="42455643" id="0">
   <data key="d9">808190584</data>
   <data key="d10">primary</data>
-  <data key="d17">(('4', '3'), '3')</data>
+  <data key="d17">('3', ('4', '3'))</data>
   <data key="d12">10th Avenue</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
@@ -14257,7 +14257,7 @@
 <edge source="42450456" target="42443264" id="0">
   <data key="d9">1378258841</data>
   <data key="d10">secondary</data>
-  <data key="d17">(('4', '2'), '2', '3')</data>
+  <data key="d17">('2', '3', ('4', '2'))</data>
   <data key="d11">25</data>
   <data key="d12">5th Avenue</data>
   <data key="d13">True</data>
@@ -14535,7 +14535,7 @@
   <data key="d9">[420881457, 420881459]</data>
   <data key="d10">primary</data>
   <data key="d17">('4', '3')</data>
-  <data key="d12">['West 125th Street', 'East 125th Street']</data>
+  <data key="d12">['East 125th Street', 'West 125th Street']</data>
   <data key="d13">False</data>
   <data key="d14">[False, True]</data>
   <data key="d15">459.32664716965246</data>
@@ -14590,7 +14590,7 @@
 <edge source="42453952" target="42453398" id="0">
   <data key="d9">770524299</data>
   <data key="d10">secondary</data>
-  <data key="d17">(('2', '1'), '1')</data>
+  <data key="d17">('1', ('2', '1'))</data>
   <data key="d11">20</data>
   <data key="d12">Barclay Street</data>
   <data key="d13">True</data>
@@ -14655,9 +14655,9 @@
 <edge source="42455643" target="42442415" id="0">
   <data key="d9">195743297</data>
   <data key="d10">primary</data>
-  <data key="d17">(('4', '3'), '3')</data>
+  <data key="d17">('3', ('4', '3'))</data>
   <data key="d11">25</data>
-  <data key="d12">('Amsterdam Avenue', '10th Avenue')</data>
+  <data key="d12">('10th Avenue', 'Amsterdam Avenue')</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">642.2329626934647</data>
@@ -14777,7 +14777,7 @@
 <edge source="42455934" target="42436714" id="0">
   <data key="d9">884400289</data>
   <data key="d10">primary</data>
-  <data key="d17">('5', ('5', '6'))</data>
+  <data key="d17">(('5', '6'), '5')</data>
   <data key="d11">25</data>
   <data key="d12">1st Avenue</data>
   <data key="d13">True</data>
@@ -14788,7 +14788,7 @@
 <edge source="42455963" target="2711029280" id="0">
   <data key="d9">375316257</data>
   <data key="d10">primary</data>
-  <data key="d17">('4', '5', ('5', '6'))</data>
+  <data key="d17">('4', ('5', '6'), '5')</data>
   <data key="d11">25</data>
   <data key="d12">1st Avenue</data>
   <data key="d13">True</data>
@@ -14810,7 +14810,7 @@
 <edge source="42456060" target="42428020" id="0">
   <data key="d9">1080862177</data>
   <data key="d10">secondary</data>
-  <data key="d17">('4', '2', '3')</data>
+  <data key="d17">('2', '3', '4')</data>
   <data key="d11">25</data>
   <data key="d12">East 79th Street</data>
   <data key="d13">False</data>
@@ -14886,7 +14886,7 @@
 <edge source="42457401" target="42423039" id="0">
   <data key="d9">32935473</data>
   <data key="d10">motorway_link</data>
-  <data key="d17">(('2', '1'), '1')</data>
+  <data key="d17">('1', ('2', '1'))</data>
   <data key="d11">32</data>
   <data key="d12">FDR Drive</data>
   <data key="d13">True</data>
@@ -15117,11 +15117,11 @@
 <edge source="61269400" target="61272997" id="0">
   <data key="d9">957532385</data>
   <data key="d10">motorway</data>
-  <data key="d17">('4', '5', '3')</data>
+  <data key="d17">('4', '3', '5')</data>
   <data key="d11">44</data>
-  <data key="d12">('Henry Hudson Parkway', 'West Side Highway')</data>
+  <data key="d12">('West Side Highway', 'Henry Hudson Parkway')</data>
   <data key="d13">True</data>
-  <data key="d19">('HH;NY 9A', 'NY 9A')</data>
+  <data key="d19">('NY 9A', 'HH;NY 9A')</data>
   <data key="d14">False</data>
   <data key="d15">1945.8660955572377</data>
   <data key="d18">yes</data>
@@ -15130,11 +15130,11 @@
 <edge source="61271722" target="42423070" id="0">
   <data key="d9">[340825593, 22942162]</data>
   <data key="d10">motorway</data>
-  <data key="d17">[('4', '3'), '3']</data>
+  <data key="d17">['3', ('4', '3')]</data>
   <data key="d11">50</data>
-  <data key="d12">['Henry Hudson Parkway', 'West Side Highway']</data>
+  <data key="d12">['West Side Highway', 'Henry Hudson Parkway']</data>
   <data key="d13">True</data>
-  <data key="d19">['HH;NY 9A', 'NY 9A']</data>
+  <data key="d19">['NY 9A', 'HH;NY 9A']</data>
   <data key="d14">False</data>
   <data key="d15">1531.1553581617088</data>
   <data key="d18">yes</data>
@@ -15155,7 +15155,7 @@
 <edge source="61272997" target="2348991703" id="0">
   <data key="d9">[988984232, 22942163]</data>
   <data key="d10">motorway_link</data>
-  <data key="d17">[(('2', '1'), '1'), '1']</data>
+  <data key="d17">['1', ('1', ('2', '1'))]</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">313.78043985661253</data>
@@ -15210,7 +15210,7 @@
 <edge source="62915549" target="42430673" id="0">
   <data key="d9">989265269</data>
   <data key="d10">primary</data>
-  <data key="d17">('4', '5', '3')</data>
+  <data key="d17">('4', '3', '5')</data>
   <data key="d11">25</data>
   <data key="d12">West 42nd Street</data>
   <data key="d13">False</data>
@@ -15245,7 +15245,7 @@
 <edge source="100522479" target="561042192" id="0">
   <data key="d9">[68674968, 872052109]</data>
   <data key="d10">primary</data>
-  <data key="d17">['1', '3']</data>
+  <data key="d17">['3', '1']</data>
   <data key="d11">25</data>
   <data key="d12">Park Avenue</data>
   <data key="d13">True</data>
@@ -15336,7 +15336,7 @@
 <edge source="246579597" target="42430589" id="0">
   <data key="d9">5669945</data>
   <data key="d10">secondary</data>
-  <data key="d17">(('2', '1'), '1')</data>
+  <data key="d17">('1', ('2', '1'))</data>
   <data key="d11">25</data>
   <data key="d12">11th Avenue</data>
   <data key="d13">True</data>
@@ -15347,7 +15347,7 @@
 <edge source="246579753" target="11027912161" id="0">
   <data key="d9">1306277592</data>
   <data key="d10">trunk</data>
-  <data key="d17">(('4', '6', '3'), ('4', '3'), '3')</data>
+  <data key="d17">('3', ('4', '3'), ('4', '3', '6'))</data>
   <data key="d11">30</data>
   <data key="d12">11th Avenue</data>
   <data key="d13">True</data>
@@ -15457,7 +15457,7 @@
 <edge source="246650510" target="246580797" id="0">
   <data key="d9">68325104</data>
   <data key="d10">trunk</data>
-  <data key="d17">(('4', '3'), '3')</data>
+  <data key="d17">('3', ('4', '3'))</data>
   <data key="d11">30</data>
   <data key="d12">12th Avenue</data>
   <data key="d13">True</data>
@@ -15478,7 +15478,7 @@
 <edge source="246858435" target="5815234915" id="0">
   <data key="d9">1053554760</data>
   <data key="d10">trunk</data>
-  <data key="d17">(('4', '6', '3'), ('4', '3'), ('4', '5', '3'), '5')</data>
+  <data key="d17">(('4', '3', '5'), '5', ('4', '3'), ('4', '3', '6'))</data>
   <data key="d11">30</data>
   <data key="d12">West Street</data>
   <data key="d13">True</data>
@@ -15521,7 +15521,7 @@
 <edge source="246889572" target="12410398108" id="0">
   <data key="d9">420809442</data>
   <data key="d10">trunk</data>
-  <data key="d17">(('4', '3'), '3')</data>
+  <data key="d17">('3', ('4', '3'))</data>
   <data key="d11">30</data>
   <data key="d12">West Street</data>
   <data key="d13">True</data>
@@ -15543,7 +15543,7 @@
 <edge source="246890579" target="4142073861" id="0">
   <data key="d9">420809448</data>
   <data key="d10">trunk</data>
-  <data key="d17">(('4', '3'), ('4', '5', '3'))</data>
+  <data key="d17">(('4', '3', '5'), ('4', '3'))</data>
   <data key="d11">30</data>
   <data key="d12">West Street</data>
   <data key="d13">True</data>
@@ -15634,7 +15634,7 @@
 <edge source="247223720" target="7802856352" id="0">
   <data key="d9">1081022882</data>
   <data key="d10">secondary</data>
-  <data key="d17">('1', '3')</data>
+  <data key="d17">('3', '1')</data>
   <data key="d11">25</data>
   <data key="d12">65th Street Transverse</data>
   <data key="d13">True</data>
@@ -15888,7 +15888,7 @@
   <data key="d10">primary</data>
   <data key="d17">1</data>
   <data key="d11">20</data>
-  <data key="d12">('South Street', 'Whitehall Street')</data>
+  <data key="d12">('Whitehall Street', 'South Street')</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">154.86130437029604</data>
@@ -16138,7 +16138,7 @@
 <edge source="371188320" target="42427970" id="0">
   <data key="d9">32959280</data>
   <data key="d10">motorway_link</data>
-  <data key="d17">('1', '3')</data>
+  <data key="d17">('3', '1')</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">167.2084111676697</data>
@@ -16148,14 +16148,14 @@
 <edge source="371188320" target="5426969134" id="0">
   <data key="d9">[958130664, 987645701]</data>
   <data key="d10">motorway</data>
-  <data key="d17">[('4', '3'), '3']</data>
+  <data key="d17">['3', ('4', '3')]</data>
   <data key="d11">40</data>
   <data key="d12">FDR Drive</data>
   <data key="d13">True</data>
   <data key="d19">FDR</data>
   <data key="d14">False</data>
   <data key="d15">837.1069046211431</data>
-  <data key="d20">['yes', 'building_passage']</data>
+  <data key="d20">['building_passage', 'yes']</data>
   <data key="d18">yes</data>
   <data key="d16">LINESTRING (-73.9561062 40.7610958, -73.9582013 40.7593428, -73.9619994 40.755104)</data>
 </edge>
@@ -16194,7 +16194,7 @@
   <data key="d19">FDR</data>
   <data key="d14">False</data>
   <data key="d15">2614.599100010269</data>
-  <data key="d20">('yes', 'building_passage')</data>
+  <data key="d20">('building_passage', 'yes')</data>
   <data key="d16">LINESTRING (-73.9561742 40.76089, -73.9560116 40.7610215, -73.9558329 40.7611782, -73.9557176 40.7612885, -73.9555873 40.7613986, -73.9547614 40.7621401, -73.9545702 40.7623056, -73.9543747 40.7624871, -73.9542213 40.7626399, -73.9540532 40.7628245, -73.9535266 40.7634207, -73.9519986 40.7651059, -73.9518996 40.7652163, -73.9516205 40.7655276, -73.9510389 40.7661763, -73.9508902 40.7663475, -73.9507416 40.7665332, -73.9506095 40.7667168, -73.950481 40.766897, -73.9503358 40.7670677, -73.9500417 40.7674049, -73.9500185 40.7674304, -73.9497267 40.7677522, -73.9495688 40.767939, -73.9494372 40.7681149, -73.9493006 40.7682983, -73.9491669 40.7684816, -73.9490212 40.7686593, -73.9489437 40.7687446, -73.9488661 40.7688298, -73.948231 40.7695183, -73.9479981 40.7697767, -73.9478368 40.7699455, -73.947664 40.7701043, -73.9474968 40.77027, -73.9467906 40.7710408, -73.9466289 40.7712124, -73.9464602 40.7713699, -73.9462682 40.7715242, -73.9460715 40.7716825, -73.9458966 40.7718282, -73.945639 40.7720358, -73.94546 40.7721878, -73.9452659 40.7723364, -73.9450808 40.7724799, -73.9448667 40.7726672, -73.9446949 40.7728423, -73.9444824 40.7730754, -73.9434514 40.7742109, -73.9433435 40.7743228, -73.9432178 40.7744638, -73.9431003 40.7746073, -73.9430007 40.7747388, -73.9428939 40.7748853, -73.9428087 40.7750163, -73.9427145 40.7751906, -73.942632 40.775373, -73.9425695 40.7755328, -73.9425285 40.775659, -73.9425044 40.7757747, -73.9424742 40.7759392, -73.9424606 40.7760617, -73.942448 40.7761852, -73.9424458 40.7762921, -73.9424553 40.7764598, -73.9424769 40.7766312, -73.942498 40.7767818, -73.9425316 40.7769362, -73.9425712 40.7770847, -73.9428201 40.7779085, -73.9428934 40.7781108, -73.9429654 40.7782834, -73.9435733 40.7795958, -73.9436565 40.7797874, -73.9437408 40.7799921, -73.9438138 40.7801944, -73.9438764 40.7803914, -73.9439291 40.7805955, -73.9440036 40.7809091)</data>
 </edge>
 <edge source="371207282" target="42424025" id="0">
@@ -16258,7 +16258,7 @@
 <edge source="371239958" target="6266152785" id="0">
   <data key="d9">[122738257, 33114684]</data>
   <data key="d10">motorway</data>
-  <data key="d17">[('2', '3'), '3']</data>
+  <data key="d17">['3', ('2', '3')]</data>
   <data key="d11">40</data>
   <data key="d12">['FDR Drive', 'Harlem River Drive']</data>
   <data key="d13">True</data>
@@ -16371,7 +16371,7 @@
 <edge source="373760396" target="596776654" id="0">
   <data key="d9">1320340053</data>
   <data key="d10">motorway_link</data>
-  <data key="d17">(('2', '1'), '1')</data>
+  <data key="d17">('1', ('2', '1'))</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">1035.3744072991685</data>
@@ -16414,7 +16414,7 @@
 <edge source="486819535" target="4561384853" id="0">
   <data key="d9">986807784</data>
   <data key="d10">trunk</data>
-  <data key="d17">(('2', '1'), ('1', '3'), '2')</data>
+  <data key="d17">('2', ('3', '1'), ('2', '1'))</data>
   <data key="d11">22</data>
   <data key="d12">('Centre Street', ('Centre Street', 'Brooklyn Bridge'))</data>
   <data key="d13">True</data>
@@ -16445,7 +16445,7 @@
 <edge source="486868830" target="7480301866" id="0">
   <data key="d9">221687792</data>
   <data key="d10">primary</data>
-  <data key="d17">(('2', '1', '3'), '2', ('4', '2'))</data>
+  <data key="d17">('2', ('4', '2'), ('2', '1', '3'))</data>
   <data key="d11">25</data>
   <data key="d12">Allen Street</data>
   <data key="d13">True</data>
@@ -16496,7 +16496,7 @@
 <edge source="486869282" target="1918039877" id="0">
   <data key="d9">454963832</data>
   <data key="d10">secondary</data>
-  <data key="d17">('4', ('4', '3'), '3')</data>
+  <data key="d17">('4', '3', ('4', '3'))</data>
   <data key="d11">25</data>
   <data key="d12">Chrystie Street</data>
   <data key="d13">False</data>
@@ -16768,7 +16768,7 @@
   <data key="d10">primary</data>
   <data key="d17">2</data>
   <data key="d11">20</data>
-  <data key="d12">('Bowery', 'Chatham Square')</data>
+  <data key="d12">('Chatham Square', 'Bowery')</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">66.84283581755709</data>
@@ -16790,7 +16790,7 @@
   <data key="d10">primary</data>
   <data key="d17">('2', '3')</data>
   <data key="d11">20</data>
-  <data key="d12">('Saint James Place', 'Oliver Street')</data>
+  <data key="d12">('Oliver Street', 'Saint James Place')</data>
   <data key="d13">False</data>
   <data key="d14">True</data>
   <data key="d15">237.89888429474388</data>
@@ -16812,7 +16812,7 @@
   <data key="d10">secondary</data>
   <data key="d17">('2', ('2', '3'), '3')</data>
   <data key="d11">20</data>
-  <data key="d12">('Trinity Place', 'Greenwich Street', 'Church Street')</data>
+  <data key="d12">('Church Street', 'Greenwich Street', 'Trinity Place')</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">909.2095587159685</data>
@@ -17515,7 +17515,7 @@
 <edge source="1061531603" target="1061531593" id="0">
   <data key="d9">993379224</data>
   <data key="d10">primary</data>
-  <data key="d17">('4', '2', '3')</data>
+  <data key="d17">('4', '3', '2')</data>
   <data key="d12">Broadway</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
@@ -17609,7 +17609,7 @@
 <edge source="1061531807" target="1061531654" id="0">
   <data key="d9">195743144</data>
   <data key="d10">primary</data>
-  <data key="d17">(('2', '3'), '3')</data>
+  <data key="d17">('3', ('2', '3'))</data>
   <data key="d11">25</data>
   <data key="d12">Broadway</data>
   <data key="d13">True</data>
@@ -17621,9 +17621,9 @@
   <data key="d9">1025734017</data>
   <data key="d22">yes</data>
   <data key="d10">primary</data>
-  <data key="d17">('4', ('4', '3'), '3')</data>
+  <data key="d17">('4', '3', ('4', '3'))</data>
   <data key="d11">28</data>
-  <data key="d12">('Columbus Avenue', '9th Avenue')</data>
+  <data key="d12">('9th Avenue', 'Columbus Avenue')</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">403.52723638590044</data>
@@ -17654,7 +17654,7 @@
 <edge source="1538237325" target="42444123" id="0">
   <data key="d9">1080978586</data>
   <data key="d10">primary</data>
-  <data key="d17">('2', ('2', '3'), '3')</data>
+  <data key="d17">('2', '3', ('2', '3'))</data>
   <data key="d11">20</data>
   <data key="d12">South Street</data>
   <data key="d13">False</data>
@@ -17690,7 +17690,7 @@
   <data key="d10">secondary</data>
   <data key="d17">2</data>
   <data key="d11">25</data>
-  <data key="d12">['West 30th Street', 'Dyer Avenue']</data>
+  <data key="d12">['Dyer Avenue', 'West 30th Street']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">196.62559432520328</data>
@@ -17763,7 +17763,7 @@
 <edge source="1773066054" target="541467364" id="0">
   <data key="d9">496982787</data>
   <data key="d10">primary</data>
-  <data key="d17">(('2', '3'), '3')</data>
+  <data key="d17">('3', ('2', '3'))</data>
   <data key="d11">20</data>
   <data key="d12">Bowery</data>
   <data key="d13">True</data>
@@ -17882,7 +17882,7 @@
 <edge source="1775176474" target="3785585954" id="0">
   <data key="d9">1049828457</data>
   <data key="d10">trunk_link</data>
-  <data key="d17">('1', '3')</data>
+  <data key="d17">('3', '1')</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">90.48325431372511</data>
@@ -17947,7 +17947,7 @@
 <edge source="1815133244" target="42440163" id="0">
   <data key="d9">1025734018</data>
   <data key="d10">primary</data>
-  <data key="d17">(('4', '3'), '3')</data>
+  <data key="d17">('3', ('4', '3'))</data>
   <data key="d12">9th Avenue</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
@@ -18083,7 +18083,7 @@
 <edge source="1918039877" target="7480301864" id="0">
   <data key="d9">420352240</data>
   <data key="d10">primary</data>
-  <data key="d17">(('4', '3'), '2')</data>
+  <data key="d17">('2', ('4', '3'))</data>
   <data key="d11">25</data>
   <data key="d12">East Houston Street</data>
   <data key="d13">True</data>
@@ -18094,7 +18094,7 @@
 <edge source="1918039877" target="486869282" id="0">
   <data key="d9">1136699160</data>
   <data key="d10">secondary</data>
-  <data key="d17">('4', ('4', '3'), '3')</data>
+  <data key="d17">('4', '3', ('4', '3'))</data>
   <data key="d11">25</data>
   <data key="d12">Chrystie Street</data>
   <data key="d13">False</data>
@@ -18114,7 +18114,7 @@
 <edge source="1918039897" target="1918039864" id="0">
   <data key="d9">420352241</data>
   <data key="d10">primary</data>
-  <data key="d17">(('4', '3'), '3')</data>
+  <data key="d17">('3', ('4', '3'))</data>
   <data key="d11">25</data>
   <data key="d12">East Houston Street</data>
   <data key="d13">True</data>
@@ -18146,7 +18146,7 @@
 <edge source="1919595915" target="1918039897" id="0">
   <data key="d9">420352243</data>
   <data key="d10">primary</data>
-  <data key="d17">(('4', '3'), '3')</data>
+  <data key="d17">('3', ('4', '3'))</data>
   <data key="d11">25</data>
   <data key="d12">East Houston Street</data>
   <data key="d13">True</data>
@@ -18296,7 +18296,7 @@
 <edge source="2711029280" target="42448326" id="0">
   <data key="d9">169381960</data>
   <data key="d10">primary</data>
-  <data key="d17">('5', ('5', '6'))</data>
+  <data key="d17">(('5', '6'), '5')</data>
   <data key="d11">25</data>
   <data key="d12">1st Avenue</data>
   <data key="d13">True</data>
@@ -18371,7 +18371,7 @@
 <edge source="3099326120" target="3099327964" id="0">
   <data key="d9">420878080</data>
   <data key="d10">secondary</data>
-  <data key="d17">(('4', '3'), '2', ('2', '3'))</data>
+  <data key="d17">('2', ('2', '3'), ('4', '3'))</data>
   <data key="d12">Malcolm X Boulevard</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
@@ -18468,7 +18468,7 @@
 <edge source="3247295579" target="12534082089" id="0">
   <data key="d9">1354419960</data>
   <data key="d10">secondary</data>
-  <data key="d17">(('2', '1'), '1')</data>
+  <data key="d17">('1', ('2', '1'))</data>
   <data key="d11">25</data>
   <data key="d12">West 110th Street</data>
   <data key="d13">True</data>
@@ -18641,7 +18641,7 @@
   <data key="d9">964294640</data>
   <data key="d10">secondary</data>
   <data key="d17">2</data>
-  <data key="d12">('FDR Drive', 'York Avenue')</data>
+  <data key="d12">('York Avenue', 'FDR Drive')</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">347.47045654730164</data>
@@ -18948,7 +18948,7 @@
 <edge source="3891963915" target="1919595915" id="0">
   <data key="d9">496980200</data>
   <data key="d10">primary</data>
-  <data key="d17">(('1', '3'), '3')</data>
+  <data key="d17">(('3', '1'), '3')</data>
   <data key="d11">25</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
@@ -19290,7 +19290,7 @@
 <edge source="4321748237" target="42430237" id="0">
   <data key="d9">433124968</data>
   <data key="d10">secondary</data>
-  <data key="d17">(('4', '3'), '3')</data>
+  <data key="d17">('3', ('4', '3'))</data>
   <data key="d11">25</data>
   <data key="d12">6th Avenue</data>
   <data key="d13">True</data>
@@ -19337,7 +19337,7 @@
   <data key="d10">secondary</data>
   <data key="d17">('2', '3')</data>
   <data key="d11">25</data>
-  <data key="d12">('East 60th Street', 'Grand Army Plaza')</data>
+  <data key="d12">('Grand Army Plaza', 'East 60th Street')</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">129.57650169593333</data>
@@ -19424,7 +19424,7 @@
 <edge source="4375208206" target="42427335" id="0">
   <data key="d9">1320594617</data>
   <data key="d10">primary</data>
-  <data key="d17">(('2', '1'), '1')</data>
+  <data key="d17">('1', ('2', '1'))</data>
   <data key="d11">25</data>
   <data key="d12">Grand Street</data>
   <data key="d13">True</data>
@@ -19512,7 +19512,7 @@
 <edge source="4561384853" target="42427316" id="0">
   <data key="d9">1271581112</data>
   <data key="d10">secondary</data>
-  <data key="d17">(('2', '1'), '2', '1')</data>
+  <data key="d17">('2', '1', ('2', '1'))</data>
   <data key="d11">20</data>
   <data key="d12">Centre Street</data>
   <data key="d13">True</data>
@@ -19656,7 +19656,7 @@
   <data key="d10">secondary</data>
   <data key="d17">2</data>
   <data key="d11">25</data>
-  <data key="d12">('FDR Drive', 'York Avenue')</data>
+  <data key="d12">('York Avenue', 'FDR Drive')</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">311.34655139950036</data>
@@ -19818,7 +19818,7 @@
 <edge source="5426969134" target="42436714" id="0">
   <data key="d9">32946656</data>
   <data key="d10">motorway_link</data>
-  <data key="d17">('1', '3')</data>
+  <data key="d17">('3', '1')</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">271.94872600461036</data>
@@ -19917,7 +19917,7 @@
 <edge source="5706569898" target="42430535" id="0">
   <data key="d9">194923776</data>
   <data key="d10">secondary</data>
-  <data key="d17">(('2', '1'), '2', ('2', '3'))</data>
+  <data key="d17">('2', ('2', '3'), ('2', '1'))</data>
   <data key="d11">20</data>
   <data key="d12">Lafayette Street</data>
   <data key="d13">True</data>
@@ -19960,7 +19960,7 @@
 <edge source="5798966629" target="42440743" id="0">
   <data key="d9">380098432</data>
   <data key="d10">primary</data>
-  <data key="d17">('4', ('4', '5'), ('4', '3'), ('4', '6'))</data>
+  <data key="d17">('4', ('4', '5'), ('4', '6'), ('4', '3'))</data>
   <data key="d11">25</data>
   <data key="d12">1st Avenue</data>
   <data key="d13">True</data>
@@ -20286,7 +20286,7 @@
 <edge source="6185259892" target="42428037" id="0">
   <data key="d9">993524201</data>
   <data key="d10">secondary</data>
-  <data key="d17">('4', ('4', '5'), ('5', '6'))</data>
+  <data key="d17">(('5', '6'), ('4', '5'), '4')</data>
   <data key="d11">20</data>
   <data key="d12">York Avenue</data>
   <data key="d13">False</data>
@@ -20375,7 +20375,7 @@
 <edge source="6223571523" target="42428782" id="0">
   <data key="d9">1025137731</data>
   <data key="d10">primary</data>
-  <data key="d17">('4', ('4', '3'), '3')</data>
+  <data key="d17">('4', '3', ('4', '3'))</data>
   <data key="d11">28</data>
   <data key="d12">Broadway</data>
   <data key="d13">True</data>
@@ -20424,7 +20424,7 @@
   <data key="d15">546.1736236715027</data>
   <data key="d16">LINESTRING (-73.9300369 40.8018953, -73.9312143 40.8034625, -73.9307963 40.8026118, -73.9308738 40.8025081, -73.9313894 40.8018365)</data>
   <data key="d11">28</data>
-  <data key="d12">(('1st Avenue', 'East 127th Street'), '1st Avenue')</data>
+  <data key="d12">(('East 127th Street', '1st Avenue'), '1st Avenue')</data>
 </edge>
 <edge source="6330018917" target="3212472978" id="0">
   <data key="d9">834238144</data>
@@ -20518,7 +20518,7 @@
 <edge source="6516908811" target="5482291262" id="0">
   <data key="d9">[275298553, 1280551926]</data>
   <data key="d10">motorway_link</data>
-  <data key="d17">[('2', '1'), '3']</data>
+  <data key="d17">['3', ('2', '1')]</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">631.0038952744068</data>
@@ -20605,7 +20605,7 @@
 <edge source="7076060066" target="596776260" id="0">
   <data key="d9">353135768</data>
   <data key="d10">primary</data>
-  <data key="d17">(('2', '1'), '1')</data>
+  <data key="d17">('1', ('2', '1'))</data>
   <data key="d11">25</data>
   <data key="d12">Park Avenue</data>
   <data key="d13">True</data>
@@ -20670,7 +20670,7 @@
 <edge source="7106818626" target="42433927" id="0">
   <data key="d9">46613696</data>
   <data key="d10">secondary</data>
-  <data key="d17">(('2', '1'), ('2', '3'))</data>
+  <data key="d17">(('2', '3'), ('2', '1'))</data>
   <data key="d12">86th Street Transverse</data>
   <data key="d13">False</data>
   <data key="d14">False</data>
@@ -20814,7 +20814,7 @@
   <data key="d10">secondary</data>
   <data key="d17">('4', '2')</data>
   <data key="d11">20</data>
-  <data key="d12">('Rutgers Street', 'Canal Street')</data>
+  <data key="d12">('Canal Street', 'Rutgers Street')</data>
   <data key="d13">False</data>
   <data key="d14">False</data>
   <data key="d15">235.0247765762421</data>
@@ -20896,7 +20896,7 @@
 <edge source="7802856352" target="3718672443" id="0">
   <data key="d9">46334586</data>
   <data key="d10">secondary</data>
-  <data key="d17">('1', '3')</data>
+  <data key="d17">('3', '1')</data>
   <data key="d11">25</data>
   <data key="d12">West 66th Street</data>
   <data key="d13">True</data>
@@ -21198,7 +21198,7 @@
 <edge source="9166033062" target="5798966629" id="0">
   <data key="d9">993797880</data>
   <data key="d10">primary</data>
-  <data key="d17">(('4', '3'), '2', '3')</data>
+  <data key="d17">('2', ('4', '3'), '3')</data>
   <data key="d11">25</data>
   <data key="d12">East Houston Street</data>
   <data key="d13">True</data>
@@ -21285,7 +21285,7 @@
 <edge source="9490559521" target="42422110" id="0">
   <data key="d9">5669025</data>
   <data key="d10">motorway_link</data>
-  <data key="d17">(('2', '1'), '1')</data>
+  <data key="d17">('1', ('2', '1'))</data>
   <data key="d11">28</data>
   <data key="d12">East 124th Street</data>
   <data key="d13">True</data>
@@ -21791,7 +21791,7 @@
 <edge source="12154605956" target="10858288590" id="0">
   <data key="d9">420908129</data>
   <data key="d10">trunk</data>
-  <data key="d17">('4', '5', '3')</data>
+  <data key="d17">('4', '3', '5')</data>
   <data key="d11">30</data>
   <data key="d12">12th Avenue</data>
   <data key="d13">True</data>
@@ -21888,7 +21888,7 @@
 <edge source="12410398108" target="246858448" id="0">
   <data key="d9">412875705</data>
   <data key="d10">trunk</data>
-  <data key="d17">(('5', '6', '3'), '3')</data>
+  <data key="d17">('3', ('3', '5', '6'))</data>
   <data key="d11">30</data>
   <data key="d12">West Street</data>
   <data key="d13">True</data>
@@ -21921,7 +21921,7 @@
 <edge source="12417264049" target="42440854" id="0">
   <data key="d9">420809408</data>
   <data key="d10">trunk</data>
-  <data key="d17">(('2', '1'), '1', '3')</data>
+  <data key="d17">('3', '1', ('2', '1'))</data>
   <data key="d11">21</data>
   <data key="d12">Canal Street</data>
   <data key="d13">True</data>
@@ -22022,7 +22022,7 @@
 <edge source="13205862060" target="42442838" id="0">
   <data key="d9">1021949729</data>
   <data key="d10">primary</data>
-  <data key="d17">('4', ('4', '3'), '3')</data>
+  <data key="d17">('4', '3', ('4', '3'))</data>
   <data key="d11">25</data>
   <data key="d12">2nd Avenue</data>
   <data key="d13">True</data>

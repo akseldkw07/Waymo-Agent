@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import typing as t
 from abc import ABC, abstractmethod
-from typing import Any
 
 import gymnasium as gym
 import networkx as nx
@@ -44,15 +43,6 @@ class GraphMixinInterface(gym.Env, ABC):
     action_space: spaces.Space
 
     graph: nx.DiGraph
-    node_ids: list[str]
-    node_index: dict[str, int]
-    node_metadata: list[dict[str, Any]]
-    node_coords: np.ndarray
-    distance_matrix: np.ndarray | None
-    speed_matrix: np.ndarray | None
-    graph_edges: list[tuple[int, int]]
-    charging_nodes: list[int]
-    num_nodes: int
     np_rand: np.random.Generator
     next_request_id: int
     current_step: int
@@ -64,6 +54,12 @@ class GraphMixinInterface(gym.Env, ABC):
     _figure: FigureLike | None
     _axes: AxesLike | None
     _line_cls: Line2DType | None
+
+    @property
+    def num_nodes(self) -> int: ...
+
+    @property
+    def charging_nodes(self) -> list: ...
 
     # TODO remove these
     @abstractmethod
@@ -77,6 +73,3 @@ class GraphMixinInterface(gym.Env, ABC):
 
     @abstractmethod
     def _supply_demand_ratio(self, *args, **kwargs) -> float: ...
-
-    @abstractmethod
-    def _normalize_node(self, *args, **kwargs) -> float: ...

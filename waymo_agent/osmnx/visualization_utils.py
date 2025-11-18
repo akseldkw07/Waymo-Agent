@@ -13,13 +13,13 @@ def get_edge_color_by_speed(G: nx.MultiDiGraph):
 
     speeds = np.array(speeds, dtype=float)
     norm = colors.Normalize(vmin=speeds.min(), vmax=speeds.max())
-    cmap = cm.get_cmap("inferno")
+    cmap = cm.get_cmap("plasma")
 
     edge_colors = [cmap(norm(s)) for s in speeds]
 
     max_width, min_width = 3.0, 0.5
-    edge_widths = min_width + (norm(speeds) * (max_width - min_width))
-    return edge_colors, edge_widths
+    edge_widths: np.ndarray[tuple[int]] = min_width + (norm(speeds) * (max_width - min_width))
+    return edge_colors, edge_widths.tolist()
 
 
 def get_node_colors_and_sizes(G: nx.MultiDiGraph):
@@ -39,7 +39,7 @@ def get_node_colors_and_sizes(G: nx.MultiDiGraph):
     if lambdas.max() > 0:
         # rescale to something visible, say [10, 80] points
         lam_norm: np.ndarray = (lambdas - lambdas.min()) / (lambdas.max() - lambdas.min() + 1e-9)
-        node_sizes = (0.5 + 15 * 5 * lam_norm).round(2).tolist()
+        node_sizes: list[float] = (0.5 + 15 * 5 * lam_norm).round(2).tolist()
     else:
-        node_sizes = np.full_like(lambdas, 5).tolist()
+        node_sizes: list[float] = np.full_like(lambdas, 5).tolist()
     return node_colors, node_sizes
