@@ -93,3 +93,4 @@ scratch/
 vault/
 data/
 *.code-workspace
+cache/
