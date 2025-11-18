@@ -23,16 +23,16 @@ def sparsify_graph(G_: nx.MultiDiGraph) -> nx.MultiDiGraph:
     G = G_.copy()
 
     # 2. Remove non-major edges
-    G_major = keep_major_roads_only(G)
+    G_ret = keep_major_roads_only(G)
 
-    # 3 Remove nodes that are now isolated, or have degree 2 (i.e., pass-through nodes)
-    G_ret = remove_pass_through_nodes(G_major)
-
-    # 4. Clip to Manhattan core
-    G_ret = clip_manhattan_core(G_ret)
-
-    # 5. Remove Lincoln Tunnel
+    # 3. Remove Lincoln Tunnel
     G_ret = remove_lincoln_tunnel(G_ret)
+
+    # 4 Remove nodes that are now isolated, or have degree 2 (i.e., pass-through nodes)
+    G_ret = remove_pass_through_nodes(G_ret)
+
+    # 5. Clip to Manhattan core
+    G_ret = clip_manhattan_core(G_ret)
 
     assert isinstance(G_ret, nx.MultiDiGraph)
     print(f"Final simplified graph: {G_ret.number_of_nodes()=}, {G_ret.number_of_edges()=}")
@@ -118,20 +118,33 @@ def _remove_edges_and_simplify(G_local: nx.MultiDiGraph, edges_to_remove: list) 
 
 
 import networkx as nx
+from .osmnx_constants import OSMNXConstants as C
+
+# very rough box around the Lincoln Tunnel entrance in west midtown
+LINCOLN_WEST = -74
+LINCOLN_EAST = -73.990
+LINCOLN_SOUTH = 40.755
+LINCOLN_NORTH = 40.763
+LINCOLN_BOX = (LINCOLN_WEST, LINCOLN_SOUTH, LINCOLN_EAST, LINCOLN_NORTH)
+
+
+def _in_bbox(x: float, y: float, box: tuple[float, float, float, float]) -> bool:
+    west, south, east, north = box
+    return west <= x <= east and south <= y <= north
 
 
 def remove_lincoln_tunnel(G: nx.MultiDiGraph) -> nx.MultiDiGraph:
     """
-    Remove all edges that belong to the Lincoln Tunnel (by name),
-    then drop any isolated nodes.
+    Remove Lincoln Tunnel edges and nearby motorway/trunk ramps in west midtown.
     """
     G2 = G.copy()
-    edges_to_remove: list = []
+    edges_to_remove: list[tuple] = []
 
     for u, v, k, data in G2.edges(keys=True, data=True):
         name = data.get("name")
+        highway = data.get("highway")
 
-        # normalize to list of names
+        # normalise
         if isinstance(name, list):
             names = name
         elif isinstance(name, str):
@@ -139,14 +152,36 @@ def remove_lincoln_tunnel(G: nx.MultiDiGraph) -> nx.MultiDiGraph:
         else:
             names = []
 
-        if any("Lincoln Tunnel" in n for n in names):
+        if isinstance(highway, list):
+            htypes = highway
+        elif isinstance(highway, str):
+            htypes = [highway]
+        else:
+            htypes = []
+
+        # node coords (lon=x, lat=y)
+        ux = G2.nodes[u]["x"]
+        uy = G2.nodes[u]["y"]
+        vx = G2.nodes[v]["x"]
+        vy = G2.nodes[v]["y"]
+
+        in_lincoln_box = _in_bbox(ux, uy, LINCOLN_BOX) or _in_bbox(vx, vy, LINCOLN_BOX)
+
+        # 1) any edge explicitly named Lincoln Tunnel
+        name_is_lincoln = any("Lincoln Tunnel" in n for n in names)
+
+        # 2) or any motorway/trunk segment inside the small box
+        is_major_highway = any(h in {"motorway", "motorway_link", "trunk", "trunk_link"} for h in htypes)
+
+        if name_is_lincoln or (in_lincoln_box and is_major_highway):
             edges_to_remove.append((u, v, k))
 
     G2.remove_edges_from(edges_to_remove)
 
-    # remove any now-isolated nodes
+    # clean up isolated nodes created by this removal
     isolates = list(nx.isolates(G2))
     G2.remove_nodes_from(isolates)
+    G2 = _simplify_graph_safely(G2)
 
     return G2
 
@@ -188,6 +223,15 @@ def _merge_instructions(attr_key: str, attr_value: t.Any, u: int, v: int, key: i
     Returns:
         Any: The merged attribute value.
     """
+    # special cases
+    if attr_key in {"osmid"}:
+        val = attr_value if not isinstance(attr_value, list) else attr_value[0]
+        return int(val)
+    if attr_key in {"oneway", "reversed"} and isinstance(attr_value, list):
+        val = round(sum([True, False, False]) / len(attr_value))
+        return bool(val)
+
+    # general cases
     if isinstance(attr_value, list):
         keys_merged.add(attr_key)
         if len(attr_value) == 0:
