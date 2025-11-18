@@ -13,6 +13,7 @@ MODEL_WEIGHT_DIR = ROOT_DIR / "model_weights"
 MANHATTAN_BASIC = "manhattan-full-basic.png"
 MANHATTAN_COLORFUL = "manhattan-full-colorful.png"
 MANHATTAN_SPARSE_COLORFUL = "manhattan-sparse-colorful.png"
+MANHATTAN_SPARSE_COLORFUL_TEST = "manhattan-sparse-colorful-test.png"
 
 # Map Names
 MANHATTAN_RAW_GRAPH = "manhattan-raw.graphml"

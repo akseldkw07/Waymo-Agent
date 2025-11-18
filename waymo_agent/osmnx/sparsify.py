@@ -5,13 +5,8 @@ import osmnx as ox
 
 from .osmnx_constants import OSMNXConstants as C
 
-# 1. Define the road types you want to KEEP
-# Try removing 'secondary' if this is still too dense
 
-MAJOR_ROAD_TYPES_SET = C.MAJOR_ROAD_TYPES_SET
-
-
-def sparsify_graph(G: nx.MultiDiGraph) -> nx.MultiDiGraph:
+def sparsify_graph(G_: nx.MultiDiGraph) -> nx.MultiDiGraph:
     """
     Sparsifies a graph by keeping only major roads and removing
     all disconnected nodes and redundant pass-through nodes.
@@ -25,44 +20,120 @@ def sparsify_graph(G: nx.MultiDiGraph) -> nx.MultiDiGraph:
                          largest connected component of major roads.
     """
     # 1. Copy so we don't mutate the original
-    G_major = G.copy()
+    G = G_.copy()
 
     # 2. Remove non-major edges
+    G_major = keep_major_roads_only(G)
+
+    # 3 Remove nodes that are now isolated, or have degree 2 (i.e., pass-through nodes)
+    G_ret = remove_pass_through_nodes(G_major)
+
+    # 4. Clip to Manhattan core
+    G_ret = clip_manhattan_core(G_ret)
+
+    assert isinstance(G_ret, nx.MultiDiGraph)
+    print(f"Final simplified graph: {G_ret.number_of_nodes()=}, {G_ret.number_of_edges()=}")
+    return G_ret
+
+
+def keep_major_roads_only(G: nx.MultiDiGraph) -> nx.MultiDiGraph:
+    """
+    Keeps only major roads in the graph without further simplification.
+
+    Args:
+        G (nx.MultiDiGraph): The original graph from OSMnx.
+
+    Returns:
+        nx.MultiDiGraph: A new graph containing only major roads.
+    """
+    # 2. Remove non-major edges
     edges_to_remove = []
-    for u, v, key, data in G_major.edges(keys=True, data=True):
+    for u, v, key, data in G.edges(keys=True, data=True):
         highway_type = data.get("highway", "default")
         assert isinstance(highway_type, str), f"Unexpected highway type format: {highway_type}"
 
-        if highway_type not in MAJOR_ROAD_TYPES_SET:
+        if highway_type not in C.MAJOR_ROAD_TYPES_SET():
             edges_to_remove.append((u, v, key))
 
+    G_major = _remove_edges_and_simplify(G, edges_to_remove)
+    return G_major
+
+
+def remove_pass_through_nodes(G: nx.MultiDiGraph) -> nx.MultiDiGraph:
+    """
+    Removes pass-through nodes (nodes with degree 2) from the graph.
+
+    Args:
+        G (nx.MultiDiGraph): The original graph from OSMnx.
+
+    Returns:
+        nx.MultiDiGraph: A new graph with pass-through nodes removed.
+    """
+    nodes_to_remove = []
+    for node in G.nodes():
+        preds = set(G.predecessors(node))
+        succs = set(G.successors(node))
+        neighbors = preds | succs
+
+        # e.g. “exactly 2 neighbors and no self-loop”
+        if len(neighbors) <= 2:
+            nodes_to_remove.append(node)
+
+    print(f"Removing {len(nodes_to_remove)} isolated or pass-through nodes...")
+    G.remove_nodes_from(nodes_to_remove)
+    G_simplified = _simplify_graph_safely(G)
+    G_ret = _keep_largest_weakly_connected_component(G_simplified)
+    return G_ret
+
+
+def clip_manhattan_core(G: nx.MultiDiGraph) -> nx.MultiDiGraph:
+    G_clipped = ox.truncate.truncate_graph_bbox(G, C.MANHATTAN_BOX, truncate_by_edge=False)
+    return G_clipped
+
+
+def _remove_edges_and_simplify(G_local: nx.MultiDiGraph, edges_to_remove: list) -> nx.MultiDiGraph:
+    """
+    Remove edges that represent non-major roads and simplify the graph topology.
+
+    Args:
+        G_local (nx.MultiDiGraph): The graph to modify.
+        edges_to_remove (List[Tuple[int, int, int]]): List of edges to remove.
+    Returns:
+        nx.MultiDiGraph: The modified graph.
+    """
     print(f"Removing {len(edges_to_remove)} non-major edges...")
-    G_major.remove_edges_from(edges_to_remove)
+    G_local.remove_edges_from(edges_to_remove)
 
     # 3. Keep only the largest weakly connected component
-    components = list(nx.weakly_connected_components(G_major))
+    G_sparsified = _keep_largest_weakly_connected_component(G_local)
+
+    print(f"Graph after edge removal: {G_sparsified.number_of_nodes()=}, {G_sparsified.number_of_edges()=}")
+
+    G_simplified = _simplify_graph_safely(G_sparsified)
+
+    return G_simplified
+
+
+def _keep_largest_weakly_connected_component(G: nx.MultiDiGraph) -> nx.MultiDiGraph:
+    components = list(nx.weakly_connected_components(G))
     if not components:
         print("Warning: No components found. Returning empty graph.")
         return nx.MultiDiGraph()
 
     largest_component = max(components, key=len)
-    G_sparsified = t.cast(nx.MultiDiGraph, G_major.subgraph(largest_component).copy())
+    G_ret = t.cast(nx.MultiDiGraph, G.subgraph(largest_component).copy())
+    return G_ret
 
-    print(f"Graph after edge removal: {G_sparsified.number_of_nodes()=}, {G_sparsified.number_of_edges()=}")
 
+def _simplify_graph_safely(G: nx.MultiDiGraph) -> nx.MultiDiGraph:
     print("Cleaning all edge attributes before simplification...")
     keys_merged = set()
-    for u, v, key, data in G_sparsified.edges(keys=True, data=True):
+    for u, v, key, data in G.edges(keys=True, data=True):
         for attr_key, attr_value in data.items():
             data[attr_key] = _merge_instructions(attr_key, attr_value, u, v, key, keys_merged)
 
-    print(f"Merged attributes: {keys_merged}")
-    print("Simplifying topology...")
-    G_sparsified.graph["simplified"] = False
-    G_simplified = ox.simplify_graph(G_sparsified)
-
-    assert isinstance(G_simplified, nx.MultiDiGraph)
-    print(f"Final simplified graph: {G_simplified.number_of_nodes()=}, {G_simplified.number_of_edges()=}")
+    G.graph["simplified"] = False
+    G_simplified = ox.simplify_graph(G)
     return G_simplified
 
 

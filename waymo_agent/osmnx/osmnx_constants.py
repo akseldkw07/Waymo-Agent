@@ -58,8 +58,14 @@ class OSMNXConstants:
         "cycleway",
         "path",
     ]
-    MAJOR_ROAD_CUTOFF_INDEX = ROAD_PRIORITY.index("primary_link") + 1
-    MAJOR_ROAD_TYPES_SET = set(ROAD_PRIORITY[:MAJOR_ROAD_CUTOFF_INDEX])
+
+    @classmethod
+    def MAJOR_ROAD_CUTOFF_INDEX(cls):
+        return cls.ROAD_PRIORITY.index("secondary") + 1
+
+    @classmethod
+    def MAJOR_ROAD_TYPES_SET(cls):
+        return set(cls.ROAD_PRIORITY[: cls.MAJOR_ROAD_CUTOFF_INDEX()])
 
     COLOR_CONFIG = {
         "motorway": {"color": "#ff0000", "width": 3.0},  # Red, Thickest
@@ -97,3 +103,9 @@ class OSMNXConstants:
             edge_widths.append(style["width"])
 
         return edge_colors, edge_widths
+
+    NORTH_125TH = 40.818
+    SOUTH_LIMIT = 40.69
+    WEST_LIMIT = -74.03
+    EAST_LIMIT = -73.927  # cut before Randalls (≈ -73.92)
+    MANHATTAN_BOX = (WEST_LIMIT, SOUTH_LIMIT, EAST_LIMIT, NORTH_125TH)
