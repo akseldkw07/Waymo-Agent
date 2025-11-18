@@ -18,6 +18,7 @@ MANHATTAN_SPARSE_COLORFUL_TEST = "manhattan-sparse-colorful-test.png"
 # Map Names
 MANHATTAN_RAW_GRAPH = "manhattan-raw.graphml"
 MANHATTAN_PROCESSED_GRAPH = "manhattan-processed.graphml"
+MANHATTAN_SPARSE_GRAPH = "manhattan-sparse-{}-nodes.graphml"
 
 # WANDB
 WANDB_TEAM_NAME = "rl-project-F25"

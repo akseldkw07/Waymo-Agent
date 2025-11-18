@@ -31,6 +31,9 @@ def sparsify_graph(G_: nx.MultiDiGraph) -> nx.MultiDiGraph:
     # 4. Clip to Manhattan core
     G_ret = clip_manhattan_core(G_ret)
 
+    # 5. Remove Lincoln Tunnel
+    G_ret = remove_lincoln_tunnel(G_ret)
+
     assert isinstance(G_ret, nx.MultiDiGraph)
     print(f"Final simplified graph: {G_ret.number_of_nodes()=}, {G_ret.number_of_edges()=}")
     return G_ret
@@ -112,6 +115,40 @@ def _remove_edges_and_simplify(G_local: nx.MultiDiGraph, edges_to_remove: list) 
     G_simplified = _simplify_graph_safely(G_sparsified)
 
     return G_simplified
+
+
+import networkx as nx
+
+
+def remove_lincoln_tunnel(G: nx.MultiDiGraph) -> nx.MultiDiGraph:
+    """
+    Remove all edges that belong to the Lincoln Tunnel (by name),
+    then drop any isolated nodes.
+    """
+    G2 = G.copy()
+    edges_to_remove: list = []
+
+    for u, v, k, data in G2.edges(keys=True, data=True):
+        name = data.get("name")
+
+        # normalize to list of names
+        if isinstance(name, list):
+            names = name
+        elif isinstance(name, str):
+            names = [name]
+        else:
+            names = []
+
+        if any("Lincoln Tunnel" in n for n in names):
+            edges_to_remove.append((u, v, k))
+
+    G2.remove_edges_from(edges_to_remove)
+
+    # remove any now-isolated nodes
+    isolates = list(nx.isolates(G2))
+    G2.remove_nodes_from(isolates)
+
+    return G2
 
 
 def _keep_largest_weakly_connected_component(G: nx.MultiDiGraph) -> nx.MultiDiGraph:
