@@ -1,6 +1,7 @@
 import logging
 
 import networkx as nx
+import typing as t
 
 from .osmnx_constants import OSMNXConstants as C
 from .utils import _max_speed_int
@@ -27,11 +28,21 @@ def _clean_max_speed(G: nx.MultiDiGraph) -> None:
     """
     Cleans the 'maxspeed' attribute of all edges in the
     graph by converting them to integers.
+
+    NOTE speed is stored in mph after conversion
     """
+
     for u, v, k, data in G.edges(keys=True, data=True):
         maxspeed = data.get("maxspeed")
-        if maxspeed is not None:
-            data["maxspeed"] = _max_speed_int(maxspeed)
+
+        if maxspeed is None:
+            max_speed_mph = 30  # Default to 30 mph if not specified
+        else:
+            try:
+                max_speed_mph = _max_speed_int(maxspeed)
+            except Exception as e:
+                raise ValueError(f"Error parsing maxspeed: {e}. {data=}")
+        data["maxspeed"] = max_speed_mph
 
 
 def _clean_road_type(G: nx.MultiDiGraph) -> None:
@@ -43,14 +54,14 @@ def _clean_road_type(G: nx.MultiDiGraph) -> None:
     for u, v, k, data in G.edges(keys=True, data=True):
         road_type = data.get("highway")
 
-        if isinstance(road_type, list):
+        if isinstance(road_type, str) and road_type in C.ROAD_PRIORITY:
+            data["highway"] = road_type
+        elif isinstance(road_type, t.Iterable):  # check after str because str is Iterable
             # If it's a list, take the road type with the highest priority
             for rt in C.ROAD_PRIORITY:
                 if rt in road_type:
                     data["highway"] = rt
                     break
-        elif isinstance(road_type, str) and road_type in C.ROAD_PRIORITY:
-            data["highway"] = road_type
         else:
             logger.warning(
                 f"Invalid road type: {road_type}, associated with edge ({u}, {v}, {k}). Setting to 'unclassified'."

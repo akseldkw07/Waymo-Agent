@@ -69,7 +69,7 @@ def plot_maxspeed(G: nx.MultiDiGraph, ax: Axes | None = None):
     # Collect speeds as list for histogram
     speeds = []
     for speed, count in speed_counts.items():
-        assert isinstance(speed, int)
+        assert isinstance(speed, float), f"Unexpected speed type: {type(speed)}"
         try:
             speeds.extend([speed] * count)
         except (ValueError, IndexError, AttributeError):
@@ -104,3 +104,21 @@ def collect_unique_graph_attr(G: nx.MultiDiGraph, attr: str) -> set[t.Any]:
 
         logger.warning(f"No values found for attribute '{attr}'. Sample edge attributes: {attrs}")
     return values
+
+
+def sum_graph_attr(G: nx.MultiDiGraph, attr: str, edge_node: t.Literal["edge", "node"] = "edge") -> float:
+    """Helper to sum up all numeric values of a given edge attribute in the graph."""
+    total = 0.0
+    if edge_node == "edge":
+        for u, v, k, data in G.edges(keys=True, data=True):
+            value = data.get(attr)
+            if isinstance(value, (int, float)):
+                total += value
+            elif isinstance(value, list):
+                raise ValueError(f"Attribute '{attr}' has list values on edge ({u}, {v}, {k}), cannot sum.")
+    elif edge_node == "node":
+        for node, data in G.nodes(data=True):
+            value = data.get(attr)
+            if isinstance(value, (int, float)):
+                total += value
+    return total

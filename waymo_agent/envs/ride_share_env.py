@@ -1,17 +1,16 @@
 from __future__ import annotations
 
 import typing as t
-from pathlib import Path
 from typing import Any
 
 import networkx as nx
 import numpy as np
 
 from .dataclasses import ActiveRide, EnvConfig, RequestState, VehicleState
-from .mixin import RideShareDynamicsMixin, RideShareGraphMixin, RideShareObservationMixin, RideShareRenderingMixin
+from .mixin import RideShareDynamicsMixin, OSMnxWrapperMixin, RideShareObservationMixin, RideShareRenderingMixin
 
 
-class RideShareEnv(RideShareRenderingMixin, RideShareObservationMixin, RideShareDynamicsMixin, RideShareGraphMixin):
+class RideShareEnv(RideShareRenderingMixin, RideShareObservationMixin, RideShareDynamicsMixin, OSMnxWrapperMixin):
     """Gymnasium environment that mirrors the proposal architecture for the Waymo RL project."""
 
     """
@@ -24,6 +23,7 @@ class RideShareEnv(RideShareRenderingMixin, RideShareObservationMixin, RideShare
     enrich graph
         - add lambda parameter per node
         - save out color mappings for rendering
+        - assign lambda values
     TODO: rework RideShareGraphMixin to use osmnx for loading graphs
         - Remove all the csv code
         - Redo all the rendering code
@@ -37,7 +37,6 @@ class RideShareEnv(RideShareRenderingMixin, RideShareObservationMixin, RideShare
         super().__init__()
         self.config = config or EnvConfig()
         self.render_mode = render_mode
-        self.map_dir = Path(self.config.map_dir).expanduser()
         self.map_name = self.config.map_name
         self.graph: nx.DiGraph = nx.DiGraph()
         self.node_ids: list[str] = []

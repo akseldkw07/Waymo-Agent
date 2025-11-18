@@ -60,12 +60,14 @@ class OSMNXConstants:
     ]
 
     @classmethod
-    def MAJOR_ROAD_CUTOFF_INDEX(cls):
-        return cls.ROAD_PRIORITY.index("secondary") + 1
+    def MAJOR_ROAD_TYPES_SET(cls):
+        cutoff = cls.ROAD_PRIORITY.index("secondary") + 1
+        return set(cls.ROAD_PRIORITY[:cutoff])
 
     @classmethod
-    def MAJOR_ROAD_TYPES_SET(cls):
-        return set(cls.ROAD_PRIORITY[: cls.MAJOR_ROAD_CUTOFF_INDEX()])
+    def HIGHWAY_TYPES_SET(cls):
+        cutoff = cls.ROAD_PRIORITY.index("trunk_link") + 1
+        return set(cls.ROAD_PRIORITY[:cutoff])
 
     COLOR_CONFIG = {
         "motorway": {"color": "#ff0000", "width": 3.0},  # Red, Thickest

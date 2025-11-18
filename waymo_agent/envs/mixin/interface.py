@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import typing as t
 from abc import ABC, abstractmethod
-from pathlib import Path
 from typing import Any
 
 import gymnasium as gym
@@ -36,7 +35,6 @@ class GraphMixinInterface(gym.Env, ABC):
     metadata = {"render_modes": ["human", "ansi"], "render_fps": 6}
     WEATHER_STATES: tuple[str, ...] = ("clear", "rain", "snow")
     render_mode: str | t.Literal["human", "ansi"]
-    map_dir: Path
     map_name: str | None
     config: EnvConfig
     vehicles: list[VehicleState]

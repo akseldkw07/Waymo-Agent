@@ -23,7 +23,7 @@
 <key id="d2" for="graph" attr.name="crs" attr.type="string"/>
 <key id="d1" for="graph" attr.name="created_with" attr.type="string"/>
 <key id="d0" for="graph" attr.name="created_date" attr.type="string"/>
-<graph edgedefault="directed"><data key="d0">2025-11-17 20:19:51</data>
+<graph edgedefault="directed"><data key="d0">2025-11-17 23:30:08</data>
 <data key="d1">OSMnx 2.0.6</data>
 <data key="d2">epsg:4326</data>
 <data key="d3">True</data>
@@ -27600,7 +27600,7 @@
 <edge source="42423020" target="42434965" id="0">
   <data key="d9">[1020832418, 421852618, 420872183]</data>
   <data key="d10">primary</data>
-  <data key="d17">['6', '5']</data>
+  <data key="d17">['5', '6']</data>
   <data key="d11">25 mph</data>
   <data key="d12">2nd Avenue</data>
   <data key="d13">True</data>
@@ -28156,7 +28156,7 @@
 <edge source="42424089" target="42442961" id="0">
   <data key="d9">[818182930, 358290454]</data>
   <data key="d10">primary</data>
-  <data key="d17">['6', '5']</data>
+  <data key="d17">['5', '6']</data>
   <data key="d11">25 mph</data>
   <data key="d12">2nd Avenue</data>
   <data key="d13">True</data>
@@ -28910,7 +28910,7 @@
   <data key="d10">residential</data>
   <data key="d17">1</data>
   <data key="d11">25 mph</data>
-  <data key="d12">['Madison Avenue', 'Harlem River Drive']</data>
+  <data key="d12">['Harlem River Drive', 'Madison Avenue']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">204.12956436987128</data>
@@ -29017,7 +29017,7 @@
   <data key="d10">residential</data>
   <data key="d17">1</data>
   <data key="d11">20 mph</data>
-  <data key="d12">['Hogan Place', 'Baxter Street']</data>
+  <data key="d12">['Baxter Street', 'Hogan Place']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">112.5598451476625</data>
@@ -29211,7 +29211,7 @@
   <data key="d9">[5673185, 799234250]</data>
   <data key="d10">residential</data>
   <data key="d17">1</data>
-  <data key="d12">['East 111th Street', 'FDR Drive']</data>
+  <data key="d12">['FDR Drive', 'East 111th Street']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">195.57590985013638</data>
@@ -29232,7 +29232,7 @@
   <data key="d10">secondary</data>
   <data key="d17">1</data>
   <data key="d11">25 mph</data>
-  <data key="d12">['Frederick Douglass Boulevard', 'Harlem River Drive']</data>
+  <data key="d12">['Harlem River Drive', 'Frederick Douglass Boulevard']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">383.477049786605</data>
@@ -30090,7 +30090,7 @@
   <data key="d10">tertiary</data>
   <data key="d17">2</data>
   <data key="d11">20 mph</data>
-  <data key="d12">['Overlook Terrace', 'West 190th Street']</data>
+  <data key="d12">['West 190th Street', 'Overlook Terrace']</data>
   <data key="d13">False</data>
   <data key="d14">True</data>
   <data key="d15">308.7679389244151</data>
@@ -32138,7 +32138,7 @@
   <data key="d10">residential</data>
   <data key="d17">1</data>
   <data key="d11">20 mph</data>
-  <data key="d12">['Hanover Square', 'William Street']</data>
+  <data key="d12">['William Street', 'Hanover Square']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">80.51982381734778</data>
@@ -32664,7 +32664,7 @@
   <data key="d10">residential</data>
   <data key="d17">1</data>
   <data key="d11">25 mph</data>
-  <data key="d12">['East 77th Street', 'Cherokee Place']</data>
+  <data key="d12">['Cherokee Place', 'East 77th Street']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">222.8651671955411</data>
@@ -33104,7 +33104,7 @@
   <data key="d10">residential</data>
   <data key="d17">1</data>
   <data key="d11">25 mph</data>
-  <data key="d12">['East End Avenue', 'East 90th Street']</data>
+  <data key="d12">['East 90th Street', 'East End Avenue']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">296.13581491009876</data>
@@ -33135,7 +33135,7 @@
 <edge source="42428049" target="6185259892" id="0">
   <data key="d9">[1135143380, 953819150]</data>
   <data key="d10">secondary</data>
-  <data key="d17">['6', '5']</data>
+  <data key="d17">['5', '6']</data>
   <data key="d11">25 mph</data>
   <data key="d12">York Avenue</data>
   <data key="d13">False</data>
@@ -33185,7 +33185,7 @@
 <edge source="42428063" target="42442463" id="0">
   <data key="d9">[895398384, 895398385]</data>
   <data key="d10">primary</data>
-  <data key="d17">['3', '5']</data>
+  <data key="d17">['5', '3']</data>
   <data key="d12">Amsterdam Avenue</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
@@ -33536,7 +33536,7 @@
   <data key="d9">[46617000, 196946881, 196946879]</data>
   <data key="d10">residential</data>
   <data key="d11">20 mph</data>
-  <data key="d12">['West 187th Street', 'Chittenden Avenue', 'West 186th Street']</data>
+  <data key="d12">['West 187th Street', 'West 186th Street', 'Chittenden Avenue']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">254.56931186495288</data>
@@ -35567,7 +35567,7 @@
   <data key="d9">[1081976610, 1081976612]</data>
   <data key="d10">residential</data>
   <data key="d17">1</data>
-  <data key="d11">['25 mph', '5 mph']</data>
+  <data key="d11">['5 mph', '25 mph']</data>
   <data key="d12">West 91st Street</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
@@ -36189,7 +36189,7 @@
 <edge source="42428913" target="2383895311" id="0">
   <data key="d9">[608355937, 5670759, 1254486598, 1254486599]</data>
   <data key="d10">residential</data>
-  <data key="d12">['12th Avenue', 'West 138th Street']</data>
+  <data key="d12">['West 138th Street', '12th Avenue']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">492.4335238773665</data>
@@ -38593,7 +38593,7 @@
   <data key="d10">residential</data>
   <data key="d17">['2', '1']</data>
   <data key="d11">20 mph</data>
-  <data key="d12">['3rd Place', 'Little West Street']</data>
+  <data key="d12">['Little West Street', '3rd Place']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">142.35982649948582</data>
@@ -38924,7 +38924,7 @@
   <data key="d9">[1068067608, 1068067609, 46165807]</data>
   <data key="d10">residential</data>
   <data key="d17">2</data>
-  <data key="d11">['25 mph', '20 mph']</data>
+  <data key="d11">['20 mph', '25 mph']</data>
   <data key="d12">Murray Street</data>
   <data key="d13">False</data>
   <data key="d14">[False, True]</data>
@@ -38957,7 +38957,7 @@
   <data key="d9">[1068067608, 1068067609, 46165807]</data>
   <data key="d10">residential</data>
   <data key="d17">2</data>
-  <data key="d11">['25 mph', '20 mph']</data>
+  <data key="d11">['20 mph', '25 mph']</data>
   <data key="d12">Murray Street</data>
   <data key="d13">False</data>
   <data key="d14">[False, True]</data>
@@ -41588,7 +41588,7 @@
 <edge source="42430269" target="42430271" id="0">
   <data key="d9">[196117090, 1266830892]</data>
   <data key="d10">secondary</data>
-  <data key="d17">['6', '4']</data>
+  <data key="d17">['4', '6']</data>
   <data key="d11">25 mph</data>
   <data key="d12">6th Avenue</data>
   <data key="d13">True</data>
@@ -41620,7 +41620,7 @@
 <edge source="42430271" target="42437881" id="0">
   <data key="d9">[1088320656, 465101198, 1088320655]</data>
   <data key="d10">secondary</data>
-  <data key="d17">['6', '4']</data>
+  <data key="d17">['4', '6']</data>
   <data key="d11">25 mph</data>
   <data key="d12">West 23rd Street</data>
   <data key="d13">False</data>
@@ -43064,7 +43064,7 @@
 <edge source="42430673" target="62915549" id="0">
   <data key="d9">[169267538, 989265269, 420904621]</data>
   <data key="d10">primary</data>
-  <data key="d17">['4', '3', '5']</data>
+  <data key="d17">['4', '5', '3']</data>
   <data key="d11">25 mph</data>
   <data key="d12">West 42nd Street</data>
   <data key="d13">False</data>
@@ -44120,7 +44120,7 @@
   <data key="d9">[5669964, 5670676]</data>
   <data key="d10">residential</data>
   <data key="d11">20 mph</data>
-  <data key="d12">['West 183rd Street', 'Colonel Robert Magaw Place']</data>
+  <data key="d12">['Colonel Robert Magaw Place', 'West 183rd Street']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">224.92143916975016</data>
@@ -50046,7 +50046,7 @@
   <data key="d9">[164874521, 5670141]</data>
   <data key="d10">residential</data>
   <data key="d11">20 mph</data>
-  <data key="d12">['West 214th Street', 'Indian Road']</data>
+  <data key="d12">['Indian Road', 'West 214th Street']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">155.76217628512282</data>
@@ -51645,7 +51645,7 @@
   <data key="d9">[274836875, 1442425228]</data>
   <data key="d10">residential</data>
   <data key="d17">1</data>
-  <data key="d11">['25 mph', '15 mph']</data>
+  <data key="d11">['15 mph', '25 mph']</data>
   <data key="d12">West 182nd Street</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
@@ -52180,7 +52180,7 @@
   <data key="d9">[1226764953, 1334153966]</data>
   <data key="d10">residential</data>
   <data key="d17">1</data>
-  <data key="d11">['25 mph', '20 mph']</data>
+  <data key="d11">['20 mph', '25 mph']</data>
   <data key="d12">Water Street</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
@@ -54017,7 +54017,7 @@
   <data key="d9">[815541797, 1227941702, 5672309]</data>
   <data key="d10">residential</data>
   <data key="d17">2</data>
-  <data key="d12">['Old Broadway', 'West 131st Street']</data>
+  <data key="d12">['West 131st Street', 'Old Broadway']</data>
   <data key="d13">False</data>
   <data key="d14">[False, True]</data>
   <data key="d15">262.96378432925803</data>
@@ -55597,7 +55597,7 @@
   <data key="d9">[652745780, 5669574]</data>
   <data key="d10">residential</data>
   <data key="d17">1</data>
-  <data key="d12">['East 110th Street', 'A New Street']</data>
+  <data key="d12">['A New Street', 'East 110th Street']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">171.29825312833546</data>
@@ -55649,10 +55649,10 @@
 </edge>
 <edge source="42434412" target="42436192" id="0">
   <data key="d9">[1032502936, 129834316]</data>
-  <data key="d10">['unclassified', 'residential']</data>
+  <data key="d10">['residential', 'unclassified']</data>
   <data key="d17">1</data>
   <data key="d11">20 mph</data>
-  <data key="d12">['Cedar Street', 'Greenwich Street']</data>
+  <data key="d12">['Greenwich Street', 'Cedar Street']</data>
   <data key="d13">True</data>
   <data key="d22">15'8"</data>
   <data key="d14">False</data>
@@ -55972,7 +55972,7 @@
   <data key="d10">primary</data>
   <data key="d17">['1', '3']</data>
   <data key="d11">20 mph</data>
-  <data key="d12">['Beach Street', 'West Broadway']</data>
+  <data key="d12">['West Broadway', 'Beach Street']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">86.3951942373933</data>
@@ -56224,7 +56224,7 @@
 </edge>
 <edge source="42434946" target="42430308" id="0">
   <data key="d9">[496983398, 496983399]</data>
-  <data key="d10">['unclassified', 'residential']</data>
+  <data key="d10">['residential', 'unclassified']</data>
   <data key="d17">3</data>
   <data key="d12">West 35th Street</data>
   <data key="d13">True</data>
@@ -56555,7 +56555,7 @@
 <edge source="42435211" target="42443817" id="0">
   <data key="d9">[420883172, 587061815]</data>
   <data key="d10">secondary</data>
-  <data key="d17">['3', '5']</data>
+  <data key="d17">['5', '3']</data>
   <data key="d11">25 mph</data>
   <data key="d12">Madison Avenue</data>
   <data key="d13">True</data>
@@ -58531,7 +58531,7 @@
 <edge source="42435663" target="42437368" id="0">
   <data key="d9">[1320290376, 542259076, 1321771943]</data>
   <data key="d10">primary</data>
-  <data key="d17">['2', '5']</data>
+  <data key="d17">['5', '2']</data>
   <data key="d11">25 mph</data>
   <data key="d12">West 42nd Street</data>
   <data key="d13">False</data>
@@ -61172,7 +61172,7 @@
   <data key="d9">[5673064, 5671030]</data>
   <data key="d10">tertiary</data>
   <data key="d11">20 mph</data>
-  <data key="d12">['Overlook Terrace', 'West 190th Street']</data>
+  <data key="d12">['West 190th Street', 'Overlook Terrace']</data>
   <data key="d22">35'0"</data>
   <data key="d13">False</data>
   <data key="d14">False</data>
@@ -61740,7 +61740,7 @@
   <data key="d10">residential</data>
   <data key="d17">1</data>
   <data key="d11">25 mph</data>
-  <data key="d12">['Bethune Street', 'Hudson Street']</data>
+  <data key="d12">['Hudson Street', 'Bethune Street']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">85.6185975754393</data>
@@ -62030,7 +62030,7 @@
 <edge source="42436492" target="42438805" id="0">
   <data key="d9">[421853993, 421854006]</data>
   <data key="d10">primary</data>
-  <data key="d17">['6', '5']</data>
+  <data key="d17">['5', '6']</data>
   <data key="d11">25 mph</data>
   <data key="d12">1st Avenue</data>
   <data key="d13">True</data>
@@ -62479,7 +62479,7 @@
 <edge source="42436586" target="4138911201" id="0">
   <data key="d9">[496986905, 221157083]</data>
   <data key="d10">primary</data>
-  <data key="d17">['6', '5']</data>
+  <data key="d17">['5', '6']</data>
   <data key="d11">25 mph</data>
   <data key="d12">3rd Avenue</data>
   <data key="d13">True</data>
@@ -63702,7 +63702,7 @@
 <edge source="42436922" target="42456060" id="0">
   <data key="d9">[421853964, 421854004]</data>
   <data key="d10">primary</data>
-  <data key="d17">['6', '5']</data>
+  <data key="d17">['5', '6']</data>
   <data key="d11">25 mph</data>
   <data key="d12">1st Avenue</data>
   <data key="d13">True</data>
@@ -64262,7 +64262,7 @@
 <edge source="42437082" target="42432071" id="0">
   <data key="d9">[46201677, 1354943102]</data>
   <data key="d10">residential</data>
-  <data key="d11">['25 mph', '15 mph']</data>
+  <data key="d11">['15 mph', '25 mph']</data>
   <data key="d12">Norfolk Street</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
@@ -65313,7 +65313,7 @@
 <edge source="42437368" target="42435663" id="0">
   <data key="d9">[1320290376, 542259076, 1321771943]</data>
   <data key="d10">primary</data>
-  <data key="d17">['2', '5']</data>
+  <data key="d17">['5', '2']</data>
   <data key="d11">25 mph</data>
   <data key="d12">West 42nd Street</data>
   <data key="d13">False</data>
@@ -65681,7 +65681,7 @@
   <data key="d10">residential</data>
   <data key="d17">1</data>
   <data key="d11">25 mph</data>
-  <data key="d12">['East 20th Street', 'Gramercy Park South']</data>
+  <data key="d12">['Gramercy Park South', 'East 20th Street']</data>
   <data key="d13">True</data>
   <data key="d22">8.5</data>
   <data key="d14">False</data>
@@ -66567,7 +66567,7 @@
 <edge source="42437881" target="42430271" id="0">
   <data key="d9">[1088320656, 465101198, 1088320655]</data>
   <data key="d10">secondary</data>
-  <data key="d17">['6', '4']</data>
+  <data key="d17">['4', '6']</data>
   <data key="d11">25 mph</data>
   <data key="d12">West 23rd Street</data>
   <data key="d13">False</data>
@@ -68056,7 +68056,7 @@
   <data key="d9">[46154332, 1226764973, 1333737679]</data>
   <data key="d10">residential</data>
   <data key="d17">1</data>
-  <data key="d11">['25 mph', '20 mph']</data>
+  <data key="d11">['20 mph', '25 mph']</data>
   <data key="d12">Front Street</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
@@ -70751,7 +70751,7 @@
 <edge source="42439567" target="42430075" id="0">
   <data key="d9">[421854002, 421853956]</data>
   <data key="d10">primary</data>
-  <data key="d17">['6', '5']</data>
+  <data key="d17">['5', '6']</data>
   <data key="d11">25 mph</data>
   <data key="d12">1st Avenue</data>
   <data key="d13">True</data>
@@ -73893,7 +73893,7 @@
   <data key="d9">[1343029768, 843553760]</data>
   <data key="d10">residential</data>
   <data key="d11">20 mph</data>
-  <data key="d12">['Division Street', 'Ludlow Street']</data>
+  <data key="d12">['Ludlow Street', 'Division Street']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">99.11276411249871</data>
@@ -74409,7 +74409,7 @@
   <data key="d9">[420809417, 420809409]</data>
   <data key="d10">trunk</data>
   <data key="d17">['2', '1']</data>
-  <data key="d11">['25 mph', '20 mph']</data>
+  <data key="d11">['20 mph', '25 mph']</data>
   <data key="d12">Canal Street</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
@@ -74609,7 +74609,7 @@
 <edge source="42440951" target="42450426" id="0">
   <data key="d9">[195743336, 988984235]</data>
   <data key="d10">secondary</data>
-  <data key="d17">['3', '5']</data>
+  <data key="d17">['5', '3']</data>
   <data key="d12">5th Avenue</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
@@ -75176,7 +75176,7 @@
 <edge source="42441774" target="42428951" id="0">
   <data key="d9">[455684728, 5670988]</data>
   <data key="d10">residential</data>
-  <data key="d12">['West 152nd Street', 'Riverside Drive']</data>
+  <data key="d12">['Riverside Drive', 'West 152nd Street']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">267.60945082996983</data>
@@ -77572,7 +77572,7 @@
   <data key="d9">[1249986892, 560350513, 1095014325, 5671964, 440122878]</data>
   <data key="d10">secondary</data>
   <data key="d17">2</data>
-  <data key="d12">['Fort George Avenue', 'Amsterdam Avenue']</data>
+  <data key="d12">['Amsterdam Avenue', 'Fort George Avenue']</data>
   <data key="d13">False</data>
   <data key="d14">False</data>
   <data key="d15">785.4779917797888</data>
@@ -78290,7 +78290,7 @@
 <edge source="42442961" target="42432861" id="0">
   <data key="d9">[1030119891, 226092573]</data>
   <data key="d10">primary</data>
-  <data key="d17">['6', '5']</data>
+  <data key="d17">['5', '6']</data>
   <data key="d11">25 mph</data>
   <data key="d12">2nd Avenue</data>
   <data key="d13">True</data>
@@ -78701,7 +78701,7 @@
 <edge source="42443054" target="4779073679" id="0">
   <data key="d9">[658006856, 592374690, 420886628]</data>
   <data key="d10">secondary</data>
-  <data key="d17">['6', '5']</data>
+  <data key="d17">['5', '6']</data>
   <data key="d11">25 mph</data>
   <data key="d12">East 96th Street</data>
   <data key="d13">False</data>
@@ -80209,7 +80209,7 @@
 <edge source="42443618" target="2711029280" id="0">
   <data key="d9">[978329305, 226092571]</data>
   <data key="d10">primary</data>
-  <data key="d17">['6', '5']</data>
+  <data key="d17">['5', '6']</data>
   <data key="d11">25 mph</data>
   <data key="d12">1st Avenue</data>
   <data key="d13">True</data>
@@ -82314,7 +82314,7 @@
 <edge source="42445011" target="42437368" id="0">
   <data key="d9">[1021047632, 194926855]</data>
   <data key="d10">primary</data>
-  <data key="d17">['6', '5']</data>
+  <data key="d17">['5', '6']</data>
   <data key="d12">9th Avenue</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
@@ -82417,7 +82417,7 @@
 <edge source="42445033" target="1815133244" id="0">
   <data key="d9">[420892272, 420892273]</data>
   <data key="d10">primary</data>
-  <data key="d17">['3', '5']</data>
+  <data key="d17">['5', '3']</data>
   <data key="d12">9th Avenue</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
@@ -82860,7 +82860,7 @@
 <edge source="42445247" target="42436492" id="0">
   <data key="d9">[421853968, 195743311]</data>
   <data key="d10">primary</data>
-  <data key="d17">['6', '5']</data>
+  <data key="d17">['5', '6']</data>
   <data key="d11">25 mph</data>
   <data key="d12">1st Avenue</data>
   <data key="d13">True</data>
@@ -85054,7 +85054,7 @@
 <edge source="42445920" target="42444043" id="0">
   <data key="d9">[420356173, 438384693]</data>
   <data key="d10">secondary</data>
-  <data key="d17">['2', '5']</data>
+  <data key="d17">['5', '2']</data>
   <data key="d11">25 mph</data>
   <data key="d12">Madison Avenue</data>
   <data key="d13">True</data>
@@ -85182,7 +85182,7 @@
 <edge source="42445941" target="42443612" id="0">
   <data key="d9">[420906752, 421850830]</data>
   <data key="d10">secondary</data>
-  <data key="d17">['2', '5']</data>
+  <data key="d17">['5', '2']</data>
   <data key="d11">25 mph</data>
   <data key="d12">Madison Avenue</data>
   <data key="d13">True</data>
@@ -85764,7 +85764,7 @@
 <edge source="42446161" target="42446164" id="0">
   <data key="d9">[587061815, 993510831]</data>
   <data key="d10">secondary</data>
-  <data key="d17">['3', '5']</data>
+  <data key="d17">['5', '3']</data>
   <data key="d11">25 mph</data>
   <data key="d12">Madison Avenue</data>
   <data key="d13">True</data>
@@ -85979,7 +85979,7 @@
 <edge source="42446218" target="42442592" id="0">
   <data key="d9">[195743205, 815546101]</data>
   <data key="d10">residential</data>
-  <data key="d12">['Old Broadway', 'West 129th Street']</data>
+  <data key="d12">['West 129th Street', 'Old Broadway']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">193.65681350027063</data>
@@ -86098,7 +86098,7 @@
 <edge source="42446275" target="42436753" id="0">
   <data key="d9">[1316299835, 388240124]</data>
   <data key="d10">primary</data>
-  <data key="d17">['6', '5']</data>
+  <data key="d17">['5', '6']</data>
   <data key="d11">25 mph</data>
   <data key="d12">3rd Avenue</data>
   <data key="d13">True</data>
@@ -86384,7 +86384,7 @@
 <edge source="42446504" target="42455751" id="0">
   <data key="d9">[954520389, 1211608943]</data>
   <data key="d10">primary</data>
-  <data key="d17">['6', '5']</data>
+  <data key="d17">['5', '6']</data>
   <data key="d11">25 mph</data>
   <data key="d12">10th Avenue</data>
   <data key="d13">True</data>
@@ -86711,7 +86711,7 @@
   <data key="d10">residential</data>
   <data key="d17">1</data>
   <data key="d11">20 mph</data>
-  <data key="d12">['Washington Street', 'Joseph P. Ward Street']</data>
+  <data key="d12">['Joseph P. Ward Street', 'Washington Street']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">168.87293227454705</data>
@@ -87059,7 +87059,7 @@
   <data key="d10">residential</data>
   <data key="d17">['4', '3']</data>
   <data key="d11">20 mph</data>
-  <data key="d12">['North End Avenue', 'Vesey Street']</data>
+  <data key="d12">['Vesey Street', 'North End Avenue']</data>
   <data key="d13">False</data>
   <data key="d14">False</data>
   <data key="d15">260.5992769506539</data>
@@ -88653,7 +88653,7 @@
 <edge source="42447346" target="42438271" id="0">
   <data key="d9">[5671488, 5671622]</data>
   <data key="d10">residential</data>
-  <data key="d12">['West 141st Street', 'Chisum Place']</data>
+  <data key="d12">['Chisum Place', 'West 141st Street']</data>
   <data key="d13">False</data>
   <data key="d14">False</data>
   <data key="d15">221.0983152793753</data>
@@ -88684,7 +88684,7 @@
 <edge source="42447389" target="42444854" id="0">
   <data key="d9">[1436968821, 1436968822, 5672943]</data>
   <data key="d10">residential</data>
-  <data key="d12">['Hamilton Terrace', 'West 144th Street']</data>
+  <data key="d12">['West 144th Street', 'Hamilton Terrace']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">325.4835912468729</data>
@@ -90540,7 +90540,7 @@
   <data key="d10">residential</data>
   <data key="d17">1</data>
   <data key="d11">25 mph</data>
-  <data key="d12">['East 15th Street', 'Union Square West', 'East 16th Street']</data>
+  <data key="d12">['East 16th Street', 'East 15th Street', 'Union Square West']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">442.2972530877878</data>
@@ -91717,7 +91717,7 @@
 <edge source="42449971" target="4288677093" id="0">
   <data key="d9">[1356976352, 375165501]</data>
   <data key="d10">primary</data>
-  <data key="d17">['6', '5']</data>
+  <data key="d17">['5', '6']</data>
   <data key="d11">25 mph</data>
   <data key="d12">3rd Avenue</data>
   <data key="d13">True</data>
@@ -91870,7 +91870,7 @@
 <edge source="42450028" target="42429338" id="0">
   <data key="d9">[1215388281, 579565231]</data>
   <data key="d10">primary</data>
-  <data key="d17">['6', '4']</data>
+  <data key="d17">['4', '6']</data>
   <data key="d11">25 mph</data>
   <data key="d12">3rd Avenue</data>
   <data key="d13">True</data>
@@ -92661,7 +92661,7 @@
   <data key="d10">residential</data>
   <data key="d17">1</data>
   <data key="d11">25 mph</data>
-  <data key="d12">['Forsyth Street', 'Hester Street']</data>
+  <data key="d12">['Hester Street', 'Forsyth Street']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">218.3732552800072</data>
@@ -93875,7 +93875,7 @@
 <edge source="42452882" target="42436714" id="0">
   <data key="d9">[884400289, 884400301]</data>
   <data key="d10">primary</data>
-  <data key="d17">['6', '5']</data>
+  <data key="d17">['5', '6']</data>
   <data key="d11">25 mph</data>
   <data key="d12">1st Avenue</data>
   <data key="d13">True</data>
@@ -94628,7 +94628,7 @@
 <edge source="42453398" target="42429570" id="0">
   <data key="d9">[420809440, 1021063591]</data>
   <data key="d10">trunk</data>
-  <data key="d17">['6', '5']</data>
+  <data key="d17">['5', '6']</data>
   <data key="d11">30 mph</data>
   <data key="d12">West Street</data>
   <data key="d13">True</data>
@@ -94777,7 +94777,7 @@
 <edge source="42453555" target="42443570" id="0">
   <data key="d9">[1313135176, 1020835925, 1313135175, 169269031]</data>
   <data key="d10">trunk</data>
-  <data key="d17">['6', '4', '5']</data>
+  <data key="d17">['4', '5', '6']</data>
   <data key="d11">30 mph</data>
   <data key="d12">12th Avenue</data>
   <data key="d13">True</data>
@@ -94847,7 +94847,7 @@
 <edge source="42453591" target="42429109" id="0">
   <data key="d9">[5673208, 5670177]</data>
   <data key="d10">residential</data>
-  <data key="d12">['Broadway Terrace', 'West 193rd Street']</data>
+  <data key="d12">['West 193rd Street', 'Broadway Terrace']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">220.11745609102692</data>
@@ -94876,7 +94876,7 @@
 <edge source="42453601" target="42437339" id="0">
   <data key="d9">[380098432, 654560924]</data>
   <data key="d10">primary</data>
-  <data key="d17">['6', '4']</data>
+  <data key="d17">['4', '6']</data>
   <data key="d11">25 mph</data>
   <data key="d12">1st Avenue</data>
   <data key="d13">True</data>
@@ -96130,7 +96130,7 @@
 <edge source="42454701" target="42446478" id="0">
   <data key="d9">[421853960, 421853961]</data>
   <data key="d10">primary</data>
-  <data key="d17">['6', '5']</data>
+  <data key="d17">['5', '6']</data>
   <data key="d11">25 mph</data>
   <data key="d12">1st Avenue</data>
   <data key="d13">True</data>
@@ -96163,7 +96163,7 @@
   <data key="d9">[22909249, 1279456594, 496989301, 1314038686, 1314038687]</data>
   <data key="d10">residential</data>
   <data key="d11">25 mph</data>
-  <data key="d12">['Jane Street', 'Horatio Street', 'West Street']</data>
+  <data key="d12">['West Street', 'Jane Street', 'Horatio Street']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">315.2616984538808</data>
@@ -97378,7 +97378,7 @@
 <edge source="42455934" target="42440469" id="0">
   <data key="d9">[884400286, 884400294]</data>
   <data key="d10">primary</data>
-  <data key="d17">['6', '5']</data>
+  <data key="d17">['5', '6']</data>
   <data key="d11">25 mph</data>
   <data key="d12">1st Avenue</data>
   <data key="d13">True</data>
@@ -97422,7 +97422,7 @@
 <edge source="42456041" target="42448326" id="0">
   <data key="d9">[978320981, 978320983]</data>
   <data key="d10">primary</data>
-  <data key="d17">['6', '5']</data>
+  <data key="d17">['5', '6']</data>
   <data key="d11">25 mph</data>
   <data key="d12">1st Avenue</data>
   <data key="d13">True</data>
@@ -98820,7 +98820,7 @@
   <data key="d19">no</data>
   <data key="d10">unclassified</data>
   <data key="d17">2</data>
-  <data key="d11">['25 mph', '20 mph']</data>
+  <data key="d11">['20 mph', '25 mph']</data>
   <data key="d12">['Washington Street', 'Vesey Street']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
@@ -99870,9 +99870,9 @@
 <edge source="61269400" target="61272997" id="0">
   <data key="d9">[957532385, 171561798, 46546728, 46546732, 990288467, 1169395572, 990288468, 22941939]</data>
   <data key="d10">motorway</data>
-  <data key="d17">['4', '3', '5']</data>
-  <data key="d11">['40 mph', '50 mph', '55 mph', '30 mph']</data>
-  <data key="d12">['West Side Highway', 'Henry Hudson Parkway']</data>
+  <data key="d17">['4', '5', '3']</data>
+  <data key="d11">['30 mph', '40 mph', '55 mph', '50 mph']</data>
+  <data key="d12">['Henry Hudson Parkway', 'West Side Highway']</data>
   <data key="d13">True</data>
   <data key="d18">['HH;NY 9A', 'NY 9A']</data>
   <data key="d14">False</data>
@@ -100175,7 +100175,7 @@
 <edge source="62915549" target="42430673" id="0">
   <data key="d9">[989265269, 169267538, 420904621]</data>
   <data key="d10">primary</data>
-  <data key="d17">['4', '3', '5']</data>
+  <data key="d17">['4', '5', '3']</data>
   <data key="d11">25 mph</data>
   <data key="d12">West 42nd Street</data>
   <data key="d13">False</data>
@@ -100287,7 +100287,7 @@
   <data key="d20">yes</data>
   <data key="d10">motorway</data>
   <data key="d17">2</data>
-  <data key="d11">['40 mph', '30 mph']</data>
+  <data key="d11">['30 mph', '40 mph']</data>
   <data key="d12">FDR Drive</data>
   <data key="d13">True</data>
   <data key="d18">FDR</data>
@@ -100541,7 +100541,7 @@
 <edge source="246858433" target="246858431" id="0">
   <data key="d9">[195743225, 837515833, 1329888759]</data>
   <data key="d10">trunk</data>
-  <data key="d17">['4', '3', '5']</data>
+  <data key="d17">['4', '5', '3']</data>
   <data key="d11">30 mph</data>
   <data key="d12">West Street</data>
   <data key="d13">True</data>
@@ -100658,7 +100658,7 @@
 <edge source="246858449" target="246858435" id="0">
   <data key="d9">[475867321, 420809425, 1021042405]</data>
   <data key="d10">trunk</data>
-  <data key="d17">['6', '4', '5']</data>
+  <data key="d17">['4', '5', '6']</data>
   <data key="d11">30 mph</data>
   <data key="d12">West Street</data>
   <data key="d13">True</data>
@@ -102118,7 +102118,7 @@
   <data key="d18">FDR</data>
   <data key="d14">False</data>
   <data key="d15">2614.599100010269</data>
-  <data key="d21">['building_passage', 'yes']</data>
+  <data key="d21">['yes', 'building_passage']</data>
   <data key="d16">LINESTRING (-73.9561742 40.76089, -73.9560116 40.7610215, -73.9558329 40.7611782, -73.9557176 40.7612885, -73.9555873 40.7613986, -73.9547614 40.7621401, -73.9545702 40.7623056, -73.9543747 40.7624871, -73.9542213 40.7626399, -73.9540532 40.7628245, -73.9535266 40.7634207, -73.9519986 40.7651059, -73.9518996 40.7652163, -73.9516205 40.7655276, -73.9510389 40.7661763, -73.9508902 40.7663475, -73.9507416 40.7665332, -73.9506095 40.7667168, -73.950481 40.766897, -73.9503358 40.7670677, -73.9500417 40.7674049, -73.9500185 40.7674304, -73.9497267 40.7677522, -73.9495688 40.767939, -73.9494372 40.7681149, -73.9493006 40.7682983, -73.9491669 40.7684816, -73.9490212 40.7686593, -73.9489437 40.7687446, -73.9488661 40.7688298, -73.948231 40.7695183, -73.9479981 40.7697767, -73.9478368 40.7699455, -73.947664 40.7701043, -73.9474968 40.77027, -73.9467906 40.7710408, -73.9466289 40.7712124, -73.9464602 40.7713699, -73.9462682 40.7715242, -73.9460715 40.7716825, -73.9458966 40.7718282, -73.945639 40.7720358, -73.94546 40.7721878, -73.9452659 40.7723364, -73.9450808 40.7724799, -73.9448667 40.7726672, -73.9446949 40.7728423, -73.9444824 40.7730754, -73.9434514 40.7742109, -73.9433435 40.7743228, -73.9432178 40.7744638, -73.9431003 40.7746073, -73.9430007 40.7747388, -73.9428939 40.7748853, -73.9428087 40.7750163, -73.9427145 40.7751906, -73.942632 40.775373, -73.9425695 40.7755328, -73.9425285 40.775659, -73.9425044 40.7757747, -73.9424742 40.7759392, -73.9424606 40.7760617, -73.942448 40.7761852, -73.9424458 40.7762921, -73.9424553 40.7764598, -73.9424769 40.7766312, -73.942498 40.7767818, -73.9425316 40.7769362, -73.9425712 40.7770847, -73.9428201 40.7779085, -73.9428934 40.7781108, -73.9429654 40.7782834, -73.9435733 40.7795958, -73.9436565 40.7797874, -73.9437408 40.7799921, -73.9438138 40.7801944, -73.9438764 40.7803914, -73.9439291 40.7805955, -73.9440036 40.7809091)</data>
 </edge>
 <edge source="371197453" target="42428012" id="0">
@@ -102218,7 +102218,7 @@
 </edge>
 <edge source="371225132" target="5676585287" id="0">
   <data key="d9">[801411752, 801411754, 1080379606, 25464382]</data>
-  <data key="d20">['yes', 'movable']</data>
+  <data key="d20">['movable', 'yes']</data>
   <data key="d10">motorway</data>
   <data key="d17">3</data>
   <data key="d11">40 mph</data>
@@ -102653,7 +102653,7 @@
 <edge source="373880031" target="246858433" id="0">
   <data key="d9">[1053554760, 1053554762, 1334982039, 1334982040, 1334982041, 195743227]</data>
   <data key="d10">trunk</data>
-  <data key="d17">['6', '4', '3']</data>
+  <data key="d17">['4', '6', '3']</data>
   <data key="d11">30 mph</data>
   <data key="d12">West Street</data>
   <data key="d13">True</data>
@@ -102818,7 +102818,7 @@
   <data key="d10">residential</data>
   <data key="d17">1</data>
   <data key="d11">25 mph</data>
-  <data key="d12">['East 21st Street', 'Gramercy Park North']</data>
+  <data key="d12">['Gramercy Park North', 'East 21st Street']</data>
   <data key="d13">True</data>
   <data key="d22">9</data>
   <data key="d14">False</data>
@@ -102887,7 +102887,7 @@
 <edge source="406048768" target="42434974" id="0">
   <data key="d9">[991939499, 5670317]</data>
   <data key="d10">residential</data>
-  <data key="d11">['25 mph', '20 mph']</data>
+  <data key="d11">['20 mph', '25 mph']</data>
   <data key="d12">East 35th Street</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
@@ -103395,7 +103395,7 @@
   <data key="d10">['secondary', 'trunk']</data>
   <data key="d17">['1', '3']</data>
   <data key="d11">['20 mph', '30 mph']</data>
-  <data key="d12">['Brooklyn Bridge', 'Centre Street']</data>
+  <data key="d12">['Centre Street', 'Brooklyn Bridge']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">153.8737709833771</data>
@@ -103591,7 +103591,7 @@
 <edge source="486868830" target="42437108" id="0">
   <data key="d9">[970628513, 970628514, 1086266613, 221687790]</data>
   <data key="d10">primary</data>
-  <data key="d17">['2', '3', '1']</data>
+  <data key="d17">['2', '1', '3']</data>
   <data key="d11">25 mph</data>
   <data key="d12">Allen Street</data>
   <data key="d13">True</data>
@@ -103901,7 +103901,7 @@
 <edge source="561035344" target="7732654931" id="0">
   <data key="d9">[1032457576, 778007333]</data>
   <data key="d10">residential</data>
-  <data key="d12">['West 129th Street', 'West 126th Street']</data>
+  <data key="d12">['West 126th Street', 'West 129th Street']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">20.208885962108685</data>
@@ -105521,7 +105521,7 @@
   <data key="d9">[22927873, 22898087, 1227811498, 993795183, 413202967]</data>
   <data key="d10">motorway</data>
   <data key="d17">2</data>
-  <data key="d11">['25 mph', '30 mph']</data>
+  <data key="d11">['30 mph', '25 mph']</data>
   <data key="d12">FDR Drive</data>
   <data key="d13">True</data>
   <data key="d18">FDR</data>
@@ -105579,7 +105579,7 @@
   <data key="d10">trunk</data>
   <data key="d17">3</data>
   <data key="d11">35 mph</data>
-  <data key="d12">['Manhattan Bridge lower level', 'Manhattan Bridge Lower Level']</data>
+  <data key="d12">['Manhattan Bridge Lower Level', 'Manhattan Bridge lower level']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">141.7483417550805</data>
@@ -105628,7 +105628,7 @@
   <data key="d10">residential</data>
   <data key="d17">['2', '3']</data>
   <data key="d11">25 mph</data>
-  <data key="d12">['Waterside Plaza', 'FDR Drive']</data>
+  <data key="d12">['FDR Drive', 'Waterside Plaza']</data>
   <data key="d13">False</data>
   <data key="d14">True</data>
   <data key="d15">145.52942111603176</data>
@@ -105649,7 +105649,7 @@
   <data key="d10">residential</data>
   <data key="d17">['2', '3']</data>
   <data key="d11">25 mph</data>
-  <data key="d12">['Waterside Plaza', 'FDR Drive']</data>
+  <data key="d12">['FDR Drive', 'Waterside Plaza']</data>
   <data key="d13">False</data>
   <data key="d14">False</data>
   <data key="d15">145.52942111603176</data>
@@ -106372,7 +106372,7 @@
   <data key="d10">primary</data>
   <data key="d17">['2', '1']</data>
   <data key="d11">25 mph</data>
-  <data key="d12">['West 40th Street', '11th Avenue']</data>
+  <data key="d12">['11th Avenue', 'West 40th Street']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">127.31111173720765</data>
@@ -106419,7 +106419,7 @@
 <edge source="593984752" target="427842140" id="0">
   <data key="d9">[954552256, 1201839361, 46492010, 1088327051]</data>
   <data key="d10">['motorway_link', 'primary']</data>
-  <data key="d17">['2', '5']</data>
+  <data key="d17">['5', '2']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">186.43690488631788</data>
@@ -109243,7 +109243,7 @@
   <data key="d19">no</data>
   <data key="d10">unclassified</data>
   <data key="d17">1</data>
-  <data key="d11">['25 mph', '10 mph']</data>
+  <data key="d11">['10 mph', '25 mph']</data>
   <data key="d12">Park Row</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
@@ -110830,7 +110830,7 @@
   <data key="d18">US 9</data>
   <data key="d14">False</data>
   <data key="d15">297.9120122768904</data>
-  <data key="d20">['yes', 'movable']</data>
+  <data key="d20">['movable', 'yes']</data>
   <data key="d16">LINESTRING (-73.910359 40.8742871, -73.9104105 40.8742456, -73.9105305 40.8741489, -73.9108286 40.8739199, -73.9115765 40.8733451, -73.911655 40.8732847, -73.9119034 40.8731063, -73.9123588 40.8727313, -73.9128142 40.8723563)</data>
 </edge>
 <edge source="1544782730" target="42429287" id="0">
@@ -110888,7 +110888,7 @@
   <data key="d18">US 9</data>
   <data key="d14">False</data>
   <data key="d15">257.9887423733936</data>
-  <data key="d20">['yes', 'movable']</data>
+  <data key="d20">['movable', 'yes']</data>
   <data key="d16">LINESTRING (-73.9118281 40.8729372, -73.9118102 40.8729553, -73.9117604 40.8730057, -73.9115496 40.8731938, -73.9114601 40.8732622, -73.9107065 40.8738382, -73.910412 40.8740632, -73.9103306 40.8741237, -73.9099716 40.8743453, -73.9097785 40.8744542, -73.9097424 40.8744789, -73.9096352 40.8745523)</data>
 </edge>
 <edge source="1544809885" target="42429704" id="0">
@@ -114733,7 +114733,7 @@
 <edge source="2541754747" target="42434101" id="0">
   <data key="d9">[815541797, 5672309, 1227941702]</data>
   <data key="d10">residential</data>
-  <data key="d12">['Old Broadway', 'West 131st Street']</data>
+  <data key="d12">['West 131st Street', 'Old Broadway']</data>
   <data key="d13">False</data>
   <data key="d14">[False, True]</data>
   <data key="d15">262.96378432925803</data>
@@ -116036,7 +116036,7 @@
   <data key="d10">residential</data>
   <data key="d17">2</data>
   <data key="d11">25 mph</data>
-  <data key="d12">['Riverside Boulevard', 'West 61st Street']</data>
+  <data key="d12">['West 61st Street', 'Riverside Boulevard']</data>
   <data key="d13">False</data>
   <data key="d14">False</data>
   <data key="d15">228.79125735695925</data>
@@ -116755,7 +116755,7 @@
   <data key="d10">residential</data>
   <data key="d17">1</data>
   <data key="d11">20 mph</data>
-  <data key="d12">['Cedar Street', 'Washington Street']</data>
+  <data key="d12">['Washington Street', 'Cedar Street']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">149.28052001457104</data>
@@ -118637,7 +118637,7 @@
   <data key="d10">secondary</data>
   <data key="d17">['2', '3']</data>
   <data key="d11">25 mph</data>
-  <data key="d12">['Grand Army Plaza', 'East 60th Street']</data>
+  <data key="d12">['East 60th Street', 'Grand Army Plaza']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">129.57650169593333</data>
@@ -119887,7 +119887,7 @@
 <edge source="4779073679" target="42443054" id="0">
   <data key="d9">[658006856, 592374690, 420886628]</data>
   <data key="d10">secondary</data>
-  <data key="d17">['6', '5']</data>
+  <data key="d17">['5', '6']</data>
   <data key="d12">East 96th Street</data>
   <data key="d13">False</data>
   <data key="d14">True</data>
@@ -121136,10 +121136,10 @@
 </edge>
 <edge source="5730369220" target="42427483" id="0">
   <data key="d9">[22904113, 22904055]</data>
-  <data key="d10">['unclassified', 'secondary_link']</data>
+  <data key="d10">['secondary_link', 'unclassified']</data>
   <data key="d17">1</data>
   <data key="d11">25 mph</data>
-  <data key="d12">['West 24th Street', '11th Avenue']</data>
+  <data key="d12">['11th Avenue', 'West 24th Street']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">334.55038792455076</data>
@@ -121771,7 +121771,7 @@
 </edge>
 <edge source="6159356499" target="277482762" id="0">
   <data key="d9">[801411751, 801411753, 5669174, 1080379610, 1080379611, 194933373]</data>
-  <data key="d20">['yes', 'movable']</data>
+  <data key="d20">['movable', 'yes']</data>
   <data key="d10">motorway</data>
   <data key="d17">['4', '3']</data>
   <data key="d11">40 mph</data>
@@ -122094,7 +122094,7 @@
 <edge source="6185259892" target="42428049" id="0">
   <data key="d9">[1135143380, 953819150]</data>
   <data key="d10">secondary</data>
-  <data key="d17">['6', '5']</data>
+  <data key="d17">['5', '6']</data>
   <data key="d11">25 mph</data>
   <data key="d12">York Avenue</data>
   <data key="d13">False</data>
@@ -123428,7 +123428,7 @@
   <data key="d19">no</data>
   <data key="d10">residential</data>
   <data key="d17">['2', '1']</data>
-  <data key="d11">['25 mph', '10 mph']</data>
+  <data key="d11">['10 mph', '25 mph']</data>
   <data key="d12">Park Row</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
@@ -125253,7 +125253,7 @@
 <edge source="9140954071" target="13099951760" id="0">
   <data key="d9">[421852034, 1425233038]</data>
   <data key="d10">trunk</data>
-  <data key="d17">['6', '4']</data>
+  <data key="d17">['4', '6']</data>
   <data key="d11">30 mph</data>
   <data key="d12">12th Avenue</data>
   <data key="d13">True</data>
@@ -125864,7 +125864,7 @@
   <data key="d10">residential</data>
   <data key="d17">1</data>
   <data key="d11">25 mph</data>
-  <data key="d12">['Cherry Street', 'FDR Drive']</data>
+  <data key="d12">['FDR Drive', 'Cherry Street']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">309.8725181848419</data>
@@ -126425,7 +126425,7 @@
 <edge source="11049420899" target="8288270047" id="0">
   <data key="d9">[992132288, 1313892250, 420895276]</data>
   <data key="d10">trunk</data>
-  <data key="d17">['6', '4', '3']</data>
+  <data key="d17">['4', '6', '3']</data>
   <data key="d11">30 mph</data>
   <data key="d12">11th Avenue</data>
   <data key="d13">True</data>
@@ -127095,7 +127095,7 @@
 <edge source="12154605956" target="10858288590" id="0">
   <data key="d9">[420908129, 1057257709, 1057257710, 1167572184, 992164859]</data>
   <data key="d10">trunk</data>
-  <data key="d17">['4', '3', '5']</data>
+  <data key="d17">['4', '5', '3']</data>
   <data key="d11">30 mph</data>
   <data key="d12">12th Avenue</data>
   <data key="d13">True</data>
@@ -127235,7 +127235,7 @@
 <edge source="12162542907" target="4142073861" id="0">
   <data key="d9">[420809448, 420809443, 1049852135]</data>
   <data key="d10">trunk</data>
-  <data key="d17">['4', '3', '5']</data>
+  <data key="d17">['4', '5', '3']</data>
   <data key="d11">30 mph</data>
   <data key="d12">West Street</data>
   <data key="d13">True</data>
@@ -127396,7 +127396,7 @@
 <edge source="12410398107" target="246858448" id="0">
   <data key="d9">[1113267323, 420809421, 438367286]</data>
   <data key="d10">trunk</data>
-  <data key="d17">['6', '3', '5']</data>
+  <data key="d17">['5', '6', '3']</data>
   <data key="d11">30 mph</data>
   <data key="d12">West Street</data>
   <data key="d13">True</data>
@@ -127420,7 +127420,7 @@
 <edge source="12413032498" target="6417761624" id="0">
   <data key="d9">[413052676, 1329880548, 1053552023]</data>
   <data key="d10">trunk</data>
-  <data key="d17">['6', '4', '5']</data>
+  <data key="d17">['4', '5', '6']</data>
   <data key="d11">30 mph</data>
   <data key="d12">West Street</data>
   <data key="d13">True</data>
@@ -128409,7 +128409,7 @@
   <data key="d10">residential</data>
   <data key="d17">1</data>
   <data key="d11">20 mph</data>
-  <data key="d12">['Varick Street', 'Laight Street', 'Vestry Street']</data>
+  <data key="d12">['Vestry Street', 'Laight Street', 'Varick Street']</data>
   <data key="d13">True</data>
   <data key="d14">False</data>
   <data key="d15">305.9931607064595</data>

@@ -8,10 +8,15 @@ import networkx as nx
 import numpy as np
 
 from .interface import GraphMixinInterface
+from ...constants import MAP_DIR
 
 
-class RideShareGraphMixin(GraphMixinInterface):
+class OSMnxWrapperMixin(GraphMixinInterface):
     """Graph and geometry helpers for RideShare environments."""
+
+    def _build_graph(self):
+        if self.map_name:
+            self.graph = nx.read_graphml(MAP_DIR / self.map_name)
 
     def _build_graph(self):
         built = False

@@ -16,9 +16,15 @@ MANHATTAN_SPARSE_COLORFUL = "manhattan-sparse-colorful.png"
 MANHATTAN_SPARSE_COLORFUL_TEST = "manhattan-sparse-colorful-test.png"
 
 # Map Names
+
+# intermediate raw graph
 MANHATTAN_RAW_GRAPH = "manhattan-raw.graphml"
+# intermediate graph step after osmnx.pre_processing.pre_process_graph()
 MANHATTAN_PROCESSED_GRAPH = "manhattan-processed.graphml"
+# intermediate sparsified graph. {} will be replaced by number of nodes
 MANHATTAN_SPARSE_GRAPH = "manhattan-sparse-{}-nodes.graphml"
+# final enriched graph with demand and charger info
+MANHATTAN_ENRICHED_GRAPH = "manhattan-sparse-{}-nodes-enriched.graphml"
 
 # WANDB
 WANDB_TEAM_NAME = "rl-project-F25"

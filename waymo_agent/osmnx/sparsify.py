@@ -1,3 +1,4 @@
+from .pre_processing import preprocess_graph
 import typing as t
 
 import networkx as nx
@@ -24,15 +25,19 @@ def sparsify_graph(G_: nx.MultiDiGraph) -> nx.MultiDiGraph:
 
     # 2. Remove non-major edges
     G_ret = keep_major_roads_only(G)
+    G_ret = preprocess_graph(G_ret)
 
     # 3. Remove Lincoln Tunnel
     G_ret = remove_lincoln_tunnel(G_ret)
+    G_ret = preprocess_graph(G_ret)
 
     # 4 Remove nodes that are now isolated, or have degree 2 (i.e., pass-through nodes)
     G_ret = remove_pass_through_nodes(G_ret)
+    G_ret = preprocess_graph(G_ret)
 
     # 5. Clip to Manhattan core
     G_ret = clip_manhattan_core(G_ret)
+    G_ret = preprocess_graph(G_ret)
 
     assert isinstance(G_ret, nx.MultiDiGraph)
     print(f"Final simplified graph: {G_ret.number_of_nodes()=}, {G_ret.number_of_edges()=}")
