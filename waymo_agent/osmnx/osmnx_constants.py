@@ -1,6 +1,6 @@
 import typing as t
-from pathlib import Path
 from collections.abc import Iterable, Sequence
+from pathlib import Path
 
 import networkx as nx
 from matplotlib.axes import Axes
