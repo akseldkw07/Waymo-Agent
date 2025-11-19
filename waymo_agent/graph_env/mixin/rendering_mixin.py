@@ -65,7 +65,7 @@ class RideShareRenderingMixin(GraphMixinInterface):
     def _edge_styles(self):
         edge_colors, edge_widths = get_edge_color_by_speed(self.graph)
         # TODO overwrite based on active and requested rides
-        # Use nx library
+        # Use ox.plot_graph_route
         return edge_colors, edge_widths
 
     def _node_styles(self):
