@@ -1,10 +1,10 @@
-from .pre_processing import preprocess_graph
 import typing as t
 
 import networkx as nx
 import osmnx as ox
 
 from .osmnx_constants import OSMNXConstants as C
+from .pre_processing import preprocess_graph
 
 
 def sparsify_graph(G_: nx.MultiDiGraph) -> nx.MultiDiGraph:
@@ -123,6 +123,7 @@ def _remove_edges_and_simplify(G_local: nx.MultiDiGraph, edges_to_remove: list) 
 
 
 import networkx as nx
+
 from .osmnx_constants import OSMNXConstants as C
 
 # very rough box around the Lincoln Tunnel entrance in west midtown

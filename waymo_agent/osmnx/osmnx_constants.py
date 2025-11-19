@@ -1,6 +1,40 @@
 import typing as t
+from pathlib import Path
+from collections.abc import Iterable, Sequence
 
 import networkx as nx
+from matplotlib.axes import Axes
+
+
+class Plot_graph_TypedDict(t.TypedDict, total=False):
+    # G: nx.MultiGraph | nx.MultiDiGraph
+    ax: Axes | None
+    figsize: tuple[float, float]
+    bgcolor: str
+    node_color: str | Sequence[str]
+    node_size: float | Sequence[float]
+    node_alpha: float | None
+    node_edgecolor: str | Iterable[str]
+    node_zorder: int
+    edge_color: str | Iterable[str]
+    edge_linewidth: float | Sequence[float]
+    edge_alpha: float | None
+    bbox: tuple[float, float, float, float] | None
+    show: bool
+    close: bool
+    save: bool
+    filepath: str | Path | None
+    dpi: int
+
+
+DEFAULT_OX_PLOT_NOTEBOOK: Plot_graph_TypedDict = {
+    "node_size": 5,
+    "node_color": "white",
+    "node_alpha": 0.5,
+    "figsize": (10, 10),
+    "bgcolor": "black",
+    "show": True,
+}
 
 
 class OSMNXConstants:
@@ -106,7 +140,7 @@ class OSMNXConstants:
 
         return edge_colors, edge_widths
 
-    NORTH_125TH = 40.818
+    NORTH_125TH = 40.820
     SOUTH_LIMIT = 40.69
     WEST_LIMIT = -74.03
     EAST_LIMIT = -73.927  # cut before Randalls (≈ -73.92)

@@ -1,10 +1,10 @@
-import networkx as nx
 import matplotlib.cm as cm
 import matplotlib.colors as colors
+import networkx as nx
 import numpy as np
 
 
-def get_edge_color_by_speed(G: nx.MultiDiGraph):
+def get_edge_color_by_speed(G: nx.MultiDiGraph, cmap_name: str = "plasma"):
     speeds = []
     for _, _, data in G.edges(data=True):
         maxspeed = data.get("maxspeed", 0)
@@ -13,13 +13,15 @@ def get_edge_color_by_speed(G: nx.MultiDiGraph):
 
     speeds = np.array(speeds, dtype=float)
     norm = colors.Normalize(vmin=speeds.min(), vmax=speeds.max())
-    cmap = cm.get_cmap("plasma")
+    cmap = cm.get_cmap(cmap_name)
 
-    edge_colors = [cmap(norm(s)) for s in speeds]
+    edge_colors: list[list[float]] = [np.array(cmap(norm(s).item())).tolist() for s in speeds]
 
     max_width, min_width = 3.0, 0.5
-    edge_widths: np.ndarray[tuple[int]] = min_width + (norm(speeds) * (max_width - min_width))
-    return edge_colors, edge_widths.tolist()
+    edge_widths: np.ndarray = min_width + (norm(speeds) * (max_width - min_width))
+    edge_widths_list: list[float] = edge_widths.round(2).tolist()
+
+    return edge_colors, edge_widths_list
 
 
 def get_node_colors_and_sizes(G: nx.MultiDiGraph):

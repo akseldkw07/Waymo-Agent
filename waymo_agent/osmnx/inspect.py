@@ -2,12 +2,12 @@
 Notebook functions for inspecting OSMnx graphs.
 """
 
+import logging
 import random
 import typing as t
+
 import networkx as nx
 from matplotlib.axes import Axes
-
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +27,9 @@ def inspect_graph(G: nx.MultiDiGraph) -> None:
     if num_nodes == 0:
         print("Graph has no nodes.")
     else:
-        sample_node = random.choice(list(G.nodes(data=True)))
-        print(f"Sample node attributes: {sample_node[1]}\n")
+        sample_node_id = random.choice(list(G.nodes(data=False)))
+        sample_node = G.nodes[sample_node_id]
+        print(f"Sample node -{sample_node_id=}- attributes: {sample_node}\n")
 
     if num_edges == 0:
         print("Graph has no edges.")
@@ -37,9 +38,9 @@ def inspect_graph(G: nx.MultiDiGraph) -> None:
         print(f"Sample edge attributes: {sample_edge[2]}")
 
 
-def max_speed_distribution(G: nx.MultiDiGraph) -> dict[str, int]:
+def edge_attr_distribution(G: nx.MultiDiGraph, attr: str) -> dict[str, int]:
     """
-    Computes the distribution of maximum speed limits in the graph.
+    Computes the distribution of a given edge attribute in the graph.
 
     Args:
         G (nx.MultiDiGraph): The graph to analyze.
@@ -49,7 +50,7 @@ def max_speed_distribution(G: nx.MultiDiGraph) -> dict[str, int]:
     """
     speed_counts: dict[str, int] = {}
     for u, v, k, data in G.edges(keys=True, data=True):
-        maxspeed = data.get("maxspeed")
+        maxspeed = data.get(attr)
         if isinstance(maxspeed, list):
             for speed in maxspeed:
                 speed_counts[speed] = speed_counts.get(speed, 0) + 1
@@ -58,8 +59,12 @@ def max_speed_distribution(G: nx.MultiDiGraph) -> dict[str, int]:
     return speed_counts
 
 
-def plot_maxspeed(G: nx.MultiDiGraph, ax: Axes | None = None):
-    speed_counts = max_speed_distribution(G)
+def max_speed_distribution(G: nx.MultiDiGraph):
+    return edge_attr_distribution(G, "maxspeed")
+
+
+def plot_edge_attr(G: nx.MultiDiGraph, attr: str, ax: Axes | None = None):
+    attr_counts = edge_attr_distribution(G, attr)
 
     if ax is None:
         import matplotlib.pyplot as plt
@@ -68,21 +73,25 @@ def plot_maxspeed(G: nx.MultiDiGraph, ax: Axes | None = None):
 
     # Collect speeds as list for histogram
     speeds = []
-    for speed, count in speed_counts.items():
-        assert isinstance(speed, (int, float)), f"Unexpected speed type: {type(speed)}"
+    for val, count in attr_counts.items():
+        assert isinstance(val, (int, float)), f"Unexpected speed type: {type(val)}"
         try:
-            speeds.extend([speed] * count)
+            speeds.extend([val] * count)
         except (ValueError, IndexError, AttributeError):
             # Skip unparseable speeds
             pass
 
     if speeds:
-        ax.hist(speeds, bins=20, edgecolor="black")
-        ax.set_xlabel("Max Speed")
+        ax.hist(speeds, bins="rice", edgecolor="black")
+        ax.set_xlabel(f"{attr}")
         ax.set_ylabel("Frequency")
-        ax.set_title("Max Speed Distribution")
+        ax.set_title(f"{attr} Distribution")
     else:
-        ax.text(0.5, 0.5, "No plottable speed data", ha="center", va="center", transform=ax.transAxes)
+        ax.text(0.5, 0.5, "No plottable data", ha="center", va="center", transform=ax.transAxes)
+
+
+def plot_maxspeed(G: nx.MultiDiGraph, ax: Axes | None = None):
+    return plot_edge_attr(G, "maxspeed", ax=ax)
 
 
 def collect_unique_graph_attr(G: nx.MultiDiGraph, attr: str) -> set[t.Any]:

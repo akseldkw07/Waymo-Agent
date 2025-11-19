@@ -1,7 +1,7 @@
 import logging
+import typing as t
 
 import networkx as nx
-import typing as t
 
 from .osmnx_constants import OSMNXConstants as C
 from .utils import _max_speed_int

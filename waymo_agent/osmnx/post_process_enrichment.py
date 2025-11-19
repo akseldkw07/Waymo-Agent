@@ -3,10 +3,9 @@ Assign charging stations, lambda values
 """
 
 import networkx as nx
-
-from .inspect import sum_graph_attr
-from ..envs.dataclasses import EnvConfig
 import numpy as np
+from ..env.dataclasses import EnvConfig
+from .inspect import sum_graph_attr
 
 ENV = EnvConfig()
 
@@ -16,9 +15,11 @@ def enrich_graph(G: nx.MultiDiGraph, config: EnvConfig = ENV):
     Enrich the graph with charging stations and lambda values.
     1. Assign charging stations to nodes proportional to its degree centrality.
     2. Assign lambda values to each node proportional to its degree centrality.
+    3. Calculate travel time for each edge based on maxspeed and length.
     """
     _assign_chargers(G, config)
     _assign_lambda_values(G, config)
+    _calculate_time_edge(G)
 
 
 def _assign_chargers(G: nx.MultiDiGraph, config: EnvConfig):
@@ -78,3 +79,23 @@ def _assign_lambda_values(G: nx.MultiDiGraph, config: EnvConfig):
 
     sum_lambda = sum_graph_attr(G, "lambda", "node")
     print(f"Assigned lambda values to nodes. Total lambda: {sum_lambda:.4f} (target: {total_lambda:.4f})")
+
+
+def _calculate_time_edge(G: nx.MultiDiGraph):
+    for u, v, k, data in G.edges(keys=True, data=True):
+        speed = data.get("maxspeed", 30)  # default to 30 km/h if not specified
+        length = data.get("length", 0)  # length in meters
+        length_km = length / 1000.0  # convert to km
+        time_minutes = _calculate_time(speed, length_km)
+        G.edges[u, v, k]["travel_time_min"] = time_minutes
+
+
+def _calculate_time(speed_kmh: float, distance_km: float) -> float:
+    """
+    Calculate time in minutes given speed in km/h and distance in km.
+    """
+    if speed_kmh <= 0:
+        raise ValueError("Speed must be greater than zero.")
+    time_hours = distance_km / speed_kmh
+    time_minutes = time_hours * 60.0
+    return time_minutes
