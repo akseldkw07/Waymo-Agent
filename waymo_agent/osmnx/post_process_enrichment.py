@@ -2,28 +2,39 @@
 Assign charging stations, lambda values
 """
 
+import typing as t
+
 import networkx as nx
 import numpy as np
 
-from ..env.dataclasses import EnvConfig
+from waymo_agent.osmnx.euclidean_L2_embed import embed_L2
+
 from .inspect import sum_graph_attr
 
-ENV = EnvConfig()
+if t.TYPE_CHECKING:
+    from ..data_classes.dataclasses import EnvConfig
 
 
-def enrich_graph(G: nx.MultiDiGraph, config: EnvConfig = ENV):
+def enrich_graph(G: nx.MultiDiGraph, config: "EnvConfig | None" = None):
     """
     Enrich the graph with charging stations and lambda values.
     1. Assign charging stations to nodes proportional to its degree centrality.
     2. Assign lambda values to each node proportional to its degree centrality.
     3. Calculate travel time for each edge based on maxspeed and length.
+    4. Embed L2 normalized coordinates into each node.
     """
-    _assign_chargers(G, config)
+    if config is None:
+        from ..data_classes.dataclasses import EnvConfig
+
+        config = EnvConfig()
+
+    # _assign_chargers(G, config) TODO re-enable when chargers are used
     _assign_lambda_values(G, config)
     _calculate_time_edge(G)
+    embed_L2(G)
 
 
-def _assign_chargers(G: nx.MultiDiGraph, config: EnvConfig):
+def _assign_chargers(G: nx.MultiDiGraph, config: "EnvConfig"):
     """
     Assign charging stations to nodes proportional to its degree centrality.
     """
@@ -42,7 +53,7 @@ def _assign_chargers(G: nx.MultiDiGraph, config: EnvConfig):
     print(f"Assigned {len(charging_nodes)} charging nodes.")
 
 
-def _assign_lambda_values(G: nx.MultiDiGraph, config: EnvConfig):
+def _assign_lambda_values(G: nx.MultiDiGraph, config: "EnvConfig"):
     """
     Assign lambda values to each node proportional to its degree centrality.
     """
@@ -76,7 +87,7 @@ def _assign_lambda_values(G: nx.MultiDiGraph, config: EnvConfig):
         noise = np.random.uniform(-noise_std, noise_std)
 
         lambda_values[node] = max(0.0, lambda_values[node] + noise)
-        G.nodes[node]["lambda"] = lambda_values[node]
+        G.nodes[node]["lambda"] = float(lambda_values[node])
 
     sum_lambda = sum_graph_attr(G, "lambda", "node")
     print(f"Assigned lambda values to nodes. Total lambda: {sum_lambda:.4f} (target: {total_lambda:.4f})")

@@ -6,13 +6,18 @@ import networkx as nx
 from matplotlib.axes import Axes
 
 
+class Plot_route_TypedDict(t.TypedDict, total=True):
+    route_color: str
+    route_linewidth: float
+
+
 class Plot_graph_TypedDict(t.TypedDict, total=False):
     # G: nx.MultiGraph | nx.MultiDiGraph
     ax: Axes | None
     figsize: tuple[float, float]
     bgcolor: str
     node_color: str | Sequence[str]
-    node_size: float | Sequence[float]
+    node_size: t.Required[float | Sequence[float]]
     node_alpha: float | None
     node_edgecolor: str | Iterable[str]
     node_zorder: int

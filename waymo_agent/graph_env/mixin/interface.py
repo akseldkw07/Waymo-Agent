@@ -1,30 +1,27 @@
 from __future__ import annotations
 
 import typing as t
-from abc import ABC, abstractmethod
+from abc import ABC
 
 import gymnasium as gym
 import networkx as nx
 import numpy as np
 from gymnasium import spaces
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
+from matplotlib.lines import Line2D
 
-if t.TYPE_CHECKING:
-    from matplotlib.axes import Axes
-    from matplotlib.figure import Figure
-    from matplotlib.lines import Line2D
+from waymo_agent.data_classes.space_dicts import ActionDict, ObservationDict
 
-    AxesLike = Axes
-    FigureLike = Figure
-    Line2DType = type[Line2D]
-else:
-    AxesLike = FigureLike = t.Any  # type: ignore
-    Line2DType = t.Any  # type: ignore
+AxesLike = Axes
+FigureLike = Figure
+Line2DType = type[Line2D]
 
 """Gymnasium environment that mirrors the proposal architecture for the Waymo RL project."""
 
 import logging
 
-from ..dataclasses import ActiveRide, EnvConfig, RequestState, VehicleState
+from ...data_classes.dataclasses import ActiveRide, EnvConfig, RequestState, VehicleState
 
 
 class GraphMixinInterface(gym.Env, ABC):
@@ -34,53 +31,67 @@ class GraphMixinInterface(gym.Env, ABC):
     """
 
     metadata = {"render_modes": ["human", "ansi"], "render_fps": 6}
-    WEATHER_STATES: tuple[str, ...] = ("clear", "rain", "snow")
+    config: EnvConfig
     render_mode: str | t.Literal["human", "ansi"]
     map_name: str | None
-    config: EnvConfig
+
+    # Graph
+    graph: nx.MultiDiGraph
+    node_ids: list[int]
+    node_index: dict[int, int]
+    node_coords: np.ndarray
+
+    # Vehicles
     vehicles: list[VehicleState]
-    pending_requests: list[RequestState | None]
-    active_rides: dict[int, ActiveRide]
-    observation_space: spaces.Space
-    action_space: spaces.Space
     num_vehicles: int
 
-    graph: nx.MultiDiGraph
-    node_ids: list[str]
-    node_index: dict[str, int]
-    node_metadata: list[dict[str, t.Any]]
-    node_coords: np.ndarray
-    node_lambdas: np.ndarray
-    node_lambda_weights: np.ndarray
-    graph_edges: list[tuple[int, int]]
-    edge_segments: list[t.Any]
-    np_rand: np.random.Generator
-    next_request_id: int
+    # Observation and Action Spaces
+    observation_space: spaces.Dict  # type: ignore
+    observation_curr: ObservationDict
+    action_space: spaces.Dict  # type: ignore
+    action_curr: ActionDict
+
+    # Requests and Rides
+    pending_requests: list[RequestState]
+    active_rides: dict[int, ActiveRide]
+
+    # Time and Metrics
     current_step: int
     day_of_week: int
+    day_of_week_norm: tuple[float, float]
     time_of_day: float
+    time_of_day_norm: tuple[float, float]
     weather_idx: int
     metrics: dict[str, float]
+    error_msg: str
 
     @property
-    def num_nodes(self) -> int: ...
-
-    @property
-    def charging_nodes(self) -> dict[str, int]: ...
+    def size(self) -> tuple[int, int]: ...
 
     @property
     def logger(self) -> logging.Logger:
         return logging.getLogger(self.__class__.__name__)
 
-    # TODO remove these
-    @abstractmethod
-    def _distance(self, *args, **kwargs) -> float: ...
+    @property
+    def info(self) -> dict[str, t.Any]: ...
 
-    @abstractmethod
-    def nearest_charging_station(self, *args, **kwargs) -> int: ...
+    @property
+    def TimeVerbose(self):
+        return {
+            "step": self.current_step,
+            "date": {"raw": self.day_of_week, "normed": self.day_of_week_norm},
+            "time": {"raw": self.time_of_day, "normed": self.time_of_day_norm},
+            "weather_idx": self.weather_idx,
+        }
 
-    # @abstractmethod
-    # def _normalize_distance(self, *args, **kwargs) -> float: ...
+    def calc_time_normed(self):
+        # Cyclical time features
 
-    # @abstractmethod
-    # def _supply_demand_ratio(self, *args, **kwargs) -> float: ...
+        precision = 4
+        day_sin = np.sin(2 * np.pi * self.day_of_week / self.config.day_per_week).round(precision)
+        day_cos = np.cos(2 * np.pi * self.day_of_week / self.config.day_per_week).round(precision)
+        time_sin = np.sin(2 * np.pi * self.time_of_day / self.config.hours_per_day).round(precision)
+        time_cos = np.cos(2 * np.pi * self.time_of_day / self.config.hours_per_day).round(precision)
+
+        self.day_of_week_norm = (day_sin, day_cos)
+        self.time_of_day_norm = (time_sin, time_cos)

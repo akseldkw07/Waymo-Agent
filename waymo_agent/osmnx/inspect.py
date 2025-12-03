@@ -38,7 +38,7 @@ def inspect_graph(G: nx.MultiDiGraph) -> None:
         print(f"Sample edge attributes: {sample_edge[2]}")
 
 
-def edge_attr_distribution(G: nx.MultiDiGraph, attr: str) -> dict[str, int]:
+def edge_attr_counts(G: nx.MultiDiGraph, attr_str: str):
     """
     Computes the distribution of a given edge attribute in the graph.
 
@@ -47,42 +47,51 @@ def edge_attr_distribution(G: nx.MultiDiGraph, attr: str) -> dict[str, int]:
 
     Returns:
         Dict[str, int]: A dictionary with speed limits as keys and their counts as values.
+
+    NOTE this only works for attributes that are integers or lists of integers.
     """
     speed_counts: dict[str, int] = {}
     for u, v, k, data in G.edges(keys=True, data=True):
-        maxspeed = data.get(attr)
-        if isinstance(maxspeed, list):
-            for speed in maxspeed:
-                speed_counts[speed] = speed_counts.get(speed, 0) + 1
-        elif maxspeed is not None:
-            speed_counts[maxspeed] = speed_counts.get(maxspeed, 0) + 1
+        attr = data.get(attr_str)
+        if isinstance(attr, list):
+            for val in attr:
+                speed_counts[val] = speed_counts.get(val, 0) + 1
+        elif attr is not None:
+            speed_counts[attr] = speed_counts.get(attr, 0) + 1
     return speed_counts
 
 
 def max_speed_distribution(G: nx.MultiDiGraph):
-    return edge_attr_distribution(G, "maxspeed")
+    return edge_attr_counts(G, "maxspeed")
 
 
-def plot_edge_attr(G: nx.MultiDiGraph, attr: str, ax: Axes | None = None):
-    attr_counts = edge_attr_distribution(G, attr)
+def plot_edge_or_node_attr(
+    G: nx.MultiDiGraph, attr: str, edge_node: t.Literal["edge", "node"] = "edge", ax: Axes | None = None
+):
+    vals = []
+
+    if edge_node == "edge":
+        for u, v, k, data in G.edges(keys=True, data=True):
+            value = data.get(attr)
+            if isinstance(value, (int, float)):
+                vals.append(value)
+            elif isinstance(value, list):
+                vals.extend([v for v in value if isinstance(v, (int, float))])
+    elif edge_node == "node":
+        for node, data in G.nodes(data=True):
+            value = data.get(attr)
+            if isinstance(value, (int, float)):
+                vals.append(value)
+            elif isinstance(value, list):
+                vals.extend([v for v in value if isinstance(v, (int, float))])
 
     if ax is None:
         import matplotlib.pyplot as plt
 
         fig, ax = plt.subplots()
 
-    # Collect speeds as list for histogram
-    speeds = []
-    for val, count in attr_counts.items():
-        assert isinstance(val, (int, float)), f"Unexpected speed type: {type(val)}"
-        try:
-            speeds.extend([val] * count)
-        except (ValueError, IndexError, AttributeError):
-            # Skip unparseable speeds
-            pass
-
-    if speeds:
-        ax.hist(speeds, bins="rice", edgecolor="black")
+    if vals:
+        ax.hist(vals, bins="rice", edgecolor="black")
         ax.set_xlabel(f"{attr}")
         ax.set_ylabel("Frequency")
         ax.set_title(f"{attr} Distribution")
@@ -91,7 +100,7 @@ def plot_edge_attr(G: nx.MultiDiGraph, attr: str, ax: Axes | None = None):
 
 
 def plot_maxspeed(G: nx.MultiDiGraph, ax: Axes | None = None):
-    return plot_edge_attr(G, "maxspeed", ax=ax)
+    return plot_edge_or_node_attr(G, "maxspeed", ax=ax)
 
 
 def collect_unique_graph_attr(G: nx.MultiDiGraph, attr: str) -> set[t.Any]:

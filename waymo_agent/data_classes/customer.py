@@ -2,10 +2,16 @@
 TODO
 """
 
-from waymo_agent.env.dataclasses import RequestState
+from dataclasses import dataclass
+
+from waymo_agent.data_classes.dataclasses import RequestState
 
 
+@dataclass
 class Customer:
+    id: int
+    customer_bias: float
+
     def request_acceptance_probability(self, request: RequestState) -> float:
         """
         Compute the probability that a customer will accept a ride request

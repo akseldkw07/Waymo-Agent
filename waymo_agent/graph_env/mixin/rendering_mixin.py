@@ -3,18 +3,42 @@ from __future__ import annotations
 import typing as t
 from pathlib import Path
 
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
 import osmnx as ox
 
-from waymo_agent.utils.visualization_utils import get_edge_color_by_speed, get_node_colors_and_sizes
+from waymo_agent.data_classes.dataclasses import RequestStatusEnum as RSE
+from waymo_agent.osmnx.visualization import get_edge_color_by_speed, get_node_colors_and_sizes
 
 from ...osmnx.osmnx_constants import Plot_graph_TypedDict
 from .interface import GraphMixinInterface
 
 
-class RideShareRenderingMixin(GraphMixinInterface):
-    """Matplotlib-based rendering that overlays fleet state on top of the OSMnx map."""
+class RenderingMixin(GraphMixinInterface):
+    """
+    Mixin for rendering the environment using Matplotlib and OSMnx.
 
+    This mixin provides functionality to:
+    - Render the road network graph.
+    - Overlay vehicle positions and active ride routes.
+    - Save rendered frames to disk.
+    """
+
+    @t.overload
+    def render(self, **kwargs: t.Unpack[Plot_graph_TypedDict]) -> tuple[Figure, Axes]: ...
+    @t.overload
+    def render(self, *args: t.Any, **kwargs: t.Any) -> t.Any: ...
     def render(self, **kwargs: t.Unpack[Plot_graph_TypedDict]):
+        """
+        Render the environment.
+
+        Args:
+            **kwargs: Additional arguments passed to the rendering backend.
+
+        Returns:
+            The figure and axes objects of the plot.
+        """
         mode = self.render_mode or "human"
         if mode not in self.metadata["render_modes"]:
             raise ValueError(f"Unsupported render mode: {mode}")
@@ -25,13 +49,7 @@ class RideShareRenderingMixin(GraphMixinInterface):
     def _render_map(self, **kwargs: t.Unpack[Plot_graph_TypedDict]):
         """
         Render the current environment state on the map.
-
-        TODO render
-            - vehicle positions
-            - current requests
-            - active rides (nodes/edges) use ox.plot_graph_routes()
         """
-        self.logger.warning("Rendering incomplete - this is a placeholder implementation.")
         edge_colors, edge_widths = self._edge_styles()
         node_colors, node_sizes = self._node_styles()
 
@@ -48,27 +66,42 @@ class RideShareRenderingMixin(GraphMixinInterface):
             )
         )
 
-        ox.plot_graph(self.graph, **ox_kwargs)
+        # Plot the base graph
+        fig, ax = ox.plot_graph(self.graph, **ox_kwargs)
+
+        # Plot active rides & requests as routes
+        active_rides = [val.route.route for val in self.active_rides.values()]
+        plot_request_types = {RSE.AWAITING_PRICE, RSE.ACCEPTED, RSE.ASSIGNED}
+        requests = [val.route.route for val in self.pending_requests if val.status in plot_request_types]
+
+        if active_rides:
+            ox.plot_graph_routes(self.graph, active_rides, **self.config.ox_plot_active_rides, ax=ax)
+        if requests:
+            ox.plot_graph_routes(self.graph, requests, **self.config.ox_plot_requests, ax=ax)
+
+        return fig, ax
 
     def save_render(self, path: str | Path):
         """
         Save the current render to a file.
         """
-        ...
+        fig, ax = self.render(show=False)
+        fig.savefig(path, dpi=self.config.ox_plot_default.get("dpi", 2_000))
+        plt.close(fig)
 
     def close(self):
         """Close the rendering."""
+        plt.close("all")
 
     # ------------------------------------------------------------------ #
     # Style helpers
     # ------------------------------------------------------------------ #
     def _edge_styles(self):
         edge_colors, edge_widths = get_edge_color_by_speed(self.graph)
-        # TODO overwrite based on active and requested rides
-        # Use ox.plot_graph_route
         return edge_colors, edge_widths
 
     def _node_styles(self):
         node_colors, node_sizes = get_node_colors_and_sizes(self.graph)
-        # TODO overwrite based on 1) vehicle positions 2) charger availability 3) pending request 4) active rides
+        # TODO: Update node colors based on vehicle positions?
+        # For now, keep static styles or implement dynamic coloring here
         return node_colors, node_sizes
