@@ -27,13 +27,12 @@ from ...data_classes.dataclasses import ActiveRide, EnvConfig, RequestState, Veh
 class GraphMixinInterface(gym.Env, ABC):
     """
     Base interface for RideShare environment mixins that provide graph and geometry functionality.
-    TODO remove | None from type hints
     """
 
     metadata = {"render_modes": ["human", "ansi"], "render_fps": 6}
     config: EnvConfig
     render_mode: str | t.Literal["human", "ansi"]
-    map_name: str | None
+    map_name: str
 
     # Graph
     graph: nx.MultiDiGraph

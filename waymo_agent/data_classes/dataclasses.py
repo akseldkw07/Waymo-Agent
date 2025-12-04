@@ -96,7 +96,7 @@ class EnvConfig:
         default_factory=lambda: {
             "node_size": 5,
             "node_color": "white",
-            "node_alpha": 0.5,
+            "node_alpha": 0.85,
             "figsize": (10, 10),
             "bgcolor": "black",
             "show": True,

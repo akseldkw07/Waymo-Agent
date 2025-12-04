@@ -6,6 +6,7 @@ import networkx as nx
 import numpy as np
 from scipy.spatial.kdtree import cKDTree
 
+from waymo_agent.osmnx.euclidean_L2_embed import nearest_node_id_from_xy
 from waymo_agent.osmnx.shortest_path import calculate_longest_path
 
 from ...osmnx.charging import get_charging_nodes
@@ -20,6 +21,9 @@ class OSMnxWrapperMixin(GraphMixinInterface):
     _num_nodes: int
     _num_edges: int
     G: nx.MultiDiGraph
+    pos_raw: dict[int, tuple[float, float]]
+    pos_norm: dict[int, tuple[float, float]]
+
     """
     Mixin for handling graph operations using NetworkX and OSMnx.
 
@@ -50,13 +54,15 @@ class OSMnxWrapperMixin(GraphMixinInterface):
         self._chargers = get_charging_nodes(G)
         self.map_name = map_path.name
 
-        xs = np.array([G.nodes[n]["x_norm"] for n in G.nodes])
-        ys = np.array([G.nodes[n]["y_norm"] for n in G.nodes])
-
         self.node_ids = list(G.nodes)  # index -> node id
         self.node_index = {nid: i for i, nid in enumerate(self.node_ids)}  # node id -> index
+
+        xs = np.array([G.nodes[n]["x_norm"] for n in G.nodes])
+        ys = np.array([G.nodes[n]["y_norm"] for n in G.nodes])
         self.node_coords = np.stack([xs, ys], axis=1)  # shape: (N, 2)
         self.kd_tree = cKDTree(self.node_coords)  # type: ignore
+        self.pos_raw = {n: (self.graph.nodes[n]["x"], self.graph.nodes[n]["y"]) for n in self.graph.nodes}
+        self.pos_norm = {n: (self.graph.nodes[n]["x_norm"], self.graph.nodes[n]["y_norm"]) for n in self.graph.nodes}
 
     # ------------------------------------------------------------------ #
     # Public helpers expected by other mixins
@@ -114,3 +120,6 @@ class OSMnxWrapperMixin(GraphMixinInterface):
             return float(length)
         except nx.NetworkXNoPath:
             return float("inf")
+
+    def nearest_node_id(self, x_norm: float, y_norm: float) -> int:
+        return nearest_node_id_from_xy(self.kd_tree, self.node_ids, x_norm, y_norm)
