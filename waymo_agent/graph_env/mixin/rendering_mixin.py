@@ -26,10 +26,10 @@ class RenderingMixin(GraphMixinInterface):
     """
 
     @t.overload
-    def render(self, **kwargs: t.Unpack[Plot_graph_TypedDict]) -> tuple[Figure, Axes]: ...
+    def render(self, *args: t.Any, **kwargs: t.Any) -> tuple[Figure, Axes]: ...
     @t.overload
-    def render(self, *args: t.Any, **kwargs: t.Any) -> t.Any: ...
-    def render(self, **kwargs: t.Unpack[Plot_graph_TypedDict]):
+    def render(self, **kwargs: t.Unpack[Plot_graph_TypedDict]) -> tuple[Figure, Axes]: ...
+    def render(self, **kwargs: t.Unpack[Plot_graph_TypedDict]) -> tuple[Figure, Axes]:
         """
         Render the environment.
 
@@ -44,7 +44,9 @@ class RenderingMixin(GraphMixinInterface):
             raise ValueError(f"Unsupported render mode: {mode}")
         if mode == "ansi":
             raise NotImplementedError("ANSI rendering is not implemented yet.")
-        return self._render_map(**kwargs)
+        fig, ax = self._render_map(**kwargs)
+        plt.show(fig)
+        return fig, ax
 
     def _render_map(self, **kwargs: t.Unpack[Plot_graph_TypedDict]):
         """
@@ -75,9 +77,9 @@ class RenderingMixin(GraphMixinInterface):
         requests = [val.route.route for val in self.pending_requests if val.status in plot_request_types]
 
         if active_rides:
-            ox.plot_graph_routes(self.graph, active_rides, **self.config.ox_plot_active_rides, ax=ax)
+            ox.plot_graph_routes(self.graph, active_rides, **self.config.ox_plot_active_rides, ax=ax, show=False)
         if requests:
-            ox.plot_graph_routes(self.graph, requests, **self.config.ox_plot_requests, ax=ax)
+            ox.plot_graph_routes(self.graph, requests, **self.config.ox_plot_requests, ax=ax, show=False)
 
         return fig, ax
 

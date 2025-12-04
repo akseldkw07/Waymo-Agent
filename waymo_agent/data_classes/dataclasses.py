@@ -99,7 +99,7 @@ class EnvConfig:
             "node_alpha": 0.85,
             "figsize": (10, 10),
             "bgcolor": "black",
-            "show": True,
+            "show": False,
             "edge_linewidth": 1.0,
         }
     )
