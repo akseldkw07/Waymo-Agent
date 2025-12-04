@@ -7,7 +7,7 @@ import typing as t
 import networkx as nx
 import numpy as np
 
-from waymo_agent.osmnx.euclidean_L2_embed import embed_L2
+from waymo_agent.osmnx.euclidean_L2_embed import embed_L2, PRECISION
 
 from .inspect import sum_graph_attr
 
@@ -87,7 +87,7 @@ def _assign_lambda_values(G: nx.MultiDiGraph, config: "EnvConfig"):
         noise = np.random.uniform(-noise_std, noise_std)
 
         lambda_values[node] = max(0.0, lambda_values[node] + noise)
-        G.nodes[node]["lambda"] = float(lambda_values[node])
+        G.nodes[node]["lambda"] = round(float(lambda_values[node]), PRECISION)
 
     sum_lambda = sum_graph_attr(G, "lambda", "node")
     print(f"Assigned lambda values to nodes. Total lambda: {sum_lambda:.4f} (target: {total_lambda:.4f})")
@@ -99,7 +99,7 @@ def _calculate_time_edge(G: nx.MultiDiGraph):
         length = data.get("length", 0)  # length in meters
         length_km = length / 1000.0  # convert to km
         time_minutes = _calculate_time(speed, length_km)
-        G.edges[u, v, k]["travel_time_min"] = time_minutes
+        G.edges[u, v, k]["travel_time_minutes"] = round(time_minutes, PRECISION)
 
 
 def _calculate_time(speed_kmh: float, distance_km: float) -> float:
@@ -110,4 +110,4 @@ def _calculate_time(speed_kmh: float, distance_km: float) -> float:
         raise ValueError("Speed must be greater than zero.")
     time_hours = distance_km / speed_kmh
     time_minutes = time_hours * 60.0
-    return time_minutes
+    return round(time_minutes, PRECISION)

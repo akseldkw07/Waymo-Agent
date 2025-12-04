@@ -3,6 +3,8 @@ import numpy as np
 import osmnx as ox
 from scipy.spatial.kdtree import cKDTree
 
+PRECISION = 4
+
 
 def embed_L2(G: nx.MultiDiGraph):
     """
@@ -26,10 +28,10 @@ def embed_L2(G: nx.MultiDiGraph):
         d["y_norm"] = float((d["y"] - y0) / max_abs)
 
     for n in G.nodes:
-        G.nodes[n]["x_centered"] = G_proj.nodes[n]["x_centered"]
-        G.nodes[n]["y_centered"] = G_proj.nodes[n]["y_centered"]
-        G.nodes[n]["x_norm"] = G_proj.nodes[n]["x_norm"]
-        G.nodes[n]["y_norm"] = G_proj.nodes[n]["y_norm"]
+        G.nodes[n]["x_centered"] = round(G_proj.nodes[n]["x_centered"], PRECISION)
+        G.nodes[n]["y_centered"] = round(G_proj.nodes[n]["y_centered"], PRECISION)
+        G.nodes[n]["x_norm"] = round(G_proj.nodes[n]["x_norm"], PRECISION)
+        G.nodes[n]["y_norm"] = round(G_proj.nodes[n]["y_norm"], PRECISION)
 
 
 def _nearest_node_from_xy(kd_tree: "cKDTree", x_norm: float, y_norm: float) -> int:

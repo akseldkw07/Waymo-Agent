@@ -4,13 +4,12 @@ import typing as t
 
 import networkx as nx
 import numpy as np
-import osmnx as ox
 from scipy.spatial.kdtree import cKDTree
 
 from waymo_agent.osmnx.shortest_path import calculate_longest_path
 
 from ...osmnx.charging import get_charging_nodes
-from ...osmnx.post_load_fix import post_load
+from ...osmnx.load_graph_safe import load_graph_type_preserved, post_load
 from .interface import GraphMixinInterface
 
 
@@ -44,7 +43,7 @@ class OSMnxWrapperMixin(GraphMixinInterface):
     # ------------------------------------------------------------------ #
     def _load_graphml(self, name: str):
         map_path = self.config.map_dir / name
-        G = ox.load_graphml(map_path)
+        G = load_graph_type_preserved(map_path)
         post_load(G)
         self.graph = G
         self.G = G
@@ -101,7 +100,7 @@ class OSMnxWrapperMixin(GraphMixinInterface):
             self._longest_distance, self._longest_route = max_length, longest_path
             return self._longest_distance
 
-    def distance(self, src_id: int, dst_id: int, metric: t.Literal["length", "travel_time_min"] = "length"):
+    def distance(self, src_id: int, dst_id: int, metric: t.Literal["length", "travel_time_minutes"] = "length"):
         """
         Compute the length or travel time between two nodes in the graph.
 

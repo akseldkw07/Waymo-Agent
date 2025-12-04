@@ -3,13 +3,16 @@ Notebook functions for inspecting OSMnx graphs.
 """
 
 import logging
+from math import ceil
 import random
 import typing as t
 from collections import defaultdict
 
+from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import networkx as nx
 from matplotlib.axes import Axes
+import numpy as np
 
 from waymo_agent.osmnx.osmnx_constants import OSMNXConstants
 
@@ -30,15 +33,16 @@ def attrs_in_graph(G: nx.MultiDiGraph, edge_node: EDGE_NODE_LITERAL = "edge"):
     Returns:
         Set[str]: A set of unique attribute keys.
     """
+    print(f"Inspecting {edge_node.upper()} attributes in the graph.")
     attrs = defaultdict(set)
     if edge_node == "edge":
         for u, v, k, data in G.edges(keys=True, data=True):
-            for key in data.keys():
-                attrs[key].add(type(data[key]).__name__)
+            for key in OSMNXConstants.EDGE_ATTR_LITERAL.__args__:
+                attrs[key].add(type(data.get(key)).__name__)
     elif edge_node == "node":
         for node, data in G.nodes(data=True):
-            for key in data.keys():
-                attrs[key].add(type(data[key]).__name__)
+            for key in OSMNXConstants.NODE_ATTR_LITERAL.__args__:
+                attrs[key].add(type(data.get(key)).__name__)
     return attrs
 
 
@@ -119,12 +123,44 @@ def hist_edge_or_node_attr(
         fig, ax = plt.subplots()
 
     if vals:
-        ax.hist(vals, bins="rice", edgecolor="black")
-        ax.set_xlabel(f"{attr_str}")
-        ax.set_ylabel("Frequency")
-        ax.set_title(f"{attr_str} Distribution")
+        try:
+            ax.hist(vals, bins="rice", edgecolor="black")
+            ax.set_xlabel(f"{attr_str}")
+            ax.set_ylabel("Frequency")
+            ax.set_title(f"{attr_str} Distribution")
+        except Exception:
+            ax.text(0.5, 0.5, f"Error plotting {attr_str}", ha="center", va="center", transform=ax.transAxes)
     else:
-        ax.text(0.5, 0.5, "No plottable data", ha="center", va="center", transform=ax.transAxes)
+        ax.text(0.5, 0.5, f"No plottable data for {attr_str}!!", ha="center", va="center", transform=ax.transAxes)
+
+
+def hist_ALL(
+    G: nx.MultiDiGraph, edge_node: EDGE_NODE_LITERAL = "edge", fig_ax: tuple[Figure, np.ndarray] | None = None
+):
+    if edge_node == "edge":
+        attrs = attrs_in_graph(G, edge_node="edge")
+    elif edge_node == "node":
+        attrs = attrs_in_graph(G, edge_node="node")
+
+    if fig_ax is None:
+        figwidth = 2
+        figlen = ceil(len(attrs) / figwidth)
+
+        fig, axes = plt.subplots(figlen, figwidth, figsize=(6 * figwidth, 4 * figlen))
+        plt.close(fig)  # to avoid showing empty plot immediately
+    else:
+        fig, axes = fig_ax
+        assert axes.size >= len(attrs)
+
+    attr_keys = list(attrs.keys())
+    for idx, ax in enumerate(axes.ravel()):
+        if idx < len(attr_keys):
+            attr = attr_keys[idx]
+            hist_edge_or_node_attr(G, attr, edge_node=edge_node, ax=ax)
+        else:
+            ax.axis("off")
+    fig.subplots_adjust(hspace=0.45)
+    return fig
 
 
 def plot_maxspeed(G: nx.MultiDiGraph, ax: Axes | None = None):

@@ -4,7 +4,6 @@ from pathlib import Path
 
 import networkx as nx
 from matplotlib.axes import Axes
-from shapely import LineString
 
 EXPECTED_NODE_ATTR_TYPES = {
     "y": float,
@@ -27,10 +26,10 @@ EXPECTED_EDGE_ATTR_TYPES = {
     "oneway": bool,
     # "reversed": bool,
     "length": float,
-    "geometry": LineString,  # Shapely LineString
+    # "geometry": LineString,  # Shapely LineString
     "lanes": int,  # list or str → treat as int
     "unit": str,
-    "travel_time_min": float,
+    "travel_time_minutes": float,
     "bridge": str,
     # "ref": str,
     # "tunnel": str,
@@ -149,7 +148,7 @@ class OSMNXConstants:
         "osmid",
         "ref",
         "reversed",
-        "travel_time_min",
+        "travel_time_minutes",
         "tunnel",
         "unit",
         "width",
