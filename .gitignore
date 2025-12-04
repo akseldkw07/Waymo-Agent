@@ -23,7 +23,7 @@ wheels/
 # Environments
 .env/
 venv/
-env/
+
 .env
 # virtualenv environments (usually venv, .venv, etc.)
 # but could be custom names

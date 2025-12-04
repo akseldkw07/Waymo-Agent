@@ -1,6 +1,78 @@
 import typing as t
+from collections.abc import Iterable, Sequence
+from pathlib import Path
 
 import networkx as nx
+from matplotlib.axes import Axes
+
+EXPECTED_NODE_ATTR_TYPES = {
+    "y": float,
+    "x": float,
+    "highway": str,
+    "street_count": int,
+    "lambda": float,
+    "x_centered": float,
+    "y_centered": float,
+    "x_norm": float,
+    "y_norm": float,
+    "ref": str,
+}
+
+EXPECTED_EDGE_ATTR_TYPES = {
+    # "osmid": int,  # sometimes list[int] → treat as int or list[int]
+    "highway": str,
+    "maxspeed": float,
+    # "name": str,
+    "oneway": bool,
+    # "reversed": bool,
+    "length": float,
+    # "geometry": LineString,  # Shapely LineString
+    "lanes": int,  # list or str → treat as int
+    "unit": str,
+    "travel_time_minutes": float,
+    "bridge": str,
+    # "ref": str,
+    # "tunnel": str,
+    "width": str,
+    "access": str,
+    "junction": str,
+}
+
+
+class Plot_route_TypedDict(t.TypedDict, total=True):
+    route_color: str
+    route_linewidth: float
+
+
+class Plot_graph_TypedDict(t.TypedDict, total=False):
+    # G: nx.MultiGraph | nx.MultiDiGraph
+    ax: Axes | None
+    figsize: tuple[float, float]
+    bgcolor: str
+    node_color: str | Sequence[str]
+    node_size: t.Required[float | Sequence[float]]
+    node_alpha: float | None
+    node_edgecolor: str | Iterable[str]
+    node_zorder: int
+    edge_color: str | Iterable[str]
+    edge_linewidth: float | Sequence[float]
+    edge_alpha: float | None
+    bbox: tuple[float, float, float, float] | None
+    show: bool
+    close: bool
+    save: bool
+    filepath: str | Path | None
+    dpi: int
+
+
+DEFAULT_OX_PLOT_NOTEBOOK: Plot_graph_TypedDict = {
+    "node_size": 5,
+    "node_color": "white",
+    "node_alpha": 0.5,
+    "figsize": (10, 10),
+    "bgcolor": "black",
+    "show": True,
+}
 
 
 class OSMNXConstants:
@@ -59,13 +131,38 @@ class OSMNXConstants:
         "path",
     ]
 
-    @classmethod
-    def MAJOR_ROAD_CUTOFF_INDEX(cls):
-        return cls.ROAD_PRIORITY.index("secondary") + 1
+    NODE_ATTR_LITERAL = t.Literal[
+        "y", "x", "highway", "street_count", "lambda", "x_centered", "y_centered", "x_norm", "y_norm", "ref"
+    ]
+    EDGE_ATTR_LITERAL = t.Literal[
+        "access",
+        "bridge",
+        "geometry",
+        "highway",
+        "junction",
+        "lanes",
+        "length",
+        "maxspeed",
+        "name",
+        "oneway",
+        "osmid",
+        "ref",
+        "reversed",
+        "travel_time_minutes",
+        "tunnel",
+        "unit",
+        "width",
+    ]
 
     @classmethod
     def MAJOR_ROAD_TYPES_SET(cls):
-        return set(cls.ROAD_PRIORITY[: cls.MAJOR_ROAD_CUTOFF_INDEX()])
+        cutoff = cls.ROAD_PRIORITY.index("secondary") + 1
+        return set(cls.ROAD_PRIORITY[:cutoff])
+
+    @classmethod
+    def HIGHWAY_TYPES_SET(cls):
+        cutoff = cls.ROAD_PRIORITY.index("trunk_link") + 1
+        return set(cls.ROAD_PRIORITY[:cutoff])
 
     COLOR_CONFIG = {
         "motorway": {"color": "#ff0000", "width": 3.0},  # Red, Thickest
@@ -104,7 +201,7 @@ class OSMNXConstants:
 
         return edge_colors, edge_widths
 
-    NORTH_125TH = 40.818
+    NORTH_125TH = 40.820
     SOUTH_LIMIT = 40.69
     WEST_LIMIT = -74.03
     EAST_LIMIT = -73.927  # cut before Randalls (≈ -73.92)
