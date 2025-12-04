@@ -110,7 +110,7 @@ class RideShareObservationMixin(GraphMixinInterface):
             )  # Hardcoded normalizer for now
             request_obs[idx, 3] = np.float32(request.distance / 10000.0)
             request_obs[idx, 4] = np.float32(
-                np.clip(request.price / max(request.base_price, 1e-6), 0.0, self.config.max_price_multiplier)
+                np.clip(request.price / max(request.est_cost, 1e-6), 0.0, self.config.max_price_multiplier)
             )
             request_obs[idx, 5] = 1.0 if request.status == RequestStatusEnum.ACCEPTED else 0.0
             dispatch_mask[idx, 0] = 1.0

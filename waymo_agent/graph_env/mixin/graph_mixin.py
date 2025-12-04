@@ -10,7 +10,7 @@ from scipy.spatial.kdtree import cKDTree
 from waymo_agent.osmnx.shortest_path import calculate_longest_path
 
 from ...osmnx.charging import get_charging_nodes
-from ...osmnx.load_utils import post_load
+from ...osmnx.post_load_fix import post_load
 from .interface import GraphMixinInterface
 
 

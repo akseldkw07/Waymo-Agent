@@ -4,6 +4,40 @@ from pathlib import Path
 
 import networkx as nx
 from matplotlib.axes import Axes
+from shapely import LineString
+
+EXPECTED_NODE_ATTR_TYPES = {
+    "y": float,
+    "x": float,
+    "highway": str,
+    "street_count": int,
+    "lambda": float,
+    "x_centered": float,
+    "y_centered": float,
+    "x_norm": float,
+    "y_norm": float,
+    "ref": str,
+}
+
+EXPECTED_EDGE_ATTR_TYPES = {
+    # "osmid": int,  # sometimes list[int] → treat as int or list[int]
+    "highway": str,
+    "maxspeed": float,
+    # "name": str,
+    "oneway": bool,
+    # "reversed": bool,
+    "length": float,
+    "geometry": LineString,  # Shapely LineString
+    "lanes": int,  # list or str → treat as int
+    "unit": str,
+    "travel_time_min": float,
+    "bridge": str,
+    # "ref": str,
+    # "tunnel": str,
+    "width": str,
+    "access": str,
+    "junction": str,
+}
 
 
 class Plot_route_TypedDict(t.TypedDict, total=True):
@@ -96,6 +130,29 @@ class OSMNXConstants:
         "footway",
         "cycleway",
         "path",
+    ]
+
+    NODE_ATTR_LITERAL = t.Literal[
+        "y", "x", "highway", "street_count", "lambda", "x_centered", "y_centered", "x_norm", "y_norm", "ref"
+    ]
+    EDGE_ATTR_LITERAL = t.Literal[
+        "access",
+        "bridge",
+        "geometry",
+        "highway",
+        "junction",
+        "lanes",
+        "length",
+        "maxspeed",
+        "name",
+        "oneway",
+        "osmid",
+        "ref",
+        "reversed",
+        "travel_time_min",
+        "tunnel",
+        "unit",
+        "width",
     ]
 
     @classmethod

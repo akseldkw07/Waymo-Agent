@@ -149,9 +149,10 @@ class RequestState:
 
     distance_raw: float  # in meters
     distance_norm: float  # normalized distance for easier NN training, [0,1]
-    base_price: float  # this is price of distance * distance_fare + base fee + time charge
+    est_cost: float  # this is price of distance * distance_fare + base fee + time charge
 
-    wait_time: float = 0.0
+    max_wait_time: float  # in hours (NOTE this comes from config.max_wait_time)
+    wait_time: float = 0.0  # in hours
     status: RequestStatusEnum = RequestStatusEnum.AWAITING_PRICE
 
     def to_numpy(self) -> np.ndarray:
@@ -160,7 +161,8 @@ class RequestState:
                 *self.pickup_loc_norm,
                 *self.dropoff_loc_norm,
                 self.distance_norm,
-                self.base_price,
+                self.est_cost,
+                self.max_wait_time,
                 self.wait_time,
                 1.0 if self.status == RequestStatusEnum.ACCEPTED else 0.0,
             ],

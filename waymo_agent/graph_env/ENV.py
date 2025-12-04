@@ -3,12 +3,11 @@ from __future__ import annotations
 import typing as t
 from pathlib import Path
 
-
 from ..data_classes.dataclasses import ActiveRide, EnvConfig, RequestState, VehicleState
 from .mixin import ActionMixin, ObservationSpaceMixin, OSMnxWrapperMixin, RenderingMixin, TransitionMixin
 
 
-class RideShareEnv(RenderingMixin, ObservationSpaceMixin, ActionMixin, TransitionMixin, OSMnxWrapperMixin):
+class RideShareEnv(RenderingMixin, OSMnxWrapperMixin, ObservationSpaceMixin, ActionMixin, TransitionMixin):
     """Gymnasium environment for simulating ride-share dispatch on OSMnx road networks."""
 
     def __init__(self, config: EnvConfig | None = None, render_mode: t.Literal["human", "ansi"] = "human"):

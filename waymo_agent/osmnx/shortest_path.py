@@ -50,3 +50,4 @@ def cheapest_path():
     Take in graph, config, start node, end node
     Use config cost parameters to weight edges based on length, travel time,
     """
+    raise NotImplementedError("I will implement this function later, maybe never")

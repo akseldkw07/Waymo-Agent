@@ -33,7 +33,7 @@ class ObservationSpaceMixin(GraphMixinInterface):
             - Global features: day of week, time of day, weather_one_hot(3) (7,) #TODO stretch goal: add demand per node, next step speed limits
             - Supply-demand ratio: (1,)
             - Vehicles: (num_vehicles, 7) -> [loc_x_norm, loc_y_norm, battery, status_one_hot(4)]
-            - Pending requests: (max_pending_requests, 8) -> [pickup_x_norm, pickup_y_norm, dropoff_x_norm, dropoff_y_norm, wait_time_norm, distance_norm, price_norm, status_one_hot(2)]
+            - Pending requests: (max_pending_requests, 9) -> [pickup_x_norm, pickup_y_norm, dropoff_x_norm, dropoff_y_norm, distance_norm, est_cost, max_wait_time, wait_time, status_one_hot(1)] # TODO add max wait time before
             - Active rides: (num_vehicles, 8) -> [pickup_x_norm, pickup_y_norm, dropoff_x_norm, dropoff_y_norm, price, total_trip_distance, trip_distance_remaining, pickup_distance_remaining]
             - Vehicle availability mask: (num_vehicles) -> 1 if vehicle can be dispatched to request, else 0
             - Pricing mask: (max_pending_requests) -> 1 if request needs pricing decision, else 0

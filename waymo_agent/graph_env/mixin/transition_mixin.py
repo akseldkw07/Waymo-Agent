@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 from waymo_agent.data_classes.space_dicts import ObservationDict
 
 from ...data_classes.dataclasses import ActiveRide

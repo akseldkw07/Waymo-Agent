@@ -3,17 +3,13 @@ import networkx as nx
 from waymo_agent.data_classes.dataclasses import PathPosition
 
 
-def step_along_route(
-    G: nx.MultiDiGraph,
-    pos: PathPosition,
-    speed_kmh: float,
-    num_mins: float = 1,
-) -> PathPosition:
+def step_along_route(G: nx.MultiDiGraph, pos: PathPosition, speed_kmh: float, num_mins: float = 1) -> PathPosition:
     """
     Move along the current route for num_mins minutes at speed_kmh.
     Handles crossing multiple edges if distance allows.
     TODO simplify,
     """
+    raise NotImplementedError("I will implement this function later, with transition model")
     # Convert km/h to m/min
     speed_m_per_min = speed_kmh * 1000.0 / 60.0
     remaining_dist = speed_m_per_min * num_mins

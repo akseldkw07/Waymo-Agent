@@ -3,10 +3,10 @@ from __future__ import annotations
 import typing as t
 from pathlib import Path
 
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import osmnx as ox
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 
 from waymo_agent.data_classes.dataclasses import RequestStatusEnum as RSE
 from waymo_agent.osmnx.visualization import get_edge_color_by_speed, get_node_colors_and_sizes

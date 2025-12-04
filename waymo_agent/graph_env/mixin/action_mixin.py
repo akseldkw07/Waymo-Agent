@@ -29,7 +29,9 @@ class ActionMixin(GraphMixinInterface):
         """
         action_space = spaces.Dict(
             {
-                "prices": spaces.Box(low=0.0, high=2.0, shape=(self.config.max_pending_requests,)),
+                "prices": spaces.Box(
+                    low=0.0, high=2.0, shape=(self.config.max_pending_requests,)
+                ),  # TODO fix max price
                 "reposition": spaces.Box(low=-1.0, high=1.0, shape=(self.num_vehicles, 2)),
                 "dispatch": spaces.MultiBinary((self.config.max_pending_requests, self.num_vehicles)),
             }

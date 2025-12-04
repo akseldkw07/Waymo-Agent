@@ -41,7 +41,7 @@ class FleetActionMixin(GraphMixinInterface):
             multiplier = 1.0 + 0.25 * float(adj)  # Hardcoded scale
             # multiplier = float(np.clip(multiplier, self.config.min_price_multiplier, self.config.max_price_multiplier))
             multiplier = float(np.clip(multiplier, 0.6, 2.0))  # Hardcoded limits
-            request.price = request.base_price * multiplier
+            request.price = request.est_cost * multiplier
             accept_prob = self._request_acceptance_probability(request)
             if self.np_random.random() < accept_prob:
                 request.status = RequestStatusEnum.ACCEPTED
