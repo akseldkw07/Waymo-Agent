@@ -9,3 +9,4 @@ from .load_graph_safe import post_load
 from .charging import *
 from .euclidean_L2_embed import *
 from .visualization import *
+from .traverse_graph import *

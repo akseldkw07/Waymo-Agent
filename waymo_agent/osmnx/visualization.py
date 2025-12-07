@@ -1,11 +1,9 @@
-import typing as t
-
 import matplotlib.cm as cm
 import matplotlib.colors as colors
 import networkx as nx
 import numpy as np
 
-from waymo_agent.data_classes.dataclasses import EnvConfig
+from waymo_agent.data_classes import EnvConfig
 
 
 def get_edge_color_by_speed(G: nx.MultiDiGraph, cmap_name: str = "plasma"):
@@ -54,35 +52,4 @@ def get_node_colors_and_sizes(G: nx.MultiDiGraph, config: EnvConfig | None = Non
         node_sizes: list[float] = (0.5 + node_width_scale * 10 * lam_norm).round(2).tolist()
     else:
         node_sizes: list[float] = np.full_like(lambdas, node_size).tolist()
-    return node_colors, node_sizes
-
-
-def highlight_nodes(
-    G: nx.MultiDiGraph,
-    highlight_node_ids: t.Iterable[int] | int,
-    highlight_color: str = "red",
-    highlight_size: float = 50.0,
-):
-    """
-    Highlight specific nodes in the graph by changing their color and size.
-
-    Args:
-        G (nx.MultiDiGraph): The graph containing the nodes.
-        highlight_node_ids (set[int]): Set of node IDs to highlight.
-        highlight_color (str): Color to use for highlighted nodes.
-        highlight_size (float): Size to use for highlighted nodes.
-        config (EnvConfig | None): Configuration for default node colors and sizes.
-
-    Returns:
-        node_colors (list): List of colors for each node.
-        node_sizes (list): List of sizes for each node.
-    """
-    config = config or EnvConfig()
-    node_colors, node_sizes = get_node_colors_and_sizes(G, config)
-
-    for idx, node in enumerate(G.nodes):
-        if node in highlight_node_ids:
-            node_colors[idx] = highlight_color
-            node_sizes[idx] = highlight_size
-
     return node_colors, node_sizes

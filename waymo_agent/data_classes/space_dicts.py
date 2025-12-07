@@ -2,6 +2,8 @@ import typing as t
 
 import numpy as np
 
+from waymo_agent.data_classes import ActiveRideDF, RequestDF, VehicleDF
+
 
 class ObservationDict(t.TypedDict):
     """
@@ -10,9 +12,9 @@ class ObservationDict(t.TypedDict):
 
     globals: np.ndarray
     supply_demand_ratio: np.ndarray
-    vehicles: np.ndarray
-    pending_requests: np.ndarray
-    active_rides: np.ndarray
+    vehicles: VehicleDF
+    pending_requests: RequestDF
+    active_rides: ActiveRideDF
     dispatch_mask: np.ndarray
     pricing_mask: np.ndarray
 

@@ -4,18 +4,19 @@ import typing as t
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import numpy as np
 import osmnx as ox
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
-from waymo_agent.data_classes.dataclasses import RequestStatusEnum as RSE
+from waymo_agent.data_classes import RequestStatusEnum as RSE
 from waymo_agent.osmnx.visualization import get_edge_color_by_speed, get_node_colors_and_sizes
 
 from ...osmnx.osmnx_constants import Plot_graph_TypedDict
-from .interface import GraphMixinInterface
+from .interface import GymEnvInterface
 
 
-class RenderingMixin(GraphMixinInterface):
+class RenderingMixin(GymEnvInterface):
     """
     Mixin for rendering the environment using Matplotlib and OSMnx.
 
@@ -72,14 +73,20 @@ class RenderingMixin(GraphMixinInterface):
         fig, ax = ox.plot_graph(self.graph, **ox_kwargs)
 
         # Plot active rides & requests as routes
-        active_rides = [val.route.route for val in self.active_rides.values()]
-        plot_request_types = {RSE.AWAITING_PRICE, RSE.ACCEPTED, RSE.ASSIGNED}
-        requests = [val.route.route for val in self.pending_requests if val.status in plot_request_types]
+        active_rides = self.observation_curr["active_rides"]
+        f_plot_rides = ~active_rides.complete & (active_rides.ride_id != self.config.invalid_id)
+        active_rides_routes = active_rides.route_nodes[f_plot_rides]
 
-        if active_rides:
-            ox.plot_graph_routes(self.graph, active_rides, **self.config.ox_plot_active_rides, ax=ax, show=False)
-        if requests:
-            ox.plot_graph_routes(self.graph, requests, **self.config.ox_plot_requests, ax=ax, show=False)
+        plot_request_types = np.array([RSE.AWAITING_PRICE, RSE.ACCEPTED, RSE.ASSIGNED])
+        pending_requests = self.observation_curr["pending_requests"]
+        f_pending_requests = np.isin(pending_requests.status, plot_request_types)
+        request_routes = pending_requests.route_nodes[f_pending_requests]
+
+        # TODO add direction arrows, make narrower
+        if len(active_rides_routes) > 0:
+            ox.plot_graph_routes(self.graph, active_rides_routes, **self.config.ox_plot_active_rides, ax=ax, show=False)
+        if len(request_routes) > 0:
+            ox.plot_graph_routes(self.graph, request_routes, **self.config.ox_plot_requests, ax=ax, show=False)
 
         return fig, ax
 

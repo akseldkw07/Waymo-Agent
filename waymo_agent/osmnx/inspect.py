@@ -3,16 +3,16 @@ Notebook functions for inspecting OSMnx graphs.
 """
 
 import logging
-from math import ceil
 import random
 import typing as t
 from collections import defaultdict
+from math import ceil
 
-from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import networkx as nx
-from matplotlib.axes import Axes
 import numpy as np
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 
 from waymo_agent.osmnx.osmnx_constants import OSMNXConstants
 
@@ -69,7 +69,9 @@ def inspect_graph(G: nx.MultiDiGraph) -> None:
         print("Graph has no edges.")
     else:
         sample_edge = random.choice(list(G.edges(data=True)))
-        print(f"Sample edge attributes: {sample_edge[2]}")
+        print(f"Sample edge attributes: {sample_edge[2]}\n")
+
+    print(OSMNXConstants.graph_edge_units())
 
 
 def edge_attr_counts(G: nx.MultiDiGraph, attr_str: ATTR_LITERAL):
