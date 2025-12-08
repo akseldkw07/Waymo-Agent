@@ -73,7 +73,7 @@ class CityTaxiEnv(gym.Env):
         # --- MODIFIED DEMAND ZONES ---
         # Highest Row (Nodes 0-4): High Demand
         for i in range(5):
-            demand[i] = np.random.poisson(lam=0.8)
+            demand[i] = np.random.poisson(lam=2)
 
         # All other rows (Nodes 5-19): Low Demand
         for i in range(5, 20):
@@ -105,21 +105,35 @@ class CityTaxiEnv(gym.Env):
             if action == 0: # PICK UP
                 if self.demand[loc] > 0:
 
-                    # --- MODIFIED REWARD STRUCTURE ---
+                    # --- REWARD STRUCTURE ---
                     if loc == 4:
-                        # Top-Right Node (Super Bonus)
-                        rewards[i] = 100.0
+                        rewards[i] = 100.0 # Top-Right Node (Super Bonus)
                     elif loc < 5:
-                        # Rest of Highest Row (Nodes 0,1,2,3)
-                        rewards[i] = 50.0
+                        rewards[i] = 20.0  # Rest of Highest Row
                     else:
-                        # Standard Zone
-                        rewards[i] = 10.0
-                    # ---------------------------------
+                        rewards[i] = 10.0  # Standard Zone
+                    # ------------------------
 
                     self.demand[loc] -= 1
                     picked_up_map[loc] += 1
-                    self.taxi_locs[i] = np.random.randint(0, self.num_nodes)
+                    
+                    # --- NEW DROPOFF LOGIC (Nearest Nodes Only) ---
+                    # Defines a random shift of -1, 0, or +1 for both row and col
+                    dr = np.random.choice([-1, 0, 1])
+                    dc = np.random.choice([-1, 0, 1])
+                    
+                    # Calculate new coords
+                    drop_r = r + dr
+                    drop_c = c + dc
+                    
+                    # Boundary Check: Clip to stay within grid limits
+                    drop_r = np.clip(drop_r, 0, self.rows - 1)
+                    drop_c = np.clip(drop_c, 0, self.cols - 1)
+                    
+                    # Update location
+                    self.taxi_locs[i] = self._get_node(drop_r, drop_c)
+                    # ----------------------------------------------
+                    
                 else:
                     rewards[i] = -1.0
 
@@ -135,8 +149,9 @@ class CityTaxiEnv(gym.Env):
                 else:
                     rewards[i] = -0.5
 
+        # Demand Update (Correction applied: No accumulation, just replacement)
         new_demand = self._generate_demand()
-        self.demand += new_demand
+        self.demand = new_demand 
         self.demand = np.clip(self.demand, 0, 50)
 
         self.current_step += 1
