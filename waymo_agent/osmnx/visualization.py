@@ -1,7 +1,6 @@
 from matplotlib.axes import Axes
 import matplotlib.cm as cm
 import matplotlib.colors as colors
-from matplotlib.ticker import FuncFormatter
 import networkx as nx
 import numpy as np
 
@@ -78,41 +77,9 @@ def x_y_coords(
     # Show both raw and normalized coordinates on axes:
     # bottom x-axis: lon with normalized x in parentheses
     # left y-axis: lat with normalized y in parentheses
-    x0 = l2_recovery["x0"]
-    y0 = l2_recovery["y0"]
-    max_abs = l2_recovery["max_abs"]
-
-    def _fmt_x(raw: float, pos: int) -> str:
-        # raw is the longitude (projected x); show raw and normalized
-        x_norm = (raw - x0) / max_abs
-        return f"{raw:.4f}\n({x_norm:.2f})"
-
-    def _fmt_y(raw: float, pos: int) -> str:
-        # raw is the latitude (projected y); show raw and normalized
-        y_norm = (raw - y0) / max_abs
-        return f"{raw:.4f}\n({y_norm:.2f})"
-
-    ax.xaxis.set_major_formatter(FuncFormatter(_fmt_x))
-    ax.yaxis.set_major_formatter(FuncFormatter(_fmt_y))
-
-    # Make tick labels more visible
-    ax.tick_params(axis="both", which="major", labelsize=11, colors="black", labelcolor="black")
-
-    # Add axis labels to clarify the coordinate systems
-    ax.set_xlabel(
-        "Longitude (x_norm)",
-        fontsize=14,
-        fontweight="bold",
-        color="black",
-        bbox=dict(boxstyle="round,pad=0.5", facecolor="white", edgecolor="black", linewidth=2),
-    )
-    ax.set_ylabel(
-        "Latitude (y_norm)",
-        fontsize=14,
-        fontweight="bold",
-        color="black",
-        bbox=dict(boxstyle="round,pad=0.5", facecolor="white", edgecolor="black", linewidth=2),
-    )
+    l2_recovery["x0"]
+    l2_recovery["y0"]
+    l2_recovery["max_abs"]
 
     # Add a title with coordinate system info
     ax.set_title(
