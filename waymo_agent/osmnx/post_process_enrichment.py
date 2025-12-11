@@ -7,12 +7,12 @@ import typing as t
 import networkx as nx
 import numpy as np
 
-from waymo_agent.osmnx.euclidean_L2_embed import embed_L2, PRECISION
+from waymo_agent.osmnx.euclidean_L2_embed import PRECISION, embed_L2
 
 from .inspect import sum_graph_attr
 
 if t.TYPE_CHECKING:
-    from ..data_classes.dataclasses import EnvConfig
+    from ..data_classes.config import EnvConfig
 
 
 def enrich_graph(G: nx.MultiDiGraph, config: "EnvConfig | None" = None):
@@ -24,7 +24,7 @@ def enrich_graph(G: nx.MultiDiGraph, config: "EnvConfig | None" = None):
     4. Embed L2 normalized coordinates into each node.
     """
     if config is None:
-        from ..data_classes.dataclasses import EnvConfig
+        from ..data_classes.config import EnvConfig
 
         config = EnvConfig()
 

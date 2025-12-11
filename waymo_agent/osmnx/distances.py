@@ -41,13 +41,3 @@ def calculate_longest_path(G: nx.MultiDiGraph, weight: str = "length") -> tuple[
     # Recover the corresponding path
     longest_path = nx.shortest_path(G, source=src_best, target=dst_best, weight=weight)
     return max_length, longest_path
-
-
-def cheapest_path():
-    """
-    TODO implement cheapest path calculation
-
-    Take in graph, config, start node, end node
-    Use config cost parameters to weight edges based on length, travel time,
-    """
-    raise NotImplementedError("I will implement this function later, maybe never")

@@ -153,6 +153,13 @@ class OSMNXConstants:
         "unit",
         "width",
     ]
+    edge_length_unit = "meters"
+    speed_unit = "km/h"
+    time_unit = "minutes"
+
+    @classmethod
+    def graph_edge_units(cls) -> str:
+        return f"{cls.edge_length_unit=}, {cls.speed_unit=}, {cls.time_unit=}"
 
     @classmethod
     def MAJOR_ROAD_TYPES_SET(cls):

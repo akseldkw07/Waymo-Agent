@@ -1,11 +1,8 @@
 import gym
-from gym import spaces
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
-import matplotlib.pyplot as plt
+from gym import spaces
 
 # ---------------------------------------------------------
 # 0. Device Setup
@@ -16,6 +13,7 @@ print(f"Using device: {device}")
 # ---------------------------------------------------------
 # 1. Custom City Environment (Multi-Agent)
 # ---------------------------------------------------------
+
 
 class CityTaxiEnv(gym.Env):
     """
@@ -32,7 +30,7 @@ class CityTaxiEnv(gym.Env):
     """
 
     def __init__(self, num_taxis=100):
-        super(CityTaxiEnv, self).__init__()
+        super().__init__()
 
         self.rows = 4
         self.cols = 5
@@ -43,14 +41,9 @@ class CityTaxiEnv(gym.Env):
         self.action_space = spaces.Discrete(5)
 
         # Observation: My Position (1) + Demand Map (20)
-        self.observation_space = spaces.Box(
-            low=0,
-            high=100,
-            shape=(1 + self.num_nodes,),
-            dtype=np.float32
-        )
+        self.observation_space = spaces.Box(low=0, high=100, shape=(1 + self.num_nodes,), dtype=np.float32)
 
-        self.max_steps = 72 # 24 hours / 20 min steps
+        self.max_steps = 72  # 24 hours / 20 min steps
         self.current_step = 0
         self.taxi_locs = np.zeros(self.num_taxis, dtype=int)
         self.demand = np.zeros(self.num_nodes)
@@ -107,35 +100,39 @@ class CityTaxiEnv(gym.Env):
             loc = self.taxi_locs[i]
             r, c = self._get_coords(loc)
 
-            if action == 0: # PICK UP
+            if action == 0:  # PICK UP
                 if self.demand[loc] > 0:
                     rewards[i] = 10.0
-                    self.demand[loc] -= 1 # Consume demand
-                    picked_up_map[loc] += 1 # Record pickup for viz
+                    self.demand[loc] -= 1  # Consume demand
+                    picked_up_map[loc] += 1  # Record pickup for viz
 
                     # Teleport to random destination
                     self.taxi_locs[i] = np.random.randint(0, self.num_nodes)
                 else:
-                    rewards[i] = -1.0 # Failed pickup penalty
+                    rewards[i] = -1.0  # Failed pickup penalty
                     # Stays in place (wasted step)
 
-            else: # MOVE
+            else:  # MOVE
                 new_r, new_c = r, c
-                if action == 1: new_r -= 1
-                elif action == 2: new_r += 1
-                elif action == 3: new_c -= 1
-                elif action == 4: new_c += 1
+                if action == 1:
+                    new_r -= 1
+                elif action == 2:
+                    new_r += 1
+                elif action == 3:
+                    new_c -= 1
+                elif action == 4:
+                    new_c += 1
 
                 # Boundary checks
                 if 0 <= new_r < self.rows and 0 <= new_c < self.cols:
                     self.taxi_locs[i] = self._get_node(new_r, new_c)
                 else:
-                    rewards[i] = -0.5 # Wall penalty
+                    rewards[i] = -0.5  # Wall penalty
 
         # Generate NEW demand (accumulate)
         new_demand = self._generate_demand()
         self.demand += new_demand
-        self.demand = np.clip(self.demand, 0, 50) # Cap higher for 100 cars
+        self.demand = np.clip(self.demand, 0, 50)  # Cap higher for 100 cars
 
         self.current_step += 1
         if self.current_step >= self.max_steps:
@@ -144,18 +141,17 @@ class CityTaxiEnv(gym.Env):
         next_obs = self._get_observation_batch()
 
         # Return info for visualization
-        info = {
-            'generated_demand': new_demand,
-            'picked_up_map': picked_up_map
-        }
+        info = {"generated_demand": new_demand, "picked_up_map": picked_up_map}
 
         return next_obs, rewards, done, info
+
 
 # ---------------------------------------------------------
 # 2. PPO Classes (CUDA Enabled)
 # ---------------------------------------------------------
 
-class Policy(object):
+
+class Policy:
     def __init__(self, obssize, actsize, lr, device):
         self.device = device
         self.actsize = actsize
@@ -166,8 +162,10 @@ class Policy(object):
             torch.nn.ReLU(),
             torch.nn.Linear(64, 64),
             torch.nn.ReLU(),
-            torch.nn.Linear(64, actsize)
-        ).to(self.device) # Move model to GPU
+            torch.nn.Linear(64, actsize),
+        ).to(
+            self.device
+        )  # Move model to GPU
 
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=lr)
 
@@ -209,7 +207,7 @@ class Policy(object):
         return loss.detach().cpu().data.numpy()
 
 
-class ValueFunction(object):
+class ValueFunction:
     def __init__(self, obssize, lr, device):
         self.device = device
         # Increased network size
@@ -218,8 +216,10 @@ class ValueFunction(object):
             torch.nn.ReLU(),
             torch.nn.Linear(64, 64),
             torch.nn.ReLU(),
-            torch.nn.Linear(64, 1)
-        ).to(self.device) # Move model to GPU
+            torch.nn.Linear(64, 1),
+        ).to(
+            self.device
+        )  # Move model to GPU
 
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=lr)
 
@@ -242,6 +242,7 @@ class ValueFunction(object):
 
         return loss.detach().cpu().data.numpy()
 
+
 def discounted_rewards(r, gamma):
     discounted_r = np.zeros_like(r, dtype=np.float32)
     running_sum = 0
@@ -250,21 +251,23 @@ def discounted_rewards(r, gamma):
         running_sum = discounted_r[i]
     return list(discounted_r)
 
+
 # ---------------------------------------------------------
 # 3. Training & Evaluation (Multi-Agent Loop)
 # ---------------------------------------------------------
+
 
 def evaluate(policy, env, episodes):
     """Evaluates the fleet performance."""
     total_score = 0
     for episode in range(episodes):
-        obs_batch = env.reset() # (100, 21)
+        obs_batch = env.reset()  # (100, 21)
         done = False
         episode_reward = 0
 
         while not done:
             # Predict for all 100 cars at once
-            p = policy.compute_prob(obs_batch) # (100, 5)
+            p = policy.compute_prob(obs_batch)  # (100, 5)
 
             # Sample actions for each car
             actions = []
@@ -280,6 +283,7 @@ def evaluate(policy, env, episodes):
         total_score += episode_reward
 
     return total_score / episodes
+
 
 def run_baseline(env, episodes=50):
     """
@@ -305,7 +309,7 @@ def run_baseline(env, episodes=50):
 
                 # Check demand
                 if current_demand_snapshot[loc] > 0:
-                    action = 0 # Pickup
+                    action = 0  # Pickup
                     current_demand_snapshot[loc] -= 1
                 else:
                     action = np.random.randint(1, 5)
@@ -320,6 +324,7 @@ def run_baseline(env, episodes=50):
     avg_score = total_score / episodes
     print(f"Baseline Average Score: {avg_score:.2f}")
     return avg_score
+
 
 def visualize_last_day(policy, env):
     """
@@ -366,8 +371,8 @@ def visualize_last_day(policy, env):
         current_profit += step_reward
         cumulative_profit.append(current_profit)
 
-        demand_generated += info['generated_demand']
-        demand_matched += info['picked_up_map']
+        demand_generated += info["generated_demand"]
+        demand_matched += info["picked_up_map"]
 
         steps += 1
 
@@ -380,7 +385,7 @@ def visualize_last_day(policy, env):
     match_grid = demand_matched.reshape(env.rows, env.cols)
 
     # Helper for heatmap
-    def plot_heatmap(ax, data, title, cmap='Blues'):
+    def plot_heatmap(ax, data, title, cmap="Blues"):
         im = ax.imshow(data, cmap=cmap)
         ax.set_title(title)
         ax.set_xticks(np.arange(env.cols))
@@ -389,21 +394,27 @@ def visualize_last_day(policy, env):
         # Loop over data dimensions and create text annotations.
         for i in range(env.rows):
             for j in range(env.cols):
-                text = ax.text(j, i, int(data[i, j]),
-                               ha="center", va="center", color="black" if data[i, j] < data.max()/2 else "white")
+                text = ax.text(
+                    j,
+                    i,
+                    int(data[i, j]),
+                    ha="center",
+                    va="center",
+                    color="black" if data[i, j] < data.max() / 2 else "white",
+                )
         plt.colorbar(im, ax=ax)
 
     # 1. Taxi Visits
-    plot_heatmap(axes[0, 0], visit_grid, "Total Taxi Visits (Presence)", cmap='Purples')
+    plot_heatmap(axes[0, 0], visit_grid, "Total Taxi Visits (Presence)", cmap="Purples")
 
     # 2. Demand Generated
-    plot_heatmap(axes[0, 1], gen_grid, "Total Demand Generated", cmap='Reds')
+    plot_heatmap(axes[0, 1], gen_grid, "Total Demand Generated", cmap="Reds")
 
     # 3. Demand Matched
-    plot_heatmap(axes[1, 0], match_grid, "Total Demand Matched (Pickups)", cmap='Greens')
+    plot_heatmap(axes[1, 0], match_grid, "Total Demand Matched (Pickups)", cmap="Greens")
 
     # 4. Profit Curve
-    axes[1, 1].plot(cumulative_profit, color='blue', linewidth=2)
+    axes[1, 1].plot(cumulative_profit, color="blue", linewidth=2)
     axes[1, 1].set_title("Cumulative Profit Over Day")
     axes[1, 1].set_xlabel("Time Step (20 mins)")
     axes[1, 1].set_ylabel("Profit ($)")
@@ -411,6 +422,7 @@ def visualize_last_day(policy, env):
 
     plt.tight_layout()
     plt.show()
+
 
 def main():
 
@@ -421,7 +433,7 @@ def main():
     iterations = 500  # Increased to 500
     gamma = 0.997
 
-    num_taxis = 10 # Increased to 100
+    num_taxis = 10  # Increased to 100
 
     # Initialize Env
     env = CityTaxiEnv(num_taxis=num_taxis)
@@ -454,7 +466,7 @@ def main():
             car_acts = [[] for _ in range(num_taxis)]
             car_rews = [[] for _ in range(num_taxis)]
 
-            obs_batch = env.reset() # (100, 21)
+            obs_batch = env.reset()  # (100, 21)
             done = False
 
             while not done:
@@ -463,7 +475,7 @@ def main():
                     car_obss[i].append(obs_batch[i])
 
                 # 2. Get probabilities for all cars (Batch Inference)
-                probs = actor.compute_prob(obs_batch) # Shape (100, 5)
+                probs = actor.compute_prob(obs_batch)  # Shape (100, 5)
 
                 # 3. Sample actions
                 actions = []
@@ -510,7 +522,7 @@ def main():
         acts_train = np.array(ACTS_BUFFER)
 
         # 1. Train Baseline
-        baseline_loss = baseline.train(obs_train, val_train)
+        baseline.train(obs_train, val_train)
 
         # 2. Train Actor
         v_preds = baseline.compute_values(obs_train).flatten()
@@ -520,8 +532,7 @@ def main():
         if advantages.std() > 1e-8:
             advantages = (advantages - advantages.mean()) / advantages.std()
 
-        actor_loss = actor.train(obs_train, acts_train, advantages)
-
+        actor.train(obs_train, acts_train, advantages)
 
     print("\nTraining Complete. Evaluating PPO...")
     test_score = evaluate(actor, env, episodes=50)
@@ -535,6 +546,7 @@ def main():
 
     # --- VISUALIZATION ---
     visualize_last_day(actor, env)
+
 
 if __name__ == "__main__":
     main()

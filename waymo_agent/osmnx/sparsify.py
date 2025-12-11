@@ -4,7 +4,7 @@ import networkx as nx
 import osmnx as ox
 
 from .osmnx_constants import OSMNXConstants as C
-from .pre_processing import preprocess_graph
+from .pre_processing import clean_graph
 
 
 def sparsify_graph(G_: nx.MultiDiGraph) -> nx.MultiDiGraph:
@@ -25,19 +25,19 @@ def sparsify_graph(G_: nx.MultiDiGraph) -> nx.MultiDiGraph:
 
     # 2. Remove non-major edges
     G_ret = keep_major_roads_only(G)
-    G_ret = preprocess_graph(G_ret)
+    G_ret = clean_graph(G_ret)
 
     # 3. Remove Lincoln Tunnel
     G_ret = remove_lincoln_tunnel(G_ret)
-    G_ret = preprocess_graph(G_ret)
+    G_ret = clean_graph(G_ret)
 
     # 4 Remove nodes that are now isolated, or have degree 2 (i.e., pass-through nodes)
     G_ret = remove_pass_through_nodes(G_ret)
-    G_ret = preprocess_graph(G_ret)
+    G_ret = clean_graph(G_ret)
 
     # 5. Clip to Manhattan core
     G_ret = clip_manhattan_core(G_ret)
-    G_ret = preprocess_graph(G_ret)
+    G_ret = clean_graph(G_ret)
 
     assert isinstance(G_ret, nx.MultiDiGraph)
     print(f"Final simplified graph: {G_ret.number_of_nodes()=}, {G_ret.number_of_edges()=}")
@@ -121,10 +121,6 @@ def _remove_edges_and_simplify(G_local: nx.MultiDiGraph, edges_to_remove: list) 
 
     return G_simplified
 
-
-import networkx as nx
-
-from .osmnx_constants import OSMNXConstants as C
 
 # very rough box around the Lincoln Tunnel entrance in west midtown
 LINCOLN_WEST = -74

@@ -4,12 +4,14 @@ This module provides a post-processing function to ensure these attributes are c
 """
 
 from __future__ import annotations
+
 import ast
 import contextlib
 import pathlib
 
 import networkx as nx
 import osmnx as ox
+
 from waymo_agent.osmnx.osmnx_constants import EXPECTED_EDGE_ATTR_TYPES, EXPECTED_NODE_ATTR_TYPES
 from waymo_agent.osmnx.utils import _coerce_speed, safe_literal_eval
 

@@ -7,6 +7,7 @@ import torch
 ROOT_DIR = Path(__file__).resolve().parent.parent
 MAP_DIR = ROOT_DIR / "maps"
 IMG_DIR = ROOT_DIR / "img"
+DATA_DIR = ROOT_DIR / "data_sim"
 MODEL_WEIGHT_DIR = ROOT_DIR / "model_weights"
 
 # IMG Paths
@@ -19,8 +20,8 @@ MANHATTAN_SPARSE_COLORFUL_TEST = "manhattan-sparse-colorful-test.png"
 
 # intermediate raw graph
 MANHATTAN_RAW_GRAPH = "manhattan-raw.graphml"
-# intermediate graph step after osmnx.pre_processing.pre_process_graph()
-MANHATTAN_PROCESSED_GRAPH = "manhattan-processed.graphml"
+# intermediate graph step after osmnx.pre_processing.clean_graph()
+MANHATTAN_CLEANED_GRAPH = "manhattan-cleaned.graphml"
 # intermediate sparsified graph. {} will be replaced by number of nodes
 MANHATTAN_SPARSE_GRAPH = "manhattan-sparse-{}-nodes.graphml"
 # final enriched graph with demand and charger info
