@@ -38,7 +38,7 @@ class EnvConfig:
     # Map and environment parameters
     map_name: str = MANHATTAN_ENRICHED_GRAPH.format(782)  # "manhattan-sparse-782-nodes-enriched.graphml"
     map_dir: Path = MAP_DIR
-    vehicle_per_node: float = 0.1  # must be greater than 0.0
+    vehicle_per_node: float = 0.002  # must be greater than 0.0
     max_vehicles: int = 25
     time_step_delta: dt.timedelta = dt.timedelta(minutes=1)
     max_episode_steps: int = 60 * 24  # 1 day
@@ -46,7 +46,7 @@ class EnvConfig:
     hours_per_day: int = 24
 
     # Demand parameters
-    lambda_per_node: float = 1 / 200  # average number of requests per node per minute
+    lambda_per_node: float = vehicle_per_node / 15  # average number of requests per node per minute
     lambda_variation_coef: float = 2.0
 
     # Request parameters
