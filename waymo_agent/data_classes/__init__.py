@@ -1,4 +1,5 @@
 from .config import EnvConfig
+from .config_plot import PlotConfig
 from .dataclasses import *
 from .vehicles import *
 from .requests import *

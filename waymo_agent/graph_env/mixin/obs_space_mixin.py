@@ -76,7 +76,7 @@ class ObservationSpaceMixin(GymEnvInterface):
         """
         self.bc_row, self._breadcrumbs = {}, []
         self.bc_row.update({"step": self.current_step, "timestamp": self.time_dt})
-        real_requests = RequestDF.spawn_requests(self)
+        real_requests = RequestDF.spawn_requests(self, self.config.max_new_requests_per_step)
         filler_requests = RequestDF.generate_empty(num_rows=self.config.max_pending_requests - len(real_requests))
         requests = RequestDF(pd.concat([real_requests, filler_requests], ignore_index=True).reset_index(drop=True))
         vehicles = init_vehicle_df(self)

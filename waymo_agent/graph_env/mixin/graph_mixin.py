@@ -10,7 +10,7 @@ from scipy.spatial.kdtree import cKDTree
 
 from waymo_agent.graph_env.df_utils import edges_to_df, nodes_to_df
 from waymo_agent.osmnx.distances import calculate_longest_path
-from waymo_agent.osmnx.euclidean_L2_embed import nearest_node_id_from_xy
+from waymo_agent.osmnx.euclidean_L2_embed import _recover_L2_params_env, nearest_node_id_from_xy
 
 from ...osmnx.charging import get_charging_nodes
 from ...osmnx.load_graph_safe import load_graph_type_preserved, post_load
@@ -71,6 +71,7 @@ class OSMnxWrapperMixin(GymEnvInterface):
         xs = np.array([G.nodes[n]["x_norm"] for n in G.nodes])
         ys = np.array([G.nodes[n]["y_norm"] for n in G.nodes])
         self.node_coords = np.stack([xs, ys], axis=1)  # shape: (N, 2)
+
         self.kd_tree = cKDTree(self.node_coords)  # type: ignore
         self.pos_raw = {n: (G.nodes[n]["x"], G.nodes[n]["y"]) for n in G.nodes}
         self.pos_norm = {n: (G.nodes[n]["x_norm"], G.nodes[n]["y_norm"]) for n in G.nodes}
@@ -81,6 +82,9 @@ class OSMnxWrapperMixin(GymEnvInterface):
         # TODO reduce # edges by transitioning to undirected graph (this needs to happen far upstream)
         self.edge_df = edges_to_df(G)
         self.route_edges_df = {}
+
+        # Recover L2 normalization parameters for coordinate conversion
+        self.l2_recovery = _recover_L2_params_env(self)
 
     @cached_property
     def EdgeDFEnriched(self):

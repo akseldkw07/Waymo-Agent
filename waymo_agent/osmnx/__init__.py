@@ -10,3 +10,6 @@ from .charging import *
 from .euclidean_L2_embed import *
 from .visualization import *
 from .traverse_graph import *
+from .load_graph_safe import load_graph_type_preserved
+
+# from ..osmnx.osmnx_constants import DEFAULT_OX_PLOT_NOTEBOOK

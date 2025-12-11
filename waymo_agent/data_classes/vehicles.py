@@ -5,11 +5,12 @@ import typing as t
 
 import numpy as np
 
-from waymo_agent.data_classes.config import EnvConfig
+
 from waymo_agent.data_classes.enriched_df_base import EnrichedDF, validate_typed_df_keys
 
 if t.TYPE_CHECKING:
     from waymo_agent.graph_env.mixin.obs_space_mixin import ObservationSpaceMixin
+    from waymo_agent.data_classes.config import EnvConfig
 
 
 class VehicleStatusEnum(enum.IntEnum):

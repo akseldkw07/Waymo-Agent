@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import logging
 import typing as t
 from abc import ABC
 
@@ -12,7 +13,7 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
 
-from waymo_agent.data_classes import ActionDict, CustomerDF, EnvInfoTypedDict, ObservationDict
+from waymo_agent.data_classes import ActionDict, CustomerDF, EnvConfig, EnvInfoTypedDict, ObservationDict, PlotConfig
 from waymo_agent.data_classes.enriched_df_base import validate_typed_df_keys
 from waymo_agent.data_classes.metrics import TimeSeriesMetricsDF
 from waymo_agent.simulation.dt_utils import embed_datetime_to_circle
@@ -23,10 +24,6 @@ Line2DType = type[Line2D]
 
 """Gymnasium environment that mirrors the proposal architecture for the Waymo RL project."""
 
-import logging
-
-from waymo_agent.data_classes import EnvConfig
-
 
 class GymEnvInterface(gym.Env, ABC):
     """
@@ -35,6 +32,7 @@ class GymEnvInterface(gym.Env, ABC):
 
     metadata = {"render_modes": ["human", "ansi"], "render_fps": 6}
     config: EnvConfig
+    plt_cfg: PlotConfig
     render_mode: str | t.Literal["human", "ansi"]
     map_name: str
     num_vehicles: int
@@ -44,6 +42,7 @@ class GymEnvInterface(gym.Env, ABC):
     node_ids: list[int]
     node_index: dict[int, int]
     node_coords: np.ndarray
+    l2_recovery: dict[str, float]
 
     # Dataframes
     node_df: pd.DataFrame

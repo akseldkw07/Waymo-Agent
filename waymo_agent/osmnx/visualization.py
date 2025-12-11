@@ -1,9 +1,13 @@
+from matplotlib.axes import Axes
 import matplotlib.cm as cm
 import matplotlib.colors as colors
+from matplotlib.ticker import FuncFormatter
 import networkx as nx
 import numpy as np
 
-from waymo_agent.data_classes import EnvConfig
+from waymo_agent.data_classes import PlotConfig
+from waymo_agent.data_classes.vehicles import VehicleDF
+from waymo_agent.osmnx.euclidean_L2_embed import x_y_normed_to_orig
 
 
 def get_edge_color_by_speed(G: nx.MultiDiGraph, cmap_name: str = "plasma"):
@@ -28,7 +32,7 @@ def get_edge_color_by_speed(G: nx.MultiDiGraph, cmap_name: str = "plasma"):
     return edge_colors, edge_widths_list
 
 
-def get_node_colors_and_sizes(G: nx.MultiDiGraph, config: EnvConfig | None = None):
+def get_node_colors_and_sizes(G: nx.MultiDiGraph, plt_cfg: PlotConfig | None = None):
     """
     Get node colors and sizes based on charger status and lambda values.
 
@@ -36,16 +40,17 @@ def get_node_colors_and_sizes(G: nx.MultiDiGraph, config: EnvConfig | None = Non
         node_colors (list): List of colors for each node.
         node_sizes (list): List of sizes for each node.
     """
-    config = config or EnvConfig()
-    node_width_scale = config.ox_plot_requests["route_linewidth"]
-    node_size = config.ox_plot_default["node_size"]
+    plt_cfg = plt_cfg or PlotConfig()
+    node_width_scale = plt_cfg.ox_plot_requests["route_linewidth"]
+    node_size = plt_cfg.ox_plot_default["node_size"]
     node_size = node_size if isinstance(node_size, (int, float)) else 5.0
     # --- node color: charger vs non-charger ---
     # e.g. bright cyan for chargers, dim gray for others
-    node_colors = ["#88fe01" if G.nodes[n].get("num_chargers", False) else "#ffffff" for n in G.nodes]
+    node_colors = ["#88fe01" if G.nodes[n].get("num_chargers", False) else plt_cfg.node_color for n in G.nodes]
 
     # --- node size: scale with lambda ---
     lambdas = np.array([G.nodes[n].get("lambda", 0.0) for n in G.nodes], dtype=float)
+
     if lambdas.max() > 0:
         # rescale to something visible, say [10, 80] points
         lam_norm: np.ndarray = (lambdas - lambdas.min()) / (lambdas.max() - lambdas.min() + 1e-9)
@@ -53,3 +58,72 @@ def get_node_colors_and_sizes(G: nx.MultiDiGraph, config: EnvConfig | None = Non
     else:
         node_sizes: list[float] = np.full_like(lambdas, node_size).tolist()
     return node_colors, node_sizes
+
+
+def plot_cars(veh: VehicleDF, cfg: PlotConfig, l2_recovery: dict[str, float], ax: Axes):
+    colors = veh["status"].map(cfg.car_status_colors).to_list()
+
+    lon, lat = x_y_normed_to_orig(l2_recovery, veh["loc_x_norm"], veh["loc_y_norm"])
+    ax.scatter(lon, lat, c=colors, s=100, zorder=10, marker="X", edgecolors="black", linewidths=2)
+
+
+def x_y_coords(
+    ax: Axes,
+    l2_recovery: dict[str, float],
+    current_step: int,
+    active_rides_routes: np.ndarray,
+    request_routes: np.ndarray,
+    veh: VehicleDF,
+):
+    # Show both raw and normalized coordinates on axes:
+    # bottom x-axis: lon with normalized x in parentheses
+    # left y-axis: lat with normalized y in parentheses
+    x0 = l2_recovery["x0"]
+    y0 = l2_recovery["y0"]
+    max_abs = l2_recovery["max_abs"]
+
+    def _fmt_x(raw: float, pos: int) -> str:
+        # raw is the longitude (projected x); show raw and normalized
+        x_norm = (raw - x0) / max_abs
+        return f"{raw:.4f}\n({x_norm:.2f})"
+
+    def _fmt_y(raw: float, pos: int) -> str:
+        # raw is the latitude (projected y); show raw and normalized
+        y_norm = (raw - y0) / max_abs
+        return f"{raw:.4f}\n({y_norm:.2f})"
+
+    ax.xaxis.set_major_formatter(FuncFormatter(_fmt_x))
+    ax.yaxis.set_major_formatter(FuncFormatter(_fmt_y))
+
+    # Make tick labels more visible
+    ax.tick_params(axis="both", which="major", labelsize=11, colors="black", labelcolor="black")
+
+    # Add axis labels to clarify the coordinate systems
+    ax.set_xlabel(
+        "Longitude (x_norm)",
+        fontsize=14,
+        fontweight="bold",
+        color="black",
+        bbox=dict(boxstyle="round,pad=0.5", facecolor="white", edgecolor="black", linewidth=2),
+    )
+    ax.set_ylabel(
+        "Latitude (y_norm)",
+        fontsize=14,
+        fontweight="bold",
+        color="black",
+        bbox=dict(boxstyle="round,pad=0.5", facecolor="white", edgecolor="black", linewidth=2),
+    )
+
+    # Add a title with coordinate system info
+    ax.set_title(
+        f"Step {current_step} | "
+        f"Vehicles: {len(veh)} | "
+        f"Active Rides: {len(active_rides_routes)} | "
+        f"Pending Requests: {len(request_routes)}\n"
+        f"Coordinates: Raw (Normalized)",
+        fontsize=12,
+        fontweight="bold",
+        color="black",
+        pad=20,
+        bbox=dict(boxstyle="round,pad=0.8", facecolor="white", edgecolor="black", linewidth=2.5),
+    )

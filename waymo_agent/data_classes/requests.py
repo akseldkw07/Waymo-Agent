@@ -158,11 +158,13 @@ class RequestDF(EnrichedDF):
         return {"shape": shape, "low": low, "high": high}
 
     @classmethod
-    def spawn_requests(cls, env: ObservationSpaceMixin | TransitionMixin) -> RequestDF:
+    def spawn_requests(cls, env: ObservationSpaceMixin | TransitionMixin, max_req: int | None = None) -> RequestDF:
         """
         Generate new ride requests. Each request is associated with a customer and a pickup/dropoff node.
 
         The process is to sample from all nodes and create requests based on the lambda rate per node.
+
+        If max_req is not None, limits the number of spawned requests to max_req.
 
         Stochastic
         """
@@ -171,6 +173,7 @@ class RequestDF(EnrichedDF):
         config = env.config
 
         f_requests = np.random.poisson(lam=env.node_df["lambda"]).astype(bool)
+        print(f_requests.sum())
 
         # CURR_REQ_ID
         new_ids = np.arange(CURR_REQ_ID, CURR_REQ_ID + (num_req := f_requests.sum()))
@@ -201,8 +204,10 @@ class RequestDF(EnrichedDF):
         request_df["status"] = RequestStatusEnum.AWAITING_PRICE
         request_df["request_dt"] = pd.to_datetime(env.time_dt)
 
-        request_df = RequestDF(request_df[RequestDF.column_order()])
+        if max_req is not None and len(request_df) > max_req:
+            request_df = request_df.sample(max_req)
 
+        request_df = RequestDF(request_df[RequestDF.column_order()])
         validate_typed_df_keys(request_df, RequestDF)
 
         return request_df

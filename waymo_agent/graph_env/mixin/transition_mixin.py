@@ -177,7 +177,7 @@ class TransitionMixin(RewardMixin):
         requests["status"] = new_status
 
         # 7 - spawn new requests
-        spawned_req = RequestDF.spawn_requests(self)
+        spawned_req = RequestDF.spawn_requests(self, self.config.max_new_requests_per_step)
 
         return requests, spawned_req, matches_orig
 
