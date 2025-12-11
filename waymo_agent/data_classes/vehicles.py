@@ -6,8 +6,7 @@ import typing as t
 import numpy as np
 
 from waymo_agent.data_classes.config import EnvConfig
-from waymo_agent.data_classes.enriched_df_base import EnrichedDF
-from waymo_agent.graph_env.df_utils import validate_typed_df_keys
+from waymo_agent.data_classes.enriched_df_base import EnrichedDF, validate_typed_df_keys
 
 if t.TYPE_CHECKING:
     from waymo_agent.graph_env.mixin.obs_space_mixin import ObservationSpaceMixin
@@ -21,24 +20,27 @@ class VehicleStatusEnum(enum.IntEnum):
 
 
 class VehicleDF(EnrichedDF):
-    ride_id: np.ndarray
     vehicle_id: np.ndarray  # unique identifier for the vehicle. [0, num_vehicles)
+    ride_id: np.ndarray
     loc_x_norm: np.ndarray  # [-1, 1]
     loc_y_norm: np.ndarray  # [-1, 1]
     battery: np.ndarray  # [0.0, 1.0]
     status: np.ndarray  # VehicleStatusEnum value
 
-    # Training view: [loc_x_norm, loc_y_norm, battery, status_one_hot(4)] -> 7 dims
-    cols_to_keep: t.ClassVar[list[str]] = ["loc_x_norm", "loc_y_norm", "battery"]
-    enum_fields: t.ClassVar[dict[str, type[enum.IntEnum]]] = {"status": VehicleStatusEnum}
-    target_dtypes: t.ClassVar[dict[str, type]] = {
-        "ride_id": np.int64,
+    # Training view: [loc_x_norm, loc_y_norm, battery, status] -> 4 dims
+    cols_to_keep: t.ClassVar[list[str]] = ["loc_x_norm", "loc_y_norm", "battery", "status"]
+    target_dtypes = {
         "vehicle_id": np.int64,
+        "ride_id": np.int64,
         "loc_x_norm": np.float32,
         "loc_y_norm": np.float32,
         "battery": np.float32,
         "status": np.int8,
     }
+
+    @property
+    def f_valid(self) -> np.ndarray:
+        return np.full(self.shape[0], True, dtype=bool)
 
     @property
     def f_available(self) -> np.ndarray:
@@ -47,6 +49,10 @@ class VehicleDF(EnrichedDF):
     @property
     def f_get_rewards(self) -> np.ndarray:
         return self.status == VehicleStatusEnum.WITH_PASSENGER
+
+    @property
+    def f_should_have_ride_id(self) -> np.ndarray:
+        return (self.status == VehicleStatusEnum.TO_PICKUP) | (self.status == VehicleStatusEnum.WITH_PASSENGER)
 
     @classmethod
     def space_config(cls, config: EnvConfig, num_vehicles: int):

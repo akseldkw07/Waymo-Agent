@@ -1,6 +1,8 @@
 import typing as t
+
 import numpy as np
 import pandas as pd
+
 from waymo_agent.data_classes.active_rides import ActiveRideDF
 from waymo_agent.osmnx.euclidean_L2_embed import f_edges_start_end_node
 
@@ -66,8 +68,10 @@ def step_along_route(env: "OSMnxWrapperMixin", pos: ActiveRideDF):
 
     for row in pos.itertuples():
         # 1 Find the enriched route edges for this row's route
+        row_index = int(row.Index)  # type: ignore
+        if not pos.f_valid[row_index]:
+            continue
         try:
-
             route_nodes: list[int] = row.route_nodes  # type: ignore
             start: int = route_nodes[0]  # type: ignore
             end: int = route_nodes[-1]  # type: ignore
@@ -90,12 +94,11 @@ def step_along_route(env: "OSMnxWrapperMixin", pos: ActiveRideDF):
         path_row, frac = time_to_edge_progress(route_enriched, next_time)
 
         # Update pos_new
-        pos_new.at[row.Index, "curr_start_node"] = path_row["source"]
-        pos_new.at[row.Index, "curr_end_node"] = path_row["target"]
-        pos_new.at[row.Index, "route_dist_on_edge"] = frac * path_row["length"]
-        pos_new.at[row.Index, "trip_distance_remaining_meters"] = path_row["DistanceRemaining"]
-        pos_new.at[row.Index, "is_complete"] = frac >= 1.0 and path_row["DistanceRemaining"] <= 0.0
-
+        pos_new.at[row_index, "curr_start_node"] = path_row["source"]
+        pos_new.at[row_index, "curr_end_node"] = path_row["target"]
+        pos_new.at[row_index, "route_dist_on_edge"] = frac * path_row["length"]
+        pos_new.at[row_index, "trip_distance_remaining_meters"] = path_row["DistanceRemaining"]
+        pos_new.at[row_index, "is_complete"] = frac >= 1.0 and path_row["DistanceRemaining"] <= 0.0
     return pos_new
 
 

@@ -11,7 +11,7 @@ class TimeSeriesMetricsDF(pd.DataFrame):
     timestamp: np.ndarray
     error_msg: np.ndarray
 
-    earned_revenue: np.ndarray
+    rewards: np.ndarray
     supply_demand_ratio: np.ndarray
 
     # perc_cars_idle: np.ndarray

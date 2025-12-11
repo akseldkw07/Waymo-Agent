@@ -7,14 +7,14 @@ import numpy as np
 import pandas as pd
 
 from waymo_agent.data_classes.config import EnvConfig
-from waymo_agent.data_classes.enriched_df_base import EnrichedDF
+from waymo_agent.data_classes.enriched_df_base import EnrichedDF, validate_typed_df_keys
 from waymo_agent.graph_env.cost_reward import compute_operating_cost
-from waymo_agent.graph_env.df_utils import validate_typed_df_keys
 
 if t.TYPE_CHECKING:
     from waymo_agent.graph_env.mixin import ObservationSpaceMixin, TransitionMixin
 
-CURR_ID: int = 0
+CURR_REQ_ID: int = 0
+CFG = EnvConfig()
 
 
 class RequestStatusEnum(enum.IntEnum):
@@ -53,10 +53,10 @@ class RequestDF(EnrichedDF):
     est_cost: np.ndarray
     price: np.ndarray
 
-    max_wait_time: np.ndarray
+    max_wait_time: np.timedelta64
     wait_time: np.ndarray
     status: np.ndarray  # RequestStatusEnum value
-    target_dtypes: t.ClassVar[dict[str, type]] = {
+    target_dtypes = {
         "request_id": np.int64,
         "request_dt": np.datetime64,  # datetime64[ns]
         "pickup_node_id": np.int64,
@@ -75,31 +75,37 @@ class RequestDF(EnrichedDF):
         "distance_meters": np.float64,
         "est_cost": np.float64,
         "price": np.float64,
-        "max_wait_time": np.float64,
-        "wait_time": np.float64,
+        "max_wait_time": np.timedelta64,
+        "wait_time": np.timedelta64,
         "status": np.int64,
+    }
+    default_vals: t.ClassVar[dict[str, t.Any]] = {
+        "max_wait_time": (CFG.max_wait_time_minutes),
+        "wait_time": 0,
+        "price": -1.0,
+        "est_cost": -1.0,
     }
 
     @property
-    def f_real_requests(self) -> np.ndarray:
-        return self.request_id != EnvConfig().invalid_id
+    def f_valid(self) -> np.ndarray:
+        return self.request_id != CFG.invalid_id
 
     @property
     def f_awaiting_price(self) -> np.ndarray:
         raw = self.status == RequestStatusEnum.AWAITING_PRICE
-        ret = raw & self.f_real_requests
+        ret = raw & self.f_valid
         return ret
 
     @property
     def f_need_dispatch(self) -> np.ndarray:
         raw = self.status == RequestStatusEnum.ACCEPTED
-        ret = raw & self.f_real_requests
+        ret = raw & self.f_valid
         return ret
 
     @property
     def f_reject_expired(self) -> np.ndarray:
         raw = (self.status == RequestStatusEnum.CANCEL_EXCEED_WAIT_TIME) | (self.status == RequestStatusEnum.REJECTED)
-        ret = raw & self.f_real_requests
+        ret = raw & self.f_valid
         return ret
 
     @property
@@ -108,13 +114,13 @@ class RequestDF(EnrichedDF):
         Requests associated with vehicle
         """
         raw = self.status == RequestStatusEnum.ASSIGNED
-        ret = raw & self.f_real_requests
+        ret = raw & self.f_valid
         return ret
 
     @property
     def f_completed(self) -> np.ndarray:
         raw = self.status == RequestStatusEnum.COMPLETED
-        ret = raw & self.f_real_requests
+        ret = raw & self.f_valid
         return ret
 
     @property
@@ -123,7 +129,7 @@ class RequestDF(EnrichedDF):
         Requests that are no longer active (cancelled, rejected, completed)
         """
         raw = self.f_reject_expired | self.f_completed
-        ret = raw & self.f_real_requests
+        ret = raw & self.f_valid
         return ret
 
     # Training view (based on define_observation_space docstring):
@@ -140,32 +146,6 @@ class RequestDF(EnrichedDF):
         "wait_time",
     ]
     enum_fields: t.ClassVar[dict[str, type[enum.IntEnum]]] = {"status": RequestStatusEnum}
-
-    @staticmethod
-    def column_order() -> list[str]:
-        return [
-            "request_id",
-            "request_dt",
-            "pickup_node_id",
-            "pickup_x_norm",
-            "pickup_y_norm",
-            "cust_id",
-            "cust_bias",
-            "cust_temperature",
-            "dropoff_node_id",
-            "dropoff_x_norm",
-            "dropoff_y_norm",
-            "route_nodes",
-            "curr_start_node",
-            "curr_end_node",
-            "route_dist_on_edge",
-            "distance_meters",
-            "est_cost",
-            "price",
-            "max_wait_time",
-            "wait_time",
-            "status",
-        ]
 
     @staticmethod
     def space_config(config: EnvConfig):
@@ -186,19 +166,20 @@ class RequestDF(EnrichedDF):
 
         Stochastic
         """
+        global CURR_REQ_ID
+        # print(f"{CURR_REQ_ID=}")
         config = env.config
 
         f_requests = np.random.poisson(lam=env.node_df["lambda"]).astype(bool)
 
-        global CURR_ID
-        new_ids = np.arange(CURR_ID, CURR_ID + f_requests.sum())
-        CURR_ID += f_requests.sum()
+        # CURR_REQ_ID
+        new_ids = np.arange(CURR_REQ_ID, CURR_REQ_ID + (num_req := f_requests.sum()))
+        CURR_REQ_ID += num_req
+        # print(f"{num_req=}, {CURR_REQ_ID=}")
 
-        cust_samples = env.cust_df.sample(f_requests.sum(), replace=True)
+        cust_samples = env.cust_df.sample(num_req, replace=True)
         cust_samples.columns = ["cust_id", "cust_bias", "cust_temperature"]
-        dropoff_df = env.node_df.sample(f_requests.sum(), replace=True, ignore_index=True)[
-            ["node_id", "x_norm", "y_norm"]
-        ]
+        dropoff_df = env.node_df.sample(num_req, replace=True, ignore_index=True)[["node_id", "x_norm", "y_norm"]]
         dropoff_df.columns = ["dropoff_node_id", "dropoff_x_norm", "dropoff_y_norm"]
 
         request_df = env.node_df[f_requests][["node_id", "x_norm", "y_norm"]].reset_index(drop=True)
@@ -215,8 +196,8 @@ class RequestDF(EnrichedDF):
         request_df["curr_end_node"] = [nodes[1] if len(nodes) > 1 else nodes[0] for nodes in request_df["route_nodes"]]
         request_df["est_cost"] = compute_operating_cost(request_df.distance_meters, config)
         request_df["price"] = np.nan
-        request_df["max_wait_time"] = config.max_wait_time
-        request_df["wait_time"] = 0.0
+        request_df["max_wait_time"] = pd.Timedelta(minutes=config.max_wait_time_minutes)
+        request_df["wait_time"] = pd.Timedelta(0)
         request_df["status"] = RequestStatusEnum.AWAITING_PRICE
         request_df["request_dt"] = pd.to_datetime(env.time_dt)
 
@@ -225,12 +206,3 @@ class RequestDF(EnrichedDF):
         validate_typed_df_keys(request_df, RequestDF)
 
         return request_df
-
-    @classmethod
-    def generate_empty(cls, num_rows: int = 0) -> RequestDF:
-        cfg = EnvConfig()
-        df = super().generate_empty(num_rows=num_rows)
-        df["request_id"] = cfg.invalid_id
-        ret = cls(df)
-        validate_typed_df_keys(ret, RequestDF)
-        return ret

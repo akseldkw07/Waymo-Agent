@@ -74,7 +74,8 @@ class RenderingMixin(GymEnvInterface):
 
         # Plot active rides & requests as routes
         active_rides = self.observation_curr["active_rides"]
-        f_plot_rides = ~active_rides.complete & (active_rides.ride_id != self.config.invalid_id)
+        f_plot_rides = ~active_rides.complete & (active_rides.ride_id != self.config.invalid_id) & active_rides.f_valid
+        self.f_plot_rides = f_plot_rides  # for testing purposes TODO remove
         active_rides_routes = active_rides.route_nodes[f_plot_rides]
 
         plot_request_types = np.array([RSE.AWAITING_PRICE, RSE.ACCEPTED, RSE.ASSIGNED])

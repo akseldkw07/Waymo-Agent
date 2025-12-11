@@ -27,7 +27,7 @@ class RewardShapingConfig:
     penalty_multiple_dispatch_assignment: float = -0.1  # penalty for assigning multiple vehicles to the same request
     penalty_assign_to_unavailable_vehicle: float = -0.2  # penalty for assigning a vehicle that is not available
 
-    def pen_df_empty(self, len: int = 1) -> pd.DataFrame:
+    def reward_df_empty(self, len: int = 1) -> pd.DataFrame:
         df_cols = self.__dataclass_fields__.keys()
         ret = pd.DataFrame({col: [0.0] * len for col in df_cols})
         return ret
@@ -51,12 +51,9 @@ class EnvConfig:
 
     # Request parameters
     max_pending_requests: int = 25
-    max_wait_time: float = 0.25  # in hours
+    max_wait_time_minutes: int = 15  # in minutes
 
     # Pricing
-    distance_fare: float = 1.8  # per meter
-    base_fare: float = 2.5
-    time_fare_per_hour: float = 15.0
     max_price: float = np.inf  # maximum allowable price for a ride
 
     # Dispatching

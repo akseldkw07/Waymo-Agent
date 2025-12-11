@@ -4,6 +4,8 @@ import typing as t
 from math import ceil
 from pathlib import Path
 
+import numpy as np
+
 from waymo_agent.data_classes import ActionDict, EnvConfig
 
 from .mixin import ActionMixin, ObservationSpaceMixin, OSMnxWrapperMixin, RenderingMixin, TransitionMixin
@@ -38,6 +40,7 @@ class RideShareEnv(RenderingMixin, OSMnxWrapperMixin, ObservationSpaceMixin, Act
 
         super().reset(seed=seed, options=options)
         self.reset_globals()
+        self.reset_debug_and_interim()
 
         observation = self.reset_observation()
         return observation, self.info
@@ -52,8 +55,22 @@ class RideShareEnv(RenderingMixin, OSMnxWrapperMixin, ObservationSpaceMixin, Act
         # TODO implement transition logic
         reward = 0.0
 
-        self._advance_clock()
         terminated = False
         truncated = self.current_step >= self.config.max_episode_steps
-        self.observation_curr = self.get_observation(action)
-        return self.observation_curr, float(reward), terminated, bool(truncated), self.info
+
+        observation, reward = self.get_observation(action)
+        obs_gymnasium: dict[str, np.ndarray] = {
+            "globals": observation["globals"],
+            "supply_demand_ratio": observation["supply_demand_ratio"],
+            "vehicles": observation["vehicles"].to_obs_numpy(),
+            "pending_requests": observation["pending_requests"].to_obs_numpy(),
+            "active_rides": observation["active_rides"].to_obs_numpy(),
+            "dispatch_mask": observation["dispatch_mask"],
+            "pricing_mask": observation["pricing_mask"],
+        }
+        try:
+            self.observation_space.contains(obs_gymnasium)
+        except Exception as e:
+            self.error_msg = str(e)
+            terminated = True
+        return obs_gymnasium, reward, terminated, bool(truncated), self.info

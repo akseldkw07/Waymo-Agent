@@ -12,9 +12,9 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
 
-from waymo_agent.data_classes import ActionDict, CustomerDF, EnvInfoTypedDict, ObservationDict, WeatherEnum
+from waymo_agent.data_classes import ActionDict, CustomerDF, EnvInfoTypedDict, ObservationDict
+from waymo_agent.data_classes.enriched_df_base import validate_typed_df_keys
 from waymo_agent.data_classes.metrics import TimeSeriesMetricsDF
-from waymo_agent.graph_env.df_utils import validate_typed_df_keys
 from waymo_agent.simulation.dt_utils import embed_datetime_to_circle
 
 AxesLike = Axes
@@ -81,9 +81,7 @@ class GymEnvInterface(gym.Env, ABC):
 
     @property
     def MetaState(self):
-        weather_one_hot = np.zeros(len(WeatherEnum), dtype=np.int8)
-        weather_one_hot[self.weather_idx] = 1
-        meta_state = np.array([*self.day_of_week_norm, *self.time_of_day_norm, *weather_one_hot])
+        meta_state = np.array([*self.day_of_week_norm, *self.time_of_day_norm, self.weather_idx])
         return meta_state
 
     @property
@@ -115,3 +113,5 @@ class GymEnvInterface(gym.Env, ABC):
         self.time_of_day_norm = embed_datetime_to_circle(self.time_dt, "time")
 
     def calc_shortest_paths(self, *args, **kwargs) -> pd.DataFrame: ...
+
+    def nearest_node_id(self, *args, **kwargs) -> t.Sequence[int]: ...

@@ -4,10 +4,11 @@ import osmnx as ox
 from scipy.spatial.kdtree import cKDTree
 
 PRECISION = 4
-import networkx as nx
-import osmnx as ox
 import typing as t
+
+import networkx as nx
 import numpy as np
+import osmnx as ox
 import pandas as pd
 
 if t.TYPE_CHECKING:

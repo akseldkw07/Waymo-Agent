@@ -3,6 +3,7 @@ TODO
 """
 
 import pathlib
+import typing as t
 
 import numpy as np
 import pandas as pd
@@ -58,7 +59,12 @@ def price_acceptance_probability(
     TODO implement the acceptance model based on margin (price - cost), supply-demand ratio, customer bias and temperature.
     Return a float between 0.0 and 1.0
     """
+    assert len(requests) == len(
+        prices
+    ), f"Length of requests, and prices must be the same. {len(requests)=}, {len(prices)=}"
     config = config or EnvConfig()
+
+    cust = t.cast(CustomerDF, pd.merge(requests[["cust_id", "est_cost"]], cust, on="cust_id", how="left"))
     z = (
         cust.bias
         + (prices - requests.est_cost) * config.acceptance_margin_weight

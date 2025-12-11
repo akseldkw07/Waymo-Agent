@@ -34,18 +34,20 @@ class ObservationSpaceMixin(GymEnvInterface):
     @property
     def global_space_config(self):
         """ """
-        shape = (7,)
-        low = np.array([-1.0, -1.0, -1.0, -1.0, 0.0, 0.0, 0.0])
-        high = np.array([1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0])
+        shape = (5,)
+        low = np.array([-1.0, -1.0, -1.0, -1.0, 0.0])
+        high = np.array([1.0, 1.0, 1.0, 1.0, len(WeatherEnum) - 1])
         return {"shape": shape, "low": low, "high": high}
 
     def define_observation_space(self):
         """
+        TODO no need to breakup enums, let the user handle
+
         Define the observation space for the environment.
-            - globals: day of week (sin, cos), time of day (sin, cos), weather_one_hot(3) (7,) #TODO stretch goal: add demand per node, next step speed limits
+            - globals: day of week (sin, cos), time of day (sin, cos), weather_idx (5,) #TODO stretch goal: add demand per node, next step speed limits
             - supply_demand_ratio: current supply-demand ratio, vehicle-per-node, lambda-per-node (3,)
-            - vehicles: (num_vehicles, 7) -> [loc_x_norm, loc_y_norm, battery, status_one_hot(4)]
-            - pending_requests: (max_pending_requests, 9) -> [pickup_x_norm, pickup_y_norm, dropoff_x_norm, dropoff_y_norm, distance_meters, est_cost, max_wait_time, wait_time, status_one_hot(1)] # TODO add max wait time before
+            - vehicles: (num_vehicles, 7) -> [loc_x_norm, loc_y_norm, battery, status(enum)]
+            - pending_requests: (max_pending_requests, 9) -> [pickup_x_norm, pickup_y_norm, dropoff_x_norm, dropoff_y_norm, distance_meters, est_cost, max_wait_time, wait_time, status_bool] # TODO add max wait time before
             - active_rides: (num_vehicles, 9) -> [pickup_x_norm, pickup_y_norm, dropoff_x_norm, dropoff_y_norm, price, est_cost, total_trip_distance, trip_distance_remaining, pickup_distance_remaining]
             - dispatch_mask: (num_vehicles) -> 1 if vehicle can be dispatched to request, else 0
             - pricing_mask: (max_pending_requests) -> 1 if request needs pricing decision, else 0
@@ -96,7 +98,7 @@ class ObservationSpaceMixin(GymEnvInterface):
         self.observation_prev = observation  # TODO should I be doing this?
         self.observation_space.contains(observation)  # This will fail due to dataframes instead of numpy arrays
         # TODOD should I .to_numpy() here?
-        self.bc_row.update({"error_msg": self.error_msg, "earned_revenue": 0})
+        self.bc_row.update({"error_msg": self.error_msg, "rewards": 0})
         self.append_breadcrumbs()
         return observation
 
@@ -115,7 +117,7 @@ class ObservationSpaceMixin(GymEnvInterface):
             "rejected_requests": 0.0,
             "cancelled_requests": 0.0,
             "overflow_requests": 0.0,
-            "earned_revenue": 0.0,
+            "rewards": 0.0,
             "energy_spent": 0.0,
             "distance_travelled": 0.0,
         }

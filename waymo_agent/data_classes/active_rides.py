@@ -7,8 +7,7 @@ import numpy as np
 import pandas as pd
 
 from waymo_agent.data_classes.config import EnvConfig
-from waymo_agent.data_classes.enriched_df_base import EnrichedDF
-from waymo_agent.graph_env.df_utils import validate_typed_df_keys
+from waymo_agent.data_classes.enriched_df_base import EnrichedDF, validate_typed_df_keys
 
 if t.TYPE_CHECKING:
     from . import RequestDF
@@ -40,6 +39,10 @@ class ActiveRideDF(EnrichedDF):
 
     complete: np.ndarray
 
+    @property
+    def f_valid(self) -> np.ndarray:
+        return self.ride_id != EnvConfig().invalid_id
+
     # Training view (define_observation_space):
     # [pickup_x_norm, pickup_y_norm, dropoff_x_norm, dropoff_y_norm,
     #  price, total_trip_distance_meters, trip_distance_remaining_meters,
@@ -56,7 +59,7 @@ class ActiveRideDF(EnrichedDF):
         "pickup_distance_remaining_meters",
     ]
     enum_fields: t.ClassVar[dict[str, type[enum.IntEnum]]] = {}
-    target_dtypes: t.ClassVar[dict[str, type]] = {
+    target_dtypes = {
         "ride_id": np.int64,
         "vehicle_id": np.int64,
         "pickup_node": np.int64,
@@ -66,6 +69,7 @@ class ActiveRideDF(EnrichedDF):
         "dropoff_x_norm": np.float32,
         "dropoff_y_norm": np.float32,
         "price": np.float32,
+        "est_cost": np.float32,
         "total_trip_distance_meters": np.float32,
         "trip_distance_remaining_meters": np.float32,
         "pickup_distance_remaining_meters": np.float32,

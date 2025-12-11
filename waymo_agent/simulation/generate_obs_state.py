@@ -10,14 +10,14 @@ if t.TYPE_CHECKING:
 
 def init_vehicle_df(env: "ObservationSpaceMixin") -> VehicleDF:
     ret = VehicleDF.generate_empty(env)
+
     return ret
 
 
-def init_active_ride_df(env: "ObservationSpaceMixin | TransitionMixin", vehicles: VehicleDF) -> ActiveRideDF:
+def init_active_ride_df(env: "ObservationSpaceMixin | TransitionMixin", vehicles: VehicleDF):
     ret = ActiveRideDF.generate_empty(num_rows=env.num_vehicles)
     ret.vehicle_id = vehicles.vehicle_id.copy()
 
-    assert isinstance(ret, ActiveRideDF)
     return ret
 
 

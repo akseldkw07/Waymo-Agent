@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from functools import cached_property
 import typing as t
+from functools import cached_property
 
 import networkx as nx
 import numpy as np
@@ -171,8 +171,12 @@ class OSMnxWrapperMixin(GymEnvInterface):
             self._longest_distance, self._longest_route = max_length, longest_path
             return self._longest_distance
 
-    def nearest_node_id(self, x_norm: float, y_norm: float) -> int:
-        return nearest_node_id_from_xy(self.kd_tree, self.node_ids, x_norm, y_norm)
+    def nearest_node_id(self, x_norm: t.Sequence[float], y_norm: t.Sequence[float]):
+        nodes = []
+        for x, y in zip(x_norm, y_norm):
+            nodeid = nearest_node_id_from_xy(self.kd_tree, self.node_ids, x, y)
+            nodes.append(nodeid)
+        return nodes
 
     def calc_shortest_paths(self, source_nodes: t.Sequence[int], target_nodes: t.Sequence[int], weight: str = "length"):
         """
