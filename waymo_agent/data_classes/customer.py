@@ -16,9 +16,9 @@ from . import RequestDF
 
 class CustomerDFGenator:
     size: int = 50_000
-    loc = 0
+    loc = -1.0
     scale = 2
-    temp_low = 1.2
+    temp_low = 1.5
     temp_high = 2.5
 
     filename: str = "customers.parquet"
@@ -62,12 +62,14 @@ def price_acceptance_probability(
     assert len(requests) == len(prices), f"Length of requests {len(requests)=} != length of prices {len(prices)=}"
     config = config or EnvConfig()
 
-    cust = t.cast(CustomerDF, pd.merge(requests[["cust_id", "est_cost"]], cust, on="cust_id", how="left"))
+    cust_enrich = t.cast(CustomerDF, pd.merge(requests[["cust_id", "est_cost"]], cust, on="cust_id", how="left"))
+    profit_margin = (prices - cust_enrich["est_cost"]) / (cust_enrich["est_cost"] + 1e-5)
+
     z = (
-        cust.bias
-        + (prices - requests.est_cost) * config.acceptance_margin_weight
+        cust_enrich.bias
+        + profit_margin * config.acceptance_margin_weight
         + config.acceptance_supply_demand_weight * supply_demand_ratio_z
-    ) / cust.temperature
+    ) / cust_enrich.temperature
 
     acceptance_prob = 1.0 / (1.0 + np.exp(-z))
 
