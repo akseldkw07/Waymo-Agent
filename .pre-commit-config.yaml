@@ -13,7 +13,7 @@ repos:
     hooks:
       - id: autoflake
         name: autoflake (remove unused imports only)
-        args: [--remove-all-unused-imports, --exclude=notebook, --in-place]
+        args: [--remove-all-unused-imports, --exclude=notebooks/**, --in-place]
   - repo: https://github.com/python/black
     rev: 24.4.2
     hooks:
