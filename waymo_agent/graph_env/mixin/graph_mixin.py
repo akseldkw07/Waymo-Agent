@@ -11,6 +11,7 @@ from scipy.spatial.kdtree import cKDTree
 from waymo_agent.graph_env.df_utils import edges_to_df, nodes_to_df
 from waymo_agent.osmnx.distances import calculate_longest_path
 from waymo_agent.osmnx.euclidean_L2_embed import _recover_L2_params_env, nearest_node_id_from_xy
+from waymo_agent.osmnx.post_process_enrichment import assign_lambda_values
 
 from ...osmnx.charging import get_charging_nodes
 from ...osmnx.load_graph_safe import load_graph_type_preserved, post_load
@@ -62,6 +63,8 @@ class OSMnxWrapperMixin(GymEnvInterface):
         self.G = G
         self._chargers = get_charging_nodes(G)
         self.map_name = map_path.name
+
+        assign_lambda_values(G, self.config)
 
     def _graph_auxiliary(self):
         G = self.graph

@@ -26,7 +26,7 @@ def precompute_path_timesteps(env: "OSMnxWrapperMixin", route: list[int]):
     ends = route[1:]
     merged = f_edges_start_end_node(env.EdgeDFEnriched, pd.Series(starts), pd.Series(ends))
     # Compute cumulative travel time
-    merged["CumTravelTime"] = merged["travel_time_minutes"].cumsum()
+    merged["CumTravelTime"] = merged["travel_time_minutes"].cumsum().astype(float)
 
     dist_rem = merged["length"][::-1].cumsum()[::-1]
     dist_rem.iloc[-1] = 0.0  # ensure last entry is exactly 0
@@ -69,7 +69,7 @@ def step_along_route(env: "OSMnxWrapperMixin", pos: ActiveRideDF):
     for row in pos.itertuples():
         # 1 Find the enriched route edges for this row's route
         row_index = int(row.Index)  # type: ignore
-        if not pos.f_valid[row_index]:
+        if not pos.f_has_route[row_index]:
             continue
         try:
             route_nodes: list[int] = row.route_nodes  # type: ignore
@@ -96,10 +96,10 @@ def step_along_route(env: "OSMnxWrapperMixin", pos: ActiveRideDF):
         # Update pos_new
         pos_new.at[row_index, "curr_start_node"] = path_row["source"]
         pos_new.at[row_index, "curr_end_node"] = path_row["target"]
-        pos_new.at[row_index, "route_dist_on_edge"] = frac * path_row["length"]
-        pos_new.at[row_index, "trip_distance_remaining_meters"] = path_row["DistanceRemaining"]
+        pos_new.at[row_index, "route_dist_on_edge"] = (frac * path_row["length"]).astype(np.float32)
+        pos_new.at[row_index, "trip_distance_remaining_meters"] = path_row["DistanceRemaining"].astype(np.float32)
         pos_new.at[row_index, "is_complete"] = frac >= 1.0 and path_row["DistanceRemaining"] <= 0.0
-    return pos_new
+    return ActiveRideDF(pos_new)
 
 
 def time_to_edge_progress(route_df: pd.DataFrame, t: float):

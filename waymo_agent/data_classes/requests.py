@@ -7,17 +7,22 @@ import numpy as np
 import pandas as pd
 
 from waymo_agent.data_classes.config import EnvConfig
+
 from waymo_agent.data_classes.enriched_df_base import EnrichedDF, validate_typed_df_keys
 from waymo_agent.graph_env.cost_reward import compute_operating_cost
+import datetime as dt
 
 if t.TYPE_CHECKING:
     from waymo_agent.graph_env.mixin import ObservationSpaceMixin, TransitionMixin
+    from waymo_agent.data_classes.config_plot import PlotConfig
 
 CURR_REQ_ID: int = 0
 CFG = EnvConfig()
 
 
 class RequestStatusEnum(enum.IntEnum):
+    INVALID = -10
+
     CANCEL_EXCEED_WAIT_TIME = -2
     REJECTED = -1
 
@@ -59,12 +64,17 @@ class RequestDF(EnrichedDF):
     target_dtypes = {
         "request_id": np.int64,
         "request_dt": np.datetime64,  # datetime64[ns]
-        "pickup_node_id": np.int64,
-        "pickup_x_norm": np.float64,
-        "pickup_y_norm": np.float64,
         "cust_id": np.int64,
         "cust_bias": np.float64,
         "cust_temperature": np.float64,
+        "est_cost": np.float64,
+        "price": np.float64,
+        "max_wait_time": np.timedelta64,
+        "wait_time": np.timedelta64,
+        "status": np.int64,
+        "pickup_node_id": np.int64,
+        "pickup_x_norm": np.float64,
+        "pickup_y_norm": np.float64,
         "dropoff_node_id": np.int64,
         "dropoff_x_norm": np.float64,
         "dropoff_y_norm": np.float64,
@@ -73,17 +83,13 @@ class RequestDF(EnrichedDF):
         "curr_end_node": np.int64,
         "route_dist_on_edge": np.float64,
         "distance_meters": np.float64,
-        "est_cost": np.float64,
-        "price": np.float64,
-        "max_wait_time": np.timedelta64,
-        "wait_time": np.timedelta64,
-        "status": np.int64,
     }
     default_vals: t.ClassVar[dict[str, t.Any]] = {
         "max_wait_time": (CFG.max_wait_time_minutes),
         "wait_time": 0,
         "price": -1.0,
         "est_cost": -1.0,
+        "status": RequestStatusEnum.INVALID,
     }
 
     @property
@@ -132,6 +138,10 @@ class RequestDF(EnrichedDF):
         ret = raw & self.f_valid
         return ret
 
+    def f_plot_route(self, plt_cfg: PlotConfig) -> np.ndarray:
+        valid_types_asint = [e.value for e in plt_cfg.request_status_colors.keys() if isinstance(e, RequestStatusEnum)]
+        return np.isin(self.status, valid_types_asint)
+
     # Training view (based on define_observation_space docstring):
     # [pickup_x_norm, pickup_y_norm, dropoff_x_norm, dropoff_y_norm,
     #  distance_meters, est_cost, max_wait_time, wait_time] + status_one_hot
@@ -145,7 +155,6 @@ class RequestDF(EnrichedDF):
         "max_wait_time",
         "wait_time",
     ]
-    enum_fields: t.ClassVar[dict[str, type[enum.IntEnum]]] = {"status": RequestStatusEnum}
 
     @staticmethod
     def space_config(config: EnvConfig):
@@ -156,6 +165,14 @@ class RequestDF(EnrichedDF):
         low = np.zeros(shape, dtype=np.float32)
         high = np.tile(row_high, (config.max_pending_requests, 1))
         return {"shape": shape, "low": low, "high": high}
+
+    @classmethod
+    def generate_empty(cls, num_rows: int, dt: dt.datetime) -> RequestDF:
+        if num_rows <= 0:
+            return cls(pd.DataFrame(columns=cls.column_order()))
+        df = super().generate_empty(num_rows=num_rows)
+        df["request_dt"] = pd.to_datetime(np.nan)
+        return df
 
     @classmethod
     def spawn_requests(cls, env: ObservationSpaceMixin | TransitionMixin, max_req: int | None = None) -> RequestDF:
@@ -169,16 +186,13 @@ class RequestDF(EnrichedDF):
         Stochastic
         """
         global CURR_REQ_ID
-        # print(f"{CURR_REQ_ID=}")
         config = env.config
 
         f_requests = np.random.poisson(lam=env.node_df["lambda"]).astype(bool)
-        print(f_requests.sum())
 
         # CURR_REQ_ID
         new_ids = np.arange(CURR_REQ_ID, CURR_REQ_ID + (num_req := f_requests.sum()))
         CURR_REQ_ID += num_req
-        # print(f"{num_req=}, {CURR_REQ_ID=}")
 
         cust_samples = env.cust_df.sample(num_req, replace=True)
         cust_samples.columns = ["cust_id", "cust_bias", "cust_temperature"]

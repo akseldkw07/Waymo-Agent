@@ -6,9 +6,13 @@ from pathlib import Path
 
 import numpy as np
 
-from waymo_agent.data_classes import ActionDict, EnvConfig, PlotConfig
+from ..data_classes.config import EnvConfig
+from ..data_classes.config_plot import PlotConfig
 
 from .mixin import ActionMixin, ObservationSpaceMixin, OSMnxWrapperMixin, RenderingMixin, TransitionMixin
+
+if t.TYPE_CHECKING:
+    from waymo_agent.data_classes import ActionDict
 
 
 class RideShareEnv(RenderingMixin, OSMnxWrapperMixin, ObservationSpaceMixin, ActionMixin, TransitionMixin):
@@ -46,7 +50,7 @@ class RideShareEnv(RenderingMixin, OSMnxWrapperMixin, ObservationSpaceMixin, Act
 
         super().reset(seed=seed, options=options)
         self.reset_globals()
-        self.reset_debug_and_interim()
+        # self.reset_debug_and_interim()
 
         observation = self.reset_observation()
         return observation, self.info
@@ -58,7 +62,6 @@ class RideShareEnv(RenderingMixin, OSMnxWrapperMixin, ObservationSpaceMixin, Act
             self.error_msg = str(e)
             terminated = True
             return self.observation_curr, 0.0, terminated, False, self.info
-        # TODO implement transition logic
         reward = 0.0
 
         terminated = False

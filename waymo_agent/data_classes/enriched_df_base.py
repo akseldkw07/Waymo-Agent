@@ -102,7 +102,6 @@ class EnrichedDF(pd.DataFrame):
         cfg = env.config if env is not None else EnvConfig()
         data = {}
         num_rows = num_rows if num_rows is not None else (env.num_vehicles if env is not None else 0)
-        # print(cls.default_vals)
 
         for col, dtype in cls.target_dtypes.items():
             def_val = cls.default_vals.get(col) or (cfg.invalid_id if "id" in col else None)
@@ -120,9 +119,7 @@ class EnrichedDF(pd.DataFrame):
                 def_val = def_val if def_val is not None else "2025-01-01"
                 data[col] = pd.to_datetime([def_val] * num_rows)  # type: ignore
             elif dtype in (np.timedelta64, pd.Timedelta):
-                # print(def_val)
                 def_val = def_val if def_val is not None else np.timedelta64(0, "s")
-                # print(col, dtype, def_val)
                 data[col] = pd.Timedelta(def_val, unit="m")  # type: ignore
             elif dtype in (object, np.object_):
                 # Object dtype → often used for lists (route_nodes)

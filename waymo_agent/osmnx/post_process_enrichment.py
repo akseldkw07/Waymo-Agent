@@ -29,7 +29,7 @@ def enrich_graph(G: nx.MultiDiGraph, config: "EnvConfig | None" = None):
         config = EnvConfig()
 
     # _assign_chargers(G, config) TODO re-enable when chargers are used
-    _assign_lambda_values(G, config)
+    assign_lambda_values(G, config)
     _calculate_time_edge(G)
     embed_L2(G)
 
@@ -53,9 +53,9 @@ def _assign_chargers(G: nx.MultiDiGraph, config: "EnvConfig"):
     print(f"Assigned {len(charging_nodes)} charging nodes.")
 
 
-def _assign_lambda_values(G: nx.MultiDiGraph, config: "EnvConfig"):
+def assign_lambda_values(G: nx.MultiDiGraph, config: "EnvConfig"):
     """
-    Assign lambda values to each node proportional to its degree centrality.
+    Assign lambda values to each node proportional to its degree centrality and config.lambda_per_node
     """
     degree_centrality = nx.degree_centrality(G)
     max_centrality = max(degree_centrality.values())
@@ -86,7 +86,8 @@ def _assign_lambda_values(G: nx.MultiDiGraph, config: "EnvConfig"):
         # noise = np.random.normal(0, noise_std)
         noise = np.random.uniform(-noise_std, noise_std)
 
-        lambda_values[node] = max(0.0, lambda_values[node] + noise)
+        norm = 0.85
+        lambda_values[node] = max(0.0, lambda_values[node] + noise) * norm
         G.nodes[node]["lambda"] = round(float(lambda_values[node]), PRECISION)
 
     sum_lambda = sum_graph_attr(G, "lambda", "node")

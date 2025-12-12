@@ -29,7 +29,7 @@ def compute_amortized_reward(
     progress_frac_step = delta_rem / total_dist
 
     amortized_reward = 0.85 * curr.price * progress_frac_step
-    is_completed = (curr.complete) & (~prev.complete)
+    is_completed = (curr.is_complete) & (~prev.is_complete)
     completion_bonus = 0.15 * curr.price * is_completed.astype(float)
 
     step_reward = amortized_reward + completion_bonus

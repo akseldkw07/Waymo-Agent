@@ -14,7 +14,7 @@ import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
-from waymo_agent.osmnx.osmnx_constants import OSMNXConstants
+from waymo_agent.data_classes.osmnx_constants import OSMNXConstants
 
 logger = logging.getLogger(__name__)
 

@@ -3,44 +3,49 @@ from __future__ import annotations
 import typing as t
 from dataclasses import dataclass, field
 
+from waymo_agent.data_classes.osmnx_constants import Plot_graph_TypedDict, DEFAULT_OX_PLOT_NOTEBOOK
+from .vehicles import VehicleStatusEnum as VSE
+from .requests import RequestStatusEnum as RSE
 
-from .vehicles import VehicleStatusEnum
 
 if t.TYPE_CHECKING:
-    from ..osmnx.osmnx_constants import Plot_graph_TypedDict, Plot_route_TypedDict
+    from .osmnx_constants import Plot_graph_TypedDict, DEFAULT_OX_PLOT_NOTEBOOK
 
 
 @dataclass
 class PlotConfig:
     node_color: str = "black"
-    ox_plot_requests: Plot_route_TypedDict = field(
-        default_factory=lambda: {"route_color": "cyan", "route_linewidth": 2.0}
-    )
-    ox_plot_active_rides: Plot_route_TypedDict = field(
-        default_factory=lambda: {"route_color": "limegreen", "route_linewidth": 3.0}
-    )
+    unused_route_widths: tuple[float, float] = (0.5, 3)  # min, max
 
-    ox_plot_default: Plot_graph_TypedDict = field(
+    active_ride_color: str = "limegreen"
+    active_ride_width: float = 2.5
+    ride_edge_alpha: float = 1.0
+
+    edge_cmap: str = "Wistia"  # https://matplotlib.org/stable/users/explain/colors/colormaps.html
+
+    ox_plot_default: Plot_graph_TypedDict = field(default_factory=lambda: DEFAULT_OX_PLOT_NOTEBOOK)
+
+    car_status_colors: dict[str | float, str] = field(
         default_factory=lambda: {
-            "node_size": 5,
-            "node_color": "white",
-            "node_alpha": 0.85,
-            "figsize": (10, 10),
-            "bgcolor": "silver",
-            "show": False,
-            "edge_linewidth": 1.0,
+            VSE.IDLE.name: "gray",
+            VSE.IDLE: "gray",
+            VSE.TO_PICKUP.name: "lightskyblue",
+            VSE.TO_PICKUP: "lightskyblue",
+            VSE.WITH_PASSENGER.name: "limegreen",
+            VSE.WITH_PASSENGER: "limegreen",
+            VSE.CHARGING.name: "red",
+            VSE.CHARGING: "red",
         }
     )
 
-    car_status_colors: dict[str | int, str] = field(
+    request_line_width: float = 2.0
+    request_status_colors: dict[str | int, str] = field(
         default_factory=lambda: {
-            VehicleStatusEnum.IDLE.name: "blue",
-            VehicleStatusEnum.IDLE: "blue",
-            VehicleStatusEnum.TO_PICKUP.name: "orange",
-            VehicleStatusEnum.TO_PICKUP: "orange",
-            VehicleStatusEnum.WITH_PASSENGER.name: "green",
-            VehicleStatusEnum.WITH_PASSENGER: "green",
-            VehicleStatusEnum.CHARGING.name: "red",
-            VehicleStatusEnum.CHARGING: "red",
+            RSE.AWAITING_PRICE.name: "gray",
+            RSE.AWAITING_PRICE: "gray",
+            RSE.ACCEPTED.name: "lightpink",
+            RSE.ACCEPTED: "lightpink",
+            RSE.ASSIGNED.name: "lightskyblue",
+            RSE.ASSIGNED: "lightskyblue",
         }
     )

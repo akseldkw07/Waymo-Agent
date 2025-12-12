@@ -5,6 +5,7 @@ import typing as t
 import numpy as np
 import pandas as pd
 from gymnasium import spaces
+import warnings
 
 from waymo_agent.constants import DATA_DIR
 from waymo_agent.data_classes import *
@@ -75,10 +76,15 @@ class ObservationSpaceMixin(GymEnvInterface):
         Ie, there's no action to pass or previous observation to reference.
         """
         self.bc_row, self._breadcrumbs = {}, []
+        self._remove_requests = []
         self.bc_row.update({"step": self.current_step, "timestamp": self.time_dt})
         real_requests = RequestDF.spawn_requests(self, self.config.max_new_requests_per_step)
-        filler_requests = RequestDF.generate_empty(num_rows=self.config.max_pending_requests - len(real_requests))
-        requests = RequestDF(pd.concat([real_requests, filler_requests], ignore_index=True).reset_index(drop=True))
+        filler_requests = RequestDF.generate_empty(
+            num_rows=self.config.max_pending_requests - len(real_requests), dt=self.time_dt
+        )
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            requests = RequestDF(pd.concat([real_requests, filler_requests], ignore_index=True).reset_index(drop=True))
         vehicles = init_vehicle_df(self)
         rides = init_active_ride_df(self, vehicles)
 

@@ -13,6 +13,7 @@ import pandas as pd
 
 if t.TYPE_CHECKING:
     from waymo_agent.graph_env.mixin import OSMnxWrapperMixin
+# ox.distance.euclidean(**{})  # type: ignore
 
 
 def embed_L2(G: nx.MultiDiGraph):

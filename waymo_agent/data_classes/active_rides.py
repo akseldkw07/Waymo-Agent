@@ -37,11 +37,15 @@ class ActiveRideDF(EnrichedDF):
     curr_end_node: np.ndarray
     route_dist_on_edge: np.ndarray  # how much distance has been traveled on the CURRENT edge
 
-    complete: np.ndarray
+    is_complete: np.ndarray
 
     @property
     def f_valid(self) -> np.ndarray:
         return self.ride_id != EnvConfig().invalid_id
+
+    @property
+    def f_has_route(self) -> np.ndarray:
+        return np.array([len(rn) >= 2 for rn in self.route_nodes], dtype=bool)
 
     # Training view (define_observation_space):
     # [pickup_x_norm, pickup_y_norm, dropoff_x_norm, dropoff_y_norm,
@@ -77,7 +81,7 @@ class ActiveRideDF(EnrichedDF):
         "curr_start_node": np.int64,
         "curr_end_node": np.int64,
         "route_dist_on_edge": np.float32,
-        "complete": np.bool_,
+        "is_complete": np.bool_,
     }
 
     @classmethod
@@ -107,10 +111,10 @@ class ActiveRideDF(EnrichedDF):
                 "trip_distance_remaining_meters": requests["distance_meters"].to_numpy(),
                 "pickup_distance_remaining_meters": requests["distance_meters"].to_numpy(),
                 "route_nodes": requests["route_nodes"].to_numpy(),
-                "curr_start_node": np.zeros(len(requests), dtype=np.int64),
-                "curr_end_node": np.zeros(len(requests), dtype=np.int64),
+                "curr_start_node": requests["route_nodes"].apply(lambda x: x[0]),
+                "curr_end_node": requests["route_nodes"].apply(lambda x: x[1] if len(x) > 1 else x[0]),
                 "route_dist_on_edge": np.zeros(len(requests), dtype=np.float32),
-                "complete": np.full(len(requests), False, dtype=bool),
+                "is_complete": np.full(len(requests), False, dtype=bool),
             }
         ).reset_index(drop=True)
         df = df.astype(cls.target_dtypes)

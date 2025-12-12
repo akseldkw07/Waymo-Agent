@@ -7,7 +7,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-
 from ..constants import MANHATTAN_ENRICHED_GRAPH, MAP_DIR
 
 
@@ -44,6 +43,7 @@ class EnvConfig:
 
     # Demand parameters
     lambda_per_node: float = vehicle_per_node / 10
+    # lambda_per_node: float = vehicle_per_node
     lambda_variation_coef: float = 2.0
     max_new_requests_per_step: int | None = None  # if None, no limit
 

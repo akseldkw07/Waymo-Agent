@@ -3,7 +3,7 @@ import typing as t
 import networkx as nx
 import osmnx as ox
 
-from .osmnx_constants import OSMNXConstants as C
+from ..data_classes.osmnx_constants import OSMNXConstants as C
 from .pre_processing import clean_graph
 
 

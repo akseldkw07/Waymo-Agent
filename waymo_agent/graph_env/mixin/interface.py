@@ -13,9 +13,11 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
 
-from waymo_agent.data_classes import ActionDict, CustomerDF, EnvConfig, EnvInfoTypedDict, ObservationDict, PlotConfig
+from waymo_agent.data_classes import ActionDict, CustomerDF, EnvConfig, EnvInfoTypedDict, ObservationDict
+from waymo_agent.data_classes.config_plot import PlotConfig
 from waymo_agent.data_classes.enriched_df_base import validate_typed_df_keys
 from waymo_agent.data_classes.metrics import TimeSeriesMetricsDF
+from waymo_agent.data_classes.requests import RequestDF
 from waymo_agent.simulation.dt_utils import embed_datetime_to_circle
 
 AxesLike = Axes
@@ -64,6 +66,7 @@ class GymEnvInterface(gym.Env, ABC):
 
     # Metrics and Debugging
     _breadcrumbs: list[dict[str, float | int | str | dt.datetime]]
+    _remove_requests: list[RequestDF]
     bc_row: dict[str, float | int | str | dt.datetime]
     metrics: dict[str, float]  # This is like "current" snapshot of accumulated metrics
     error_msg: str
@@ -97,6 +100,11 @@ class GymEnvInterface(gym.Env, ABC):
     def breadcrumbs(self) -> TimeSeriesMetricsDF:
         """Get breadcrumbs time series as a DataFrame."""
         return TimeSeriesMetricsDF.from_breadcrumbs(self._breadcrumbs)
+
+    @property
+    def DiscardedRequests(self) -> RequestDF:
+        """Get discarded requests as a DataFrame."""
+        return RequestDF(pd.concat(self._remove_requests, ignore_index=True))
 
     def append_breadcrumbs(self):
         """Append current metrics to breadcrumbs time series."""
