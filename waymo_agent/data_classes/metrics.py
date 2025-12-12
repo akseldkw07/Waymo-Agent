@@ -7,26 +7,26 @@ import pandas as pd
 
 
 class TimeSeriesMetricsDF(pd.DataFrame):
-    step: np.ndarray
-    timestamp: np.ndarray
-    error_msg: np.ndarray
+    step: pd.Series
+    timestamp: pd.Series
+    error_msg: pd.Series
 
-    rewards: np.ndarray
-    supply_demand_ratio: np.ndarray
+    rewards: pd.Series
+    supply_demand_ratio: pd.Series  # NOTE, this is normed between 0 and 1
 
-    # perc_cars_idle: np.ndarray
-    # perc_cars_on_ride: np.ndarray
-    # # perc_cars_charging: np.ndarray # not currently applicable
+    # perc_cars_idle: pd.Series
+    # perc_cars_on_ride: pd.Series
+    # # perc_cars_charging: pd.Series # not currently applicable
 
-    # avg_wait_time_seconds: np.ndarray
+    # avg_wait_time_seconds: pd.Series
 
-    # num_new_requests: np.ndarray
+    # num_new_requests: pd.Series
 
-    # num_pending_requests: np.ndarray
-    # num_"is_complete"d_requests: np.ndarray
-    # num_cancelled_requests: np.ndarray
-    # num_rejected_requests: np.ndarray
-    # num_overflow_requests: np.ndarray
+    # num_pending_requests: pd.Series
+    # num_"is_complete"d_requests: pd.Series
+    # num_cancelled_requests: pd.Series
+    # num_rejected_requests: pd.Series
+    # num_overflow_requests: pd.Series
 
     @classmethod
     def from_breadcrumbs(cls, breadcrumbs: list[dict]):

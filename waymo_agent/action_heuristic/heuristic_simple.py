@@ -1,3 +1,4 @@
+from math import sqrt
 import numpy as np
 import pandas as pd
 import typing as t
@@ -29,9 +30,9 @@ class PricingAgent:
 class DispatchAgent:
     distance_threshold: float
 
-    def __init__(self, config: EnvConfig):
-        self.config = config
-        self.distance_threshold = 0.5  # normalized distance
+    def __init__(self, env: RideShareEnv):
+        self.config = env.config
+        self.distance_threshold = sqrt(1 / env.num_vehicles)
 
     def dispatch(self, obs: ObservationDict):
         """Heuristic dispatch based on distance threshold."""
