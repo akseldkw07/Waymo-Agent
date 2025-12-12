@@ -4,7 +4,7 @@ import enum
 import typing as t
 
 import numpy as np
-
+import pandas as pd
 from waymo_agent.data_classes.enriched_df_base import EnrichedDF, validate_typed_df_keys
 
 if t.TYPE_CHECKING:
@@ -20,12 +20,12 @@ class VehicleStatusEnum(enum.IntEnum):
 
 
 class VehicleDF(EnrichedDF):
-    vehicle_id: np.ndarray  # unique identifier for the vehicle. [0, num_vehicles)
-    ride_id: np.ndarray
-    loc_x_norm: np.ndarray  # [-1, 1]
-    loc_y_norm: np.ndarray  # [-1, 1]
-    battery: np.ndarray  # [0.0, 1.0]
-    status: np.ndarray  # VehicleStatusEnum value
+    vehicle_id: pd.Series  # unique identifier for the vehicle. [0, num_vehicles)
+    ride_id: pd.Series
+    loc_x_norm: pd.Series  # [-1, 1]
+    loc_y_norm: pd.Series  # [-1, 1]
+    battery: pd.Series  # [0.0, 1.0]
+    status: pd.Series  # VehicleStatusEnum value
 
     # Training view: [loc_x_norm, loc_y_norm, battery, status] -> 4 dims
     cols_to_keep: t.ClassVar[list[str]] = ["loc_x_norm", "loc_y_norm", "battery", "status"]
@@ -43,16 +43,19 @@ class VehicleDF(EnrichedDF):
         return np.full(self.shape[0], True, dtype=bool)
 
     @property
-    def f_available(self) -> np.ndarray:
-        return self.status == VehicleStatusEnum.IDLE
+    def f_idle(self):
+        ret = self["status"] == VehicleStatusEnum.IDLE
+        return ret.to_numpy(dtype=bool)
 
     @property
-    def f_get_rewards(self) -> np.ndarray:
-        return self.status == VehicleStatusEnum.WITH_PASSENGER
+    def f_get_rewards(self):
+        ret = self["status"] == VehicleStatusEnum.WITH_PASSENGER
+        return ret.to_numpy(dtype=bool)
 
     @property
     def f_should_have_ride_id(self) -> np.ndarray:
-        return (self.status == VehicleStatusEnum.TO_PICKUP) | (self.status == VehicleStatusEnum.WITH_PASSENGER)
+        ret = (self.status == VehicleStatusEnum.TO_PICKUP) | (self.status == VehicleStatusEnum.WITH_PASSENGER)
+        return ret.to_numpy(dtype=bool)
 
     @classmethod
     def space_config(cls, config: EnvConfig, num_vehicles: int):

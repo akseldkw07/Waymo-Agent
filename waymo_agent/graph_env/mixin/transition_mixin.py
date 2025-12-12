@@ -103,7 +103,7 @@ class TransitionMixin(RewardMixin):
                 "vehicles": self._veh_interim,
                 "pending_requests": self._req_interim,
                 "active_rides": self._active_rides_interim,
-                "dispatch_mask": self._veh_interim.f_available.astype(np.float32),
+                "dispatch_mask": self._veh_interim.f_idle,
                 "pricing_mask": self._req_interim.f_awaiting_price.astype(np.float32),
             }
         )
@@ -216,7 +216,7 @@ class TransitionMixin(RewardMixin):
                 continue  # No vehicle assigned
 
             # is vehicle available for assignment (not busy)?
-            avail = vehicles.f_available[veh_idx]
+            avail = vehicles.f_idle[veh_idx]
             rewards_df.loc[req_idx, "penalty_assign_to_unavailable_vehicle"] = (
                 1 - (2 * avail)
             ) * RWD.penalty_assign_to_unavailable_vehicle
@@ -285,9 +285,12 @@ class TransitionMixin(RewardMixin):
         prev_rides = self.observation_prev["active_rides"].copy(deep=True)
         active_rides = ActiveRideDF(prev_rides.copy(deep=True))
 
-        f_new_rides = np.isin(active_rides.vehicle_id, (new_rides["vehicle_id"]))
-        masked_assign(active_rides, f_new_rides, new_rides)
-        assert pd.Series(active_rides.vehicle_id).equals(pd.Series(prev_rides.vehicle_id))
+        f_new_rides = active_rides.vehicle_id.isin(new_rides["vehicle_id"]).to_numpy(dtype=bool)
+        self._new_rides_df = new_rides
+        self.f_new_rides = f_new_rides
+        masked_assign(active_rides, f_new_rides, new_rides)  # ASSIGN NEW RIDES TO ACTIVE RIDES DF
+        # print(active_rides)
+        assert active_rides.vehicle_id.equals(prev_rides.vehicle_id)
 
         # 2 - This is a cheat (TODO fix) - just move newly_assigned vehicle to start of ride
         veh_old = VehicleDF(self.observation_prev["vehicles"].copy(deep=True))
@@ -296,6 +299,8 @@ class TransitionMixin(RewardMixin):
         vehicles["ride_id"] = np.where(f_new_rides, active_rides["ride_id"], vehicles["ride_id"])
         vehicles["loc_x_norm"] = np.where(f_new_rides, active_rides["pickup_x_norm"], vehicles["loc_x_norm"])
         vehicles["loc_y_norm"] = np.where(f_new_rides, active_rides["pickup_y_norm"], vehicles["loc_y_norm"])
+        assert vehicles["loc_x_norm"].isnull().sum() == 0, "Check 1"
+        assert vehicles["loc_y_norm"].isnull().sum() == 0, "Check 2"
 
         # 2 - Move vehicles along their routes, update rides and vehicles
         updated_ride_status = step_along_route(self, ActiveRideDF(active_rides))  # type: ignore
@@ -308,9 +313,13 @@ class TransitionMixin(RewardMixin):
             updated_ride_status.curr_end_node[updated_ride_status.f_has_route],
             updated_ride_status.route_dist_on_edge[updated_ride_status.f_has_route],
         )
+        # masked_assign(vehicles, updated_ride_status.f_has_route, vehicles, ["loc_x_norm", "loc_y_norm"])
 
-        vehicles.loc[updated_ride_status.f_has_route, "loc_x_norm"] = new_coords["x_norm"]
-        vehicles.loc[updated_ride_status.f_has_route, "loc_y_norm"] = new_coords["y_norm"]
+        vehicles.loc[updated_ride_status.f_has_route, ["loc_x_norm", "loc_y_norm"]] = new_coords[
+            ["x_norm", "y_norm"]
+        ].to_numpy()
+        assert vehicles["loc_x_norm"].isnull().sum() == 0, "Check 3"
+        assert vehicles["loc_y_norm"].isnull().sum() == 0, "Check 4"
         ride_update_cols = [
             "curr_start_node",
             "curr_end_node",
@@ -330,11 +339,14 @@ class TransitionMixin(RewardMixin):
         discard_ride_ids = updated_ride_status["ride_id"][completed_mask]
         vehicles["status"] = np.where(completed_mask, VehicleStatusEnum.IDLE, vehicles["status"])
         vehicles["ride_id"] = np.where(completed_mask, self.config.invalid_id, vehicles["ride_id"])
+        assert vehicles["loc_x_norm"].isnull().sum() == 0, "Check 5"
+        assert vehicles["loc_y_norm"].isnull().sum() == 0, "Check 6"
 
         # 5 - Handle repositioning of idle vehicles. NOTE this is a cheat - vehicles are instantly repositioned
         reposition_actions = action["reposition"]
-        f_reposition = vehicles.f_available
-        vehicles.loc[f_reposition, ["loc_x_norm", "loc_y_norm"]] = reposition_actions[f_reposition]
+        vehicles.loc[vehicles.f_idle, ["loc_x_norm", "loc_y_norm"]] = reposition_actions[vehicles.f_idle]
+        assert vehicles["loc_x_norm"].isnull().sum() == 0, "Check 7"
+        assert vehicles["loc_y_norm"].isnull().sum() == 0, "Check 8"
 
         # 6 - Reset completed rides
         gen_new_rides = init_active_ride_df(self, vehicles=vehicles)
@@ -423,7 +435,7 @@ class TransitionMixin(RewardMixin):
         f_veh_dispatched = vehicles["vehicle_id"].isin(self._dispatch_debug["vehicle_id"]) & vehicles.f_valid
 
         veh_prev = self.observation_prev["vehicles"]
-        veh_ride_sanity_df["dispatch_idle_only"] = veh_prev.f_available | ~f_veh_dispatched
+        veh_ride_sanity_df["dispatch_idle_only"] = veh_prev.f_idle | ~f_veh_dispatched
         self.observation_prev["active_rides"]
 
         """Requests"""

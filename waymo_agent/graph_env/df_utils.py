@@ -48,9 +48,17 @@ def edges_to_df(G: nx.MultiDiGraph) -> pd.DataFrame:
     return edges_df
 
 
-def masked_assign(dst: pd.DataFrame, mask: np.ndarray | pd.Series, src: pd.DataFrame):
-    assert mask.sum() == len(src), f"Mask sum {mask.sum()} != src len {len(src)}"
-    assert list(dst.columns) == list(src.columns), f"Dst columns {dst.columns} != src columns {src.columns}"
+def masked_assign(dst: pd.DataFrame, mask: np.ndarray, src: pd.DataFrame, cols: list[str] | None = None) -> None:
 
-    for c in dst.columns:
-        dst.loc[mask, c] = src[c].to_numpy()
+    assert mask.sum() == len(src), f"Mask sum {mask.sum()} != src len {len(src)}"
+    if cols is None:
+        assert list(dst.columns) == list(src.columns), f"Dst columns {dst.columns} != src columns {src.columns}"
+
+        for c in dst.columns:
+            dst.loc[mask, c] = src[c].to_numpy()
+    else:
+        assert set(cols).issubset(set(dst.columns)) and set(cols).issubset(
+            set(src.columns)
+        ), f"Cols {cols} not subset of dst columns {dst.columns} and src columns   {src.columns}"
+        for c in cols:
+            dst.loc[mask, c] = src[c].to_numpy()

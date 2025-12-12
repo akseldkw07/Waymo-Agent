@@ -88,6 +88,8 @@ class OSMnxWrapperMixin(GymEnvInterface):
 
         # Recover L2 normalization parameters for coordinate conversion
         self.l2_recovery = _recover_L2_params_env(self)
+        degree_centrality = nx.closeness_centrality(G)
+        self.node_df["degree_centrality"] = self.node_df["node_id"].map(degree_centrality)
 
     @cached_property
     def EdgeDFEnriched(self):

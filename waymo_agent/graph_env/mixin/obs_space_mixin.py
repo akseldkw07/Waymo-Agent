@@ -10,6 +10,7 @@ from gymnasium import spaces
 from waymo_agent.constants import DATA_DIR
 from waymo_agent.data_classes import *
 from waymo_agent.data_classes import ActiveRideDF, VehicleDF
+from waymo_agent.data_classes.supply_demand_df import SupplyDemandDF
 from waymo_agent.simulation import init_vehicle_df, random_dt
 from waymo_agent.simulation.generate_obs_state import get_sd_ratio, init_active_ride_df
 
@@ -58,7 +59,7 @@ class ObservationSpaceMixin(GymEnvInterface):
         observation_space = spaces.Dict(
             {
                 "globals": spaces.Box(**self.global_space_config),
-                "supply_demand_ratio": spaces.Box(low=0.0, high=10.0, shape=(3,)),
+                "supply_demand_ratio": spaces.Box(**SupplyDemandDF.space_config(self.config)),
                 "vehicles": spaces.Box(**VehicleDF.space_config(self.config, num_v)),
                 "pending_requests": spaces.Box(**RequestDF.space_config(self.config)),
                 "active_rides": spaces.Box(**ActiveRideDF.space_config(self.config, num_v)),
@@ -100,8 +101,8 @@ class ObservationSpaceMixin(GymEnvInterface):
             "vehicles": vehicles,
             "pending_requests": requests,
             "active_rides": rides,
-            "dispatch_mask": vehicles.f_available.astype(np.float32),
-            "pricing_mask": requests.f_awaiting_price.astype(np.float32),
+            "dispatch_mask": vehicles.f_idle.astype(np.int8),
+            "pricing_mask": requests.f_awaiting_price.astype(np.int8),
         }
         validate_keys(ObservationDict, observation)
         self.observation_curr = observation

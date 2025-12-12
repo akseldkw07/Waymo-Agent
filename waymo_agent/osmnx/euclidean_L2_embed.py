@@ -76,7 +76,7 @@ def interpolate_position_on_edge(
     lengths_safe = np.maximum(lengths, 1e-6)
     perc_done = (np.asarray(dist_on_edge) / lengths_safe).clip(0.0, 1.0)
 
-    ret_df = pd.DataFrame(index=edge_df.index)
+    ret_df = pd.DataFrame()
     ret_df["perc_done"] = perc_done
 
     for val in ["x", "y", "x_norm", "y_norm"]:

@@ -76,6 +76,13 @@ class EnrichedDF(pd.DataFrame):
         return ret
 
     @classmethod
+    def from_obs_numpy(cls, obs_array: np.ndarray | pd.DataFrame) -> EnrichedDF:
+        """ """
+        training_df = pd.DataFrame(obs_array, columns=cls.cols_to_keep)
+
+        return cls(training_df)
+
+    @classmethod
     def space_config(cls, config: EnvConfig, *args, **kwargs):
         """
         Stub to be overridden by subclasses that want to expose a

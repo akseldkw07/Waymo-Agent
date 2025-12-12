@@ -14,34 +14,34 @@ if t.TYPE_CHECKING:
 
 
 class ActiveRideDF(EnrichedDF):
-    ride_id: np.ndarray
-    vehicle_id: np.ndarray
+    ride_id: pd.Series
+    vehicle_id: pd.Series
 
-    pickup_node: np.ndarray
-    pickup_x_norm: np.ndarray
-    pickup_y_norm: np.ndarray
+    pickup_node: pd.Series
+    pickup_x_norm: pd.Series
+    pickup_y_norm: pd.Series
 
-    dropoff_node: np.ndarray
-    dropoff_x_norm: np.ndarray
-    dropoff_y_norm: np.ndarray
+    dropoff_node: pd.Series
+    dropoff_x_norm: pd.Series
+    dropoff_y_norm: pd.Series
 
-    price: np.ndarray
-    est_cost: np.ndarray
+    price: pd.Series
+    est_cost: pd.Series
 
-    total_trip_distance_meters: np.ndarray
-    trip_distance_remaining_meters: np.ndarray
-    pickup_distance_remaining_meters: np.ndarray
+    total_trip_distance_meters: pd.Series
+    trip_distance_remaining_meters: pd.Series
+    pickup_distance_remaining_meters: pd.Series
 
-    route_nodes: np.ndarray  # list[int] per row
-    curr_start_node: np.ndarray
-    curr_end_node: np.ndarray
-    route_dist_on_edge: np.ndarray  # how much distance has been traveled on the CURRENT edge
+    route_nodes: pd.Series  # list[int] per row
+    curr_start_node: pd.Series
+    curr_end_node: pd.Series
+    route_dist_on_edge: pd.Series  # how much distance has been traveled on the CURRENT edge
 
-    is_complete: np.ndarray
+    is_complete: pd.Series
 
     @property
-    def f_valid(self) -> np.ndarray:
-        return self.ride_id != EnvConfig().invalid_id
+    def f_valid(self):
+        return (self.ride_id != EnvConfig().invalid_id).to_numpy(dtype=bool)
 
     @property
     def f_has_route(self) -> np.ndarray:
