@@ -22,6 +22,7 @@ class RewardShapingConfig:
 
     penalty_multiple_dispatch_assignment: float = -0.1  # penalty for assigning multiple vehicles to the same request
     penalty_assign_to_unavailable_vehicle: float = -0.2  # penalty for assigning a vehicle that is not available
+    distance_penalty_xy_normed: float = -0.05  # penalty per unit normalized distance traveled without a passenger
 
     def reward_df_empty(self, len: int = 1) -> pd.DataFrame:
         df_cols = self.__dataclass_fields__.keys()
@@ -34,7 +35,7 @@ class EnvConfig:
     # Map and environment parameters
     map_name: str = MANHATTAN_ENRICHED_GRAPH.format(782)  # "manhattan-sparse-782-nodes-enriched.graphml"
     map_dir: Path = MAP_DIR
-    vehicle_per_node: float = 0.002  # must be greater than 0.0
+    vehicle_per_node: float = 0.03  # must be greater than 0.0
     max_vehicles: int = 25
     time_step_delta: dt.timedelta = dt.timedelta(minutes=1)
     max_episode_steps: int = 60 * 24  # 1 day
@@ -48,7 +49,7 @@ class EnvConfig:
     max_new_requests_per_step: int | None = None  # if None, no limit
 
     # Request parameters
-    max_pending_requests: int = 25
+    max_pending_requests: int = 50
     max_wait_time_minutes: int = 15  # in minutes
 
     # Pricing
@@ -59,8 +60,8 @@ class EnvConfig:
     invalid_id: int = -1
 
     # Customer acceptance model parameters
-    acceptance_margin_weight: float = -0.20
-    acceptance_supply_demand_weight: float = 1.5
+    acceptance_margin_weight: float = -2.0
+    acceptance_supply_demand_weight: float = 3.0
 
     # Battery and charging parameters
     battery_consumption_per_km: float = 0.01

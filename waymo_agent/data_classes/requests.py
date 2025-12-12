@@ -33,33 +33,33 @@ class RequestStatusEnum(enum.IntEnum):
 
 
 class RequestDF(EnrichedDF):
-    request_id: np.ndarray
+    request_id: pd.Series
     request_dt: np.datetime64  # pd.Timestamp
 
-    pickup_node_id: np.ndarray
-    pickup_x_norm: np.ndarray
-    pickup_y_norm: np.ndarray
+    pickup_node_id: pd.Series
+    pickup_x_norm: pd.Series
+    pickup_y_norm: pd.Series
 
-    cust_id: np.ndarray
-    cust_bias: np.ndarray
-    cust_temperature: np.ndarray
+    cust_id: pd.Series
+    cust_bias: pd.Series
+    cust_temperature: pd.Series
 
-    dropoff_node_id: np.ndarray
-    dropoff_x_norm: np.ndarray
-    dropoff_y_norm: np.ndarray
+    dropoff_node_id: pd.Series
+    dropoff_x_norm: pd.Series
+    dropoff_y_norm: pd.Series
 
-    route_nodes: np.ndarray  # list[int] per row → dtype=object
-    curr_start_node: np.ndarray  # current start node in route_nodes
-    curr_end_node: np.ndarray  # current end node in route_nodes
-    route_dist_on_edge: np.ndarray  # how much distance has been traveled on the CURRENT edge
-    distance_meters: np.ndarray
+    route_nodes: pd.Series  # list[int] per row → dtype=object
+    curr_start_node: pd.Series  # current start node in route_nodes
+    curr_end_node: pd.Series  # current end node in route_nodes
+    route_dist_on_edge: pd.Series  # how much distance has been traveled on the CURRENT edge
+    distance_meters: pd.Series
 
-    est_cost: np.ndarray
-    price: np.ndarray
+    est_cost: pd.Series
+    price: pd.Series
 
     max_wait_time: np.timedelta64
-    wait_time: np.ndarray
-    status: np.ndarray  # RequestStatusEnum value
+    wait_time: pd.Series
+    status: pd.Series  # RequestStatusEnum value
     target_dtypes = {
         "request_id": np.int64,
         "request_dt": np.datetime64,  # datetime64[ns]
@@ -92,26 +92,31 @@ class RequestDF(EnrichedDF):
     }
 
     @property
-    def f_valid(self) -> np.ndarray:
-        return self.request_id != CFG.invalid_id
+    def f_valid(self):
+        try:
+            ret = (self.request_id != CFG.invalid_id).to_numpy(dtype=bool)
+        except Exception:
+            ret = (self.status != RequestStatusEnum.INVALID).to_numpy(dtype=bool)
+        return ret
 
     @property
-    def f_awaiting_price(self) -> np.ndarray:
+    def f_awaiting_price(self):
         raw = self.status == RequestStatusEnum.AWAITING_PRICE
         ret = raw & self.f_valid
-        return ret
+        return ret.to_numpy(dtype=bool)
 
     @property
-    def f_need_dispatch(self) -> np.ndarray:
-        raw = self.status == RequestStatusEnum.ACCEPTED
+    def f_need_dispatch(self):
+        raw: pd.Series = self.status == RequestStatusEnum.ACCEPTED
         ret = raw & self.f_valid
-        return ret
+
+        return ret.to_numpy(dtype=bool)
 
     @property
     def f_reject_expired(self) -> np.ndarray:
         raw = (self.status == RequestStatusEnum.CANCEL_EXCEED_WAIT_TIME) | (self.status == RequestStatusEnum.REJECTED)
         ret = raw & self.f_valid
-        return ret
+        return ret.to_numpy(dtype=bool)
 
     @property
     def f_en_route(self) -> np.ndarray:
@@ -120,13 +125,13 @@ class RequestDF(EnrichedDF):
         """
         raw = self.status == RequestStatusEnum.ASSIGNED
         ret = raw & self.f_valid
-        return ret
+        return ret.to_numpy(dtype=bool)
 
     @property
     def f_completed(self) -> np.ndarray:
         raw = self.status == RequestStatusEnum.COMPLETED
         ret = raw & self.f_valid
-        return ret
+        return ret.to_numpy(dtype=bool)
 
     @property
     def f_inactive(self) -> np.ndarray:
@@ -134,7 +139,7 @@ class RequestDF(EnrichedDF):
         Requests that are no longer active (cancelled, rejected, completed)
         """
         raw = self.f_reject_expired | self.f_completed
-        ret = raw & self.f_valid
+        ret = np.array(raw & self.f_valid)
         return ret
 
     def f_plot_route(self, plt_cfg: PlotConfig) -> np.ndarray:
@@ -153,6 +158,7 @@ class RequestDF(EnrichedDF):
         "est_cost",
         "max_wait_time",
         "wait_time",
+        "status",
     ]
 
     @staticmethod

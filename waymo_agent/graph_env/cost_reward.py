@@ -4,13 +4,15 @@ import numpy as np
 
 from waymo_agent.data_classes import EnvConfig
 from waymo_agent.data_classes.active_rides import ActiveRideDF
+import pandas as pd
 
 
-def compute_operating_cost(distance_meters: np.ndarray, config: EnvConfig) -> np.ndarray:
+def compute_operating_cost(distance_meters: np.ndarray | pd.Series, config: EnvConfig) -> np.ndarray:
     """
     Compute the operating cost for a vehicle given the distance traveled.
     """
-    return distance_meters * config.operating_cost_per_meter
+    cost = distance_meters * config.operating_cost_per_meter
+    return np.array(cost)
 
 
 def compute_amortized_reward(curr: ActiveRideDF, prev: ActiveRideDF, config: EnvConfig, mask: np.ndarray | None = None):

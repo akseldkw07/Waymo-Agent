@@ -88,6 +88,8 @@ class OSMnxWrapperMixin(GymEnvInterface):
 
         # Recover L2 normalization parameters for coordinate conversion
         self.l2_recovery = _recover_L2_params_env(self)
+        degree_centrality = nx.closeness_centrality(G)
+        self.node_df["degree_centrality"] = self.node_df["node_id"].map(degree_centrality)
 
     @cached_property
     def EdgeDFEnriched(self):
@@ -116,6 +118,8 @@ class OSMnxWrapperMixin(GymEnvInterface):
         for col in cols_node:
             if col not in self.edge_df.columns:
                 merged = merged.rename(columns={col: f"{col}_tgt"})
+        merged.sort_values(by=["source", "target", "travel_time_minutes"], ascending=[True, True, True], inplace=True)
+        merged.drop_duplicates(subset=["source", "target"], inplace=True)
         return merged
 
     # ------------------------------------------------------------------ #

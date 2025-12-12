@@ -75,22 +75,25 @@ class RenderingMixin(GymEnvInterface):
         # Plot the base graph
         fig, ax = ox.plot_graph(self.graph, **ox_kwargs)
 
+        # Plot Cars
+        veh = self.observation_curr["vehicles"]
+        # plot_cars(veh, self.plt_cfg, self.l2_recovery, ax)
+
         # Plot active rides & requests as routes
         pending_requests = self.observation_curr["pending_requests"]
         f_pending_requests = pending_requests.f_plot_route(plt_cfg)
         plot_requests_df = RequestDF(pending_requests[f_pending_requests])
-        fig, ax = plot_routes(self.graph, plot_requests_df, plt_cfg=self.plt_cfg, fig_ax=(fig, ax))
+        plot_routes(self.graph, plot_requests_df, plt_cfg=self.plt_cfg, fig_ax=(fig, ax))
 
         active_rides = self.observation_curr["active_rides"]
         f_plot_rides = ~active_rides.is_complete & active_rides.f_valid & active_rides.f_has_route
         plot_rides_df = ActiveRideDF(active_rides[f_plot_rides])
-        fig, ax = plot_routes(self.graph, plot_rides_df, plt_cfg=self.plt_cfg, fig_ax=(fig, ax))
+        plot_routes(self.graph, plot_rides_df, plt_cfg=self.plt_cfg, fig_ax=(fig, ax))
 
-        veh = self.observation_curr["vehicles"]
         plot_nums = {"veh": len(veh), "rides": f_plot_rides.sum(), "req": f_pending_requests.sum()}
 
         plot_cars(veh, self.plt_cfg, self.l2_recovery, ax)
-        set_xlabel_ylabel_title(ax, self.l2_recovery, self.current_step, plot_nums)
+        set_xlabel_ylabel_title(self, ax, plot_nums)
 
         return fig, ax
 

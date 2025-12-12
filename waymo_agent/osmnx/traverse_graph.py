@@ -53,7 +53,7 @@ def precompute_path_timesteps(env: "OSMnxWrapperMixin", route: list[int]):
         "x_norm_tgt",
         "y_norm_tgt",
     ]
-    result = merged[cols]
+    result = merged[cols].reset_index(drop=True)
     env.route_edges_df[(route[0], route[-1])] = result
     return result
 
