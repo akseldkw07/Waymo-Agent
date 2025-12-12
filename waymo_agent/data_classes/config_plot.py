@@ -3,13 +3,13 @@ from __future__ import annotations
 import typing as t
 from dataclasses import dataclass, field
 
-from waymo_agent.data_classes.osmnx_constants import Plot_graph_TypedDict, DEFAULT_OX_PLOT_NOTEBOOK
-from .vehicles import VehicleStatusEnum as VSE
-from .requests import RequestStatusEnum as RSE
+from waymo_agent.data_classes.osmnx_constants import DEFAULT_OX_PLOT_NOTEBOOK, Plot_graph_TypedDict
 
+from .requests import RequestStatusEnum as RSE
+from .vehicles import VehicleStatusEnum as VSE
 
 if t.TYPE_CHECKING:
-    from .osmnx_constants import Plot_graph_TypedDict, DEFAULT_OX_PLOT_NOTEBOOK
+    from .osmnx_constants import DEFAULT_OX_PLOT_NOTEBOOK, Plot_graph_TypedDict
 
 
 @dataclass

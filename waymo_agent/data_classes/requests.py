@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime as dt
 import enum
 import typing as t
 
@@ -7,14 +8,12 @@ import numpy as np
 import pandas as pd
 
 from waymo_agent.data_classes.config import EnvConfig
-
 from waymo_agent.data_classes.enriched_df_base import EnrichedDF, validate_typed_df_keys
 from waymo_agent.graph_env.cost_reward import compute_operating_cost
-import datetime as dt
 
 if t.TYPE_CHECKING:
-    from waymo_agent.graph_env.mixin import ObservationSpaceMixin, TransitionMixin
     from waymo_agent.data_classes.config_plot import PlotConfig
+    from waymo_agent.graph_env.mixin import ObservationSpaceMixin, TransitionMixin
 
 CURR_REQ_ID: int = 0
 CFG = EnvConfig()

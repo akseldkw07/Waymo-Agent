@@ -1,18 +1,19 @@
+import typing as t
+
 import matplotlib.cm as cm
 import matplotlib.colors as colors
-from matplotlib.figure import Figure
 import networkx as nx
 import numpy as np
+import osmnx as ox
 from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 from matplotlib.ticker import FuncFormatter, MaxNLocator
 
-from waymo_agent.data_classes.config_plot import PlotConfig
 from waymo_agent.data_classes.active_rides import ActiveRideDF
+from waymo_agent.data_classes.config_plot import PlotConfig
 from waymo_agent.data_classes.requests import RequestDF
 from waymo_agent.data_classes.vehicles import VehicleDF
 from waymo_agent.osmnx.euclidean_L2_embed import x_y_normed_to_orig
-import osmnx as ox
-import typing as t
 
 
 def get_edge_color_by_speed(G: nx.MultiDiGraph, plt_cfg: PlotConfig | None = None):

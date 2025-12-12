@@ -8,8 +8,8 @@ import osmnx as ox
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
-from waymo_agent.data_classes.config_plot import PlotConfig
 from waymo_agent.data_classes.active_rides import ActiveRideDF
+from waymo_agent.data_classes.config_plot import PlotConfig
 from waymo_agent.data_classes.requests import RequestDF
 from waymo_agent.osmnx.visualization import (
     get_edge_color_by_speed,

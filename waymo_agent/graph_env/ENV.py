@@ -8,7 +8,6 @@ import numpy as np
 
 from ..data_classes.config import EnvConfig
 from ..data_classes.config_plot import PlotConfig
-
 from .mixin import ActionMixin, ObservationSpaceMixin, OSMnxWrapperMixin, RenderingMixin, TransitionMixin
 
 if t.TYPE_CHECKING:
