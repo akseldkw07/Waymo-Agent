@@ -14,6 +14,7 @@ from waymo_agent.graph_env.cost_reward import compute_amortized_reward
 from waymo_agent.osmnx.euclidean_L2_embed import interpolate_position_on_edge
 from waymo_agent.osmnx.traverse_graph import step_along_route
 from waymo_agent.simulation.generate_obs_state import get_sd_ratio, init_active_ride_df
+from waymo_agent.graph_env.df_utils import masked_assign
 
 from .interface import GymEnvInterface
 
@@ -48,6 +49,7 @@ class TransitionMixin(RewardMixin):
     _active_rides_interim: ActiveRideDF
 
     # DEBUGGING
+    _discard_ride_ids: pd.Series
     _veh_ride_sanity_df: pd.DataFrame  # Must ALL be True
     _rides_debug: pd.DataFrame  # detailed ride transition debug info
 
@@ -84,12 +86,12 @@ class TransitionMixin(RewardMixin):
 
         requests, matches_orig = self._update_requests_from_action(action)
         new_rides = self._new_rides(requests, matches_orig)
-        veh_interim, active_rides_updated, discard_ride_ids = self._update_vehicles(action, new_rides)
+        veh_interim, active_rides_updated, self._discard_ride_ids = self._update_vehicles(action, new_rides)
         self._veh_interim = VehicleDF(veh_interim)
         self._active_rides_interim = ActiveRideDF(active_rides_updated)
 
         self._req_interim = RequestDF(requests)
-        self._cycle_requests(discard_ride_ids)
+        self._cycle_requests(self._discard_ride_ids)
         validate_typed_df_keys(self._req_interim, RequestDF)
 
         self._assert_state_consistency(action)
@@ -284,8 +286,7 @@ class TransitionMixin(RewardMixin):
         active_rides = ActiveRideDF(prev_rides.copy(deep=True))
 
         f_new_rides = np.isin(active_rides.vehicle_id, (new_rides["vehicle_id"]))
-        active_rides[f_new_rides] = new_rides
-        active_rides.reset_index(drop=True, inplace=True)
+        masked_assign(active_rides, f_new_rides, new_rides)
         assert pd.Series(active_rides.vehicle_id).equals(pd.Series(prev_rides.vehicle_id))
 
         # 2 - This is a cheat (TODO fix) - just move newly_assigned vehicle to start of ride
@@ -296,7 +297,7 @@ class TransitionMixin(RewardMixin):
         vehicles["loc_x_norm"] = np.where(f_new_rides, active_rides["pickup_x_norm"], vehicles["loc_x_norm"])
         vehicles["loc_y_norm"] = np.where(f_new_rides, active_rides["pickup_y_norm"], vehicles["loc_y_norm"])
 
-        # 2 - Move vehicles along their routes and update vehicles
+        # 2 - Move vehicles along their routes, update rides and vehicles
         updated_ride_status = step_along_route(self, ActiveRideDF(active_rides))  # type: ignore
         self.debug_active_rides = active_rides.copy(deep=True)
         self.updated_ride_status = updated_ride_status
@@ -308,14 +309,21 @@ class TransitionMixin(RewardMixin):
             updated_ride_status.route_dist_on_edge[updated_ride_status.f_has_route],
         )
 
-        # vehicles["loc_x_norm"] = np.where(active_rides.f_has_route, new_coords["x_norm"], vehicles["loc_x_norm"])
         vehicles.loc[updated_ride_status.f_has_route, "loc_x_norm"] = new_coords["x_norm"]
         vehicles.loc[updated_ride_status.f_has_route, "loc_y_norm"] = new_coords["y_norm"]
+        ride_update_cols = [
+            "curr_start_node",
+            "curr_end_node",
+            "route_dist_on_edge",
+            "trip_distance_remaining_meters",
+            "is_complete",
+        ]
+        active_rides[ride_update_cols] = updated_ride_status[ride_update_cols]
 
         # 3 - Compute rewards for rides
-        f_reward_mask = veh_old.f_get_rewards & vehicles.f_get_rewards
-        trip_rewards = compute_amortized_reward(updated_ride_status, prev_rides, self.config, f_reward_mask)  # type: ignore
-        self._rewards.update({"ride_reward_total": trip_rewards.sum()})
+        f_reward_mask = veh_old.f_get_rewards | vehicles.f_get_rewards
+        self._trip_rewards = compute_amortized_reward(updated_ride_status, prev_rides, self.config, f_reward_mask)  # type: ignore
+        self._rewards.update({"ride_reward_total": self._trip_rewards.sum()})
 
         # 4 - Handle completed rides
         completed_mask = updated_ride_status["is_complete"]
@@ -351,9 +359,9 @@ class TransitionMixin(RewardMixin):
         requests = RequestDF(self._req_interim.copy(deep=True))
 
         # 1 - Remove requests associated with completed rides
-        f_discard = requests["request_id"].isin(discard_ride_ids) | requests.f_inactive
-        requests = requests[~f_discard].reset_index(drop=True)
-        discarded_requests_ts = [RequestDF(requests[f_discard]).reset_index(drop=True)]
+        self._f_discard = (requests.f_inactive) | requests["request_id"].isin(discard_ride_ids)
+        discarded_requests_ts = [RequestDF(requests[self._f_discard]).reset_index(drop=True)]
+        requests = requests[~self._f_discard].reset_index(drop=True)
 
         # 2 - Trim to max_pending_requests based on wait time (longest waiting kept)
         spawned_req = RequestDF.spawn_requests(self, self.config.max_new_requests_per_step)
@@ -362,12 +370,16 @@ class TransitionMixin(RewardMixin):
         )
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            requests = pd.concat([spawned_req, requests, filler_requests], ignore_index=True).reset_index(drop=True)
+            requests = RequestDF(pd.concat([spawned_req, requests, filler_requests]).reset_index(drop=True))
 
         if len(requests) > self.config.max_pending_requests:
             f_prune = requests.index >= self.config.max_pending_requests
-            discarded_requests_ts.append(RequestDF(requests[f_prune]))
+            discarded_requests_ts.append(RequestDF(requests[f_prune & requests.f_valid]).reset_index(drop=True))
             requests = requests[~f_prune].reset_index(drop=True)
+
+        for dr in discarded_requests_ts:
+            dr["discard_time"] = self.time_dt
+            dr["discard_step"] = self.current_step
 
         self._remove_requests.extend(discarded_requests_ts)
         validate_typed_df_keys(requests, RequestDF)

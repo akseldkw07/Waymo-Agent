@@ -13,14 +13,13 @@ def compute_operating_cost(distance_meters: np.ndarray, config: EnvConfig) -> np
     return distance_meters * config.operating_cost_per_meter
 
 
-def compute_amortized_reward(
-    curr: ActiveRideDF, prev: ActiveRideDF, config: EnvConfig, mask: np.ndarray | None = None
-) -> np.ndarray:
+def compute_amortized_reward(curr: ActiveRideDF, prev: ActiveRideDF, config: EnvConfig, mask: np.ndarray | None = None):
     """
     Compute the amortized reward for rides based on distance traveled and completion.
     """
-    if mask is None:
-        mask = np.ones(len(curr), dtype=bool)
+    mask = mask if mask is not None else np.ones(len(curr), dtype=bool)
+    mask &= prev["ride_id"] == curr["ride_id"]
+
     total_dist = np.maximum(curr.total_trip_distance_meters, 1e-6)
     prev_rem = prev.trip_distance_remaining_meters
     curr_rem = curr.trip_distance_remaining_meters

@@ -98,7 +98,7 @@ def step_along_route(env: "OSMnxWrapperMixin", pos: ActiveRideDF):
         pos_new.at[row_index, "curr_end_node"] = path_row["target"]
         pos_new.at[row_index, "route_dist_on_edge"] = (frac * path_row["length"]).astype(np.float32)
         pos_new.at[row_index, "trip_distance_remaining_meters"] = path_row["DistanceRemaining"].astype(np.float32)
-        pos_new.at[row_index, "is_complete"] = frac >= 1.0 and path_row["DistanceRemaining"] <= 0.0
+        pos_new.at[row_index, "is_complete"] = frac >= 0.99 or path_row["DistanceRemaining"] <= 25.0
     return ActiveRideDF(pos_new)
 
 

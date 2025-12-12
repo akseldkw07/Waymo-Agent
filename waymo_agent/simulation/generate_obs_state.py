@@ -24,12 +24,10 @@ def init_active_ride_df(env: "ObservationSpaceMixin | TransitionMixin", vehicles
 def get_sd_ratio(config: EnvConfig, requests: RequestDF, vehicles: VehicleDF) -> np.ndarray:
     # TODO somehow make this more robust - better naming schema or something like that
 
+    z = (vehicles.f_available.sum() / requests.f_awaiting_price.sum()) - 1
+    arr = 1 / (1 + np.exp(-z))  # sigmoid function
     ratio = np.array(
-        [
-            vehicles.f_available.sum() / requests.f_awaiting_price.sum().clip(min=1),
-            config.vehicle_per_node,
-            config.lambda_per_node,
-        ],
+        [arr, config.vehicle_per_node, config.lambda_per_node],
         dtype=np.float32,
     )
     return ratio

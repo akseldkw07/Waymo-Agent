@@ -60,7 +60,7 @@ class EnvConfig:
 
     # Customer acceptance model parameters
     acceptance_margin_weight: float = -0.20
-    acceptance_supply_demand_weight: float = 0.6
+    acceptance_supply_demand_weight: float = 1.5
 
     # Battery and charging parameters
     battery_consumption_per_km: float = 0.01

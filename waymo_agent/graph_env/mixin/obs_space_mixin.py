@@ -77,11 +77,13 @@ class ObservationSpaceMixin(GymEnvInterface):
         """
         self.bc_row, self._breadcrumbs = {}, []
         self._remove_requests = []
+
         self.bc_row.update({"step": self.current_step, "timestamp": self.time_dt})
         real_requests = RequestDF.spawn_requests(self, self.config.max_new_requests_per_step)
         filler_requests = RequestDF.generate_empty(
             num_rows=self.config.max_pending_requests - len(real_requests), dt=self.time_dt
         )
+        # Requests, Vehicles, Rides
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             requests = RequestDF(pd.concat([real_requests, filler_requests], ignore_index=True).reset_index(drop=True))
@@ -90,6 +92,8 @@ class ObservationSpaceMixin(GymEnvInterface):
 
         sd_ratio = get_sd_ratio(self.config, requests, vehicles)
         self.bc_row.update({"supply_demand_ratio": sd_ratio[0]})
+
+        # Observation
         observation: ObservationDict = {
             "globals": self.MetaState,
             "supply_demand_ratio": sd_ratio,
@@ -102,8 +106,11 @@ class ObservationSpaceMixin(GymEnvInterface):
         validate_keys(ObservationDict, observation)
         self.observation_curr = observation
         self.observation_prev = observation  # TODO should I be doing this?
-        self.observation_space.contains(observation)  # This will fail due to dataframes instead of numpy arrays
-        # TODOD should I .to_numpy() here?
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            self.observation_space.contains(observation)  # This will fail due to dataframes instead of numpy arrays
+
+        # Breadcrumbs
         self.bc_row.update({"error_msg": self.error_msg, "rewards": 0})
         self.append_breadcrumbs()
         return observation
