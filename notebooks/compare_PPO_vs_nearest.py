@@ -146,6 +146,7 @@ class CityTaxiEnv(gym.Env):
 
                 if 0 <= new_r < self.rows and 0 <= new_c < self.cols:
                     self.taxi_locs[i] = self._get_node(new_r, new_c)
+                    rewards[i] -= 0.1  # small time cost to discourage aimless movement
                 else:
                     rewards[i] = -0.5
 
