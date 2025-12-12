@@ -70,6 +70,10 @@ def interpolate_position_on_edge(
 
     TODO ox.utils_geo.interpolate_points()
     """
+    assert (
+        len(starts) == len(ends) == len(dist_on_edge)
+    ), f"Lengths must match: {len(starts)}, {len(ends)}, {len(dist_on_edge)}"
+
     edge_df = f_edges_start_end_node(env.EdgeDFEnriched, starts, ends)
     lengths = edge_df["length"].to_numpy()
     # avoid divide-by-zero; clip fraction to [0, 1]
@@ -103,10 +107,17 @@ def f_edges_start_end_node(
     order_df = pd.DataFrame({"source": starts, "target": ends, "_order": np.arange(len(starts))})
     # Subset edge_df to just the path edges, with correct order
     # Merge to get only edges along this path, in order
-    merged = pd.merge(order_df, edge_df, on=["source", "target"], how="left", sort=False, validate="1:m")
-    # Sort by _order to preserve path order
-    merged = merged.sort_values("_order").reset_index(drop=True)
-    # Drop _order
+    merged = pd.merge(order_df, edge_df, on=["source", "target"], how="left", sort=False)
+    if merged.shape[0] != order_df.shape[0]:
+        # print(f"{merged.columns=}")
+        merged.drop_duplicates(subset=["source", "target"], inplace=True)
+        # print(f"{merged.columns=}")
+
+    assert (
+        merged.shape[0] == order_df.shape[0]
+    ), f"Some edges not found in edge_df. {order_df.shape[0]=}, {merged.shape[0]=}\n\n{merged}"
+
+    assert merged["_order"].is_monotonic_increasing, "Order not preserved in merge"
     merged = merged.drop(columns=["_order"])
     return merged
 

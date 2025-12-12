@@ -15,6 +15,9 @@ from waymo_agent.data_classes.requests import RequestDF
 from waymo_agent.data_classes.vehicles import VehicleDF
 from waymo_agent.osmnx.euclidean_L2_embed import x_y_normed_to_orig
 
+if t.TYPE_CHECKING:
+    from waymo_agent.graph_env.mixin import RenderingMixin
+
 
 def get_edge_color_by_speed(G: nx.MultiDiGraph, plt_cfg: PlotConfig | None = None):
     plt_cfg = plt_cfg or PlotConfig()
@@ -131,12 +134,13 @@ def plot_cars(veh: VehicleDF, cfg: PlotConfig, l2_recovery: dict[str, float], ax
     ax.scatter(lon, lat, c=colors, s=100, zorder=10, marker="X", edgecolors="black", linewidths=2)
 
 
-def set_xlabel_ylabel_title(
-    ax: Axes, l2_recovery: dict[str, float], current_step: int, num_veh_req_rides: dict[str, int]
-):
+def set_xlabel_ylabel_title(env: "RenderingMixin", ax: Axes, plot_nums: dict[str, int]):
     """
     Format and display x and y coordinates on the plot axes, including normalized values.
     """
+    l2_recovery = env.l2_recovery
+    current_step = env.current_step
+
     # CRITICAL: osmnx turns axes off - turn them back on
     ax.axis("on")
     ax.xaxis.set_visible(True)
@@ -189,8 +193,8 @@ def set_xlabel_ylabel_title(
 
     # Title
     ax.set_title(
-        f"Step {current_step} | Vehicles: {num_veh_req_rides['veh']} | Active Rides: {num_veh_req_rides['rides']} | "
-        f"Pending Requests: {num_veh_req_rides['req']}\nCoordinates: Raw (Normalized)",
+        f"Step {current_step} | Vehicles: {plot_nums['veh']} | Active Rides: {plot_nums['rides']} | "
+        f"Pending Requests: {plot_nums['req']}\nTotal Rewards: {float(env.breadcrumbs['rewards'].sum()):.2f}",
         fontsize=14,
         fontweight="bold",
         color="black",

@@ -481,7 +481,7 @@ class TransitionMixin(RewardMixin):
         Clear all interim and debug dataframes to free up memory.
         """
         # raise NotImplementedError("reset_debug_and_interim not yet implemented.")
-        print("resetting debug and interim dataframes")
+        # tqdm.write("resetting debug and interim dataframes")
         for attr in [
             "_veh_ride_sanity_df",
             "_rides_debug",

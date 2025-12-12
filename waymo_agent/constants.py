@@ -8,6 +8,7 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 MAP_DIR = ROOT_DIR / "maps"
 IMG_DIR = ROOT_DIR / "img"
 DATA_DIR = ROOT_DIR / "data_sim"
+DATA_IGNORE_DIR = ROOT_DIR / "data"
 MODEL_WEIGHT_DIR = ROOT_DIR / "model_weights"
 
 # IMG Paths

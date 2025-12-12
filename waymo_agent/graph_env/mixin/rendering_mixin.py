@@ -93,7 +93,7 @@ class RenderingMixin(GymEnvInterface):
         plot_nums = {"veh": len(veh), "rides": f_plot_rides.sum(), "req": f_pending_requests.sum()}
 
         plot_cars(veh, self.plt_cfg, self.l2_recovery, ax)
-        set_xlabel_ylabel_title(ax, self.l2_recovery, self.current_step, plot_nums)
+        set_xlabel_ylabel_title(self, ax, plot_nums)
 
         return fig, ax
 

@@ -44,7 +44,7 @@ class DispatchAgent:
 
         requests = RequestDF(RequestDF.from_obs_numpy(obs["pending_requests"]))
         f_req_dispatchable = requests.f_need_dispatch
-        print(f"Dispatchable requests: {np.sum(f_req_dispatchable)} out of {len(requests)}")
+        # print(f"Dispatchable requests: {np.sum(f_req_dispatchable)} out of {len(requests)}")
 
         f_taken = np.zeros(len(vehicles), dtype=bool)
         dispatch_actions = np.full(requests.shape[0], self.config.no_action_id, dtype=int)
@@ -55,6 +55,9 @@ class DispatchAgent:
                 continue  # skip requests that do not need pricing decision
 
             veh_avail = vehicles[~f_taken & veh_available]
+            if len(veh_avail) == 0:
+                # print("No available vehicles left to dispatch.")
+                break
             # print(veh_avail)
             # print("\n\n")
             x_norm = req.pickup_x_norm
@@ -68,10 +71,10 @@ class DispatchAgent:
             # print(f"min_dist_idx: {min_dist_idx}")
             min_dist = distances[min_dist_idx]
             veh_idx = veh_avail.vehicle_id.to_numpy()[min_dist_idx]
-            print(f"Request {req_idx} closest vehicle {veh_idx} at distance {min_dist} min_dist_idx {min_dist_idx}")
+            # print(f"Request {req_idx} closest vehicle {veh_idx} at distance {min_dist} min_dist_idx {min_dist_idx}")
 
             if min_dist <= self.distance_threshold:
-                print(f"Assigning vehicle {veh_idx} to request {req_idx}")
+                # print(f"Assigning vehicle {veh_idx} to request {req_idx}")
                 dispatch_actions[req_idx] = veh_idx
                 f_taken[veh_idx] = True
 

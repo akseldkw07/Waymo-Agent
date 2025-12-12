@@ -118,6 +118,8 @@ class OSMnxWrapperMixin(GymEnvInterface):
         for col in cols_node:
             if col not in self.edge_df.columns:
                 merged = merged.rename(columns={col: f"{col}_tgt"})
+        merged.sort_values(by=["source", "target", "travel_time_minutes"], ascending=[True, True, True], inplace=True)
+        merged.drop_duplicates(subset=["source", "target"], inplace=True)
         return merged
 
     # ------------------------------------------------------------------ #
