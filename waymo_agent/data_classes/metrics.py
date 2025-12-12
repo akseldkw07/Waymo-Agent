@@ -23,7 +23,7 @@ class TimeSeriesMetricsDF(pd.DataFrame):
     # num_new_requests: np.ndarray
 
     # num_pending_requests: np.ndarray
-    # num_completed_requests: np.ndarray
+    # num_"is_complete"d_requests: np.ndarray
     # num_cancelled_requests: np.ndarray
     # num_rejected_requests: np.ndarray
     # num_overflow_requests: np.ndarray

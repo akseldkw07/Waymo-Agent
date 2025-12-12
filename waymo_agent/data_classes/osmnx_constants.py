@@ -2,7 +2,6 @@ import typing as t
 from collections.abc import Iterable, Sequence
 from pathlib import Path
 
-import networkx as nx
 from matplotlib.axes import Axes
 
 EXPECTED_NODE_ATTR_TYPES = {
@@ -39,11 +38,6 @@ EXPECTED_EDGE_ATTR_TYPES = {
 }
 
 
-class Plot_route_TypedDict(t.TypedDict, total=True):
-    route_color: str
-    route_linewidth: float
-
-
 class Plot_graph_TypedDict(t.TypedDict, total=False):
     # G: nx.MultiGraph | nx.MultiDiGraph
     ax: Axes | None
@@ -68,10 +62,13 @@ class Plot_graph_TypedDict(t.TypedDict, total=False):
 DEFAULT_OX_PLOT_NOTEBOOK: Plot_graph_TypedDict = {
     "node_size": 5,
     "node_color": "white",
-    "node_alpha": 0.5,
-    "figsize": (10, 10),
-    "bgcolor": "black",
-    "show": True,
+    "node_alpha": 0.80,
+    "edge_alpha": 0.8,
+    "figsize": (15, 15),
+    "bgcolor": "white",
+    "show": False,
+    "close": True,
+    "edge_linewidth": 1.0,
 }
 
 
@@ -188,25 +185,6 @@ class OSMNXConstants:
         "living_street": {"color": "#777777", "width": 0.4},
         "pedestrian": {"color": "#999999", "width": 0.3},  # Lighter Grey, Thinnest
     }
-
-    @staticmethod
-    def get_edge_colors(G: nx.MultiDiGraph):
-        edge_colors = []
-        edge_widths = []
-
-        for u, v, data in G.edges(data=True):
-            # Get highway type (handle lists if necessary)
-            highway_type = data.get("highway", "default")
-            if isinstance(highway_type, list):
-                highway_type = highway_type[0]
-
-            # Fetch style from config, or use default if type not found
-            style = OSMNXConstants.COLOR_CONFIG.get(highway_type, OSMNXConstants.COLOR_CONFIG["unclassified"])
-
-            edge_colors.append(style["color"])
-            edge_widths.append(style["width"])
-
-        return edge_colors, edge_widths
 
     NORTH_125TH = 40.820
     SOUTH_LIMIT = 40.69

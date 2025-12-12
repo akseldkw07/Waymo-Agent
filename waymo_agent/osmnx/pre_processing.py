@@ -4,7 +4,7 @@ import typing as t
 import networkx as nx
 from shapely.geometry import LineString
 
-from .osmnx_constants import OSMNXConstants as C
+from ..data_classes.osmnx_constants import OSMNXConstants as C
 from .utils import _max_speed_int
 
 logger = logging.getLogger(__name__)

@@ -3,7 +3,7 @@ import numpy as np
 import osmnx as ox
 from scipy.spatial.kdtree import cKDTree
 
-PRECISION = 4
+PRECISION = 6
 import typing as t
 
 import networkx as nx
@@ -12,14 +12,15 @@ import osmnx as ox
 import pandas as pd
 
 if t.TYPE_CHECKING:
-    from waymo_agent.graph_env.mixin.graph_mixin import OSMnxWrapperMixin
+    from waymo_agent.graph_env.mixin import OSMnxWrapperMixin
+# ox.distance.euclidean(**{})  # type: ignore
 
 
 def embed_L2(G: nx.MultiDiGraph):
     """
     Embed L2 normalized coordinates into each node.
     """
-    G_proj = ox.project_graph(G)
+    G_proj = ox.project_graph(G, to_latlong=True)
 
     xs = np.array([d["x"] for _, d in G_proj.nodes(data=True)])
     ys = np.array([d["y"] for _, d in G_proj.nodes(data=True)])
@@ -66,6 +67,8 @@ def interpolate_position_on_edge(
     1. Get edges
     2. For each edge, get start and end node coordinates
     3. Interpolate position based on dist_on_edge and edge length
+
+    TODO ox.utils_geo.interpolate_points()
     """
     edge_df = f_edges_start_end_node(env.EdgeDFEnriched, starts, ends)
     lengths = edge_df["length"].to_numpy()
@@ -106,3 +109,45 @@ def f_edges_start_end_node(
     # Drop _order
     merged = merged.drop(columns=["_order"])
     return merged
+
+
+def _recover_L2_params_env(env: "OSMnxWrapperMixin"):
+    """
+    Recover x0, y0, and max_abs used in embed_L2.
+
+    These are computed from the PROJECTED graph, just like in embed_L2.
+    """
+    # Project the graph to get projected coordinates
+    x0 = env.node_df["x"].to_numpy().mean()
+    y0 = env.node_df["y"].to_numpy().mean()
+    xs_c = env.node_df["x"] - x0
+    ys_c = env.node_df["y"] - y0
+    max_abs = max(np.abs(xs_c).max(), np.abs(ys_c).max())  # largest radius
+    return {"x0": x0, "y0": y0, "max_abs": max_abs}
+
+
+def _recover_L2_params_graph(G: nx.MultiDiGraph):
+    G_proj = ox.project_graph(G, to_latlong=True)
+
+    xs = np.array([d["x"] for _, d in G_proj.nodes(data=True)])
+    ys = np.array([d["y"] for _, d in G_proj.nodes(data=True)])
+
+    x0 = xs.mean()
+    y0 = ys.mean()
+    xs_c = xs - x0
+    ys_c = ys - y0
+    max_abs = max(np.abs(xs_c).max(), np.abs(ys_c).max())  # largest radius
+    return {"x0": x0, "y0": y0, "max_abs": max_abs}
+
+
+def x_y_normed_to_orig(recover_params: dict[str, float], x_norm: pd.Series, y_norm: pd.Series):
+    """
+    Convert normalized coordinates back to original projected coordinates.
+    """
+    x0 = recover_params["x0"]
+    y0 = recover_params["y0"]
+    max_abs = recover_params["max_abs"]
+
+    x_orig = x_norm * max_abs + x0
+    y_orig = y_norm * max_abs + y0
+    return x_orig.to_numpy(), y_orig.to_numpy()

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import datetime as dt
-import typing as t
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -9,9 +8,6 @@ import numpy as np
 import pandas as pd
 
 from ..constants import MANHATTAN_ENRICHED_GRAPH, MAP_DIR
-
-if t.TYPE_CHECKING:
-    from ..osmnx.osmnx_constants import Plot_graph_TypedDict, Plot_route_TypedDict
 
 
 @dataclass
@@ -46,8 +42,10 @@ class EnvConfig:
     hours_per_day: int = 24
 
     # Demand parameters
-    lambda_per_node: float = vehicle_per_node / 15  # average number of requests per node per minute
+    lambda_per_node: float = vehicle_per_node / 10
+    # lambda_per_node: float = vehicle_per_node
     lambda_variation_coef: float = 2.0
+    max_new_requests_per_step: int | None = None  # if None, no limit
 
     # Request parameters
     max_pending_requests: int = 25
@@ -62,7 +60,7 @@ class EnvConfig:
 
     # Customer acceptance model parameters
     acceptance_margin_weight: float = -0.20
-    acceptance_supply_demand_weight: float = 0.6
+    acceptance_supply_demand_weight: float = 1.5
 
     # Battery and charging parameters
     battery_consumption_per_km: float = 0.01
@@ -81,26 +79,6 @@ class EnvConfig:
     @property
     def operating_cost_per_meter(self) -> float:
         return self.operating_cost_per_km / 1000.0
-
-    # Graphing parameters
-    ox_plot_requests: Plot_route_TypedDict = field(
-        default_factory=lambda: {"route_color": "cyan", "route_linewidth": 2.0}
-    )
-    ox_plot_active_rides: Plot_route_TypedDict = field(
-        default_factory=lambda: {"route_color": "limegreen", "route_linewidth": 3.0}
-    )
-
-    ox_plot_default: Plot_graph_TypedDict = field(
-        default_factory=lambda: {
-            "node_size": 5,
-            "node_color": "white",
-            "node_alpha": 0.85,
-            "figsize": (10, 10),
-            "bgcolor": "black",
-            "show": False,
-            "edge_linewidth": 1.0,
-        }
-    )
 
     # Verbose Rewards
     verbose_rewards: bool = True

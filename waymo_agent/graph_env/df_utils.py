@@ -1,5 +1,6 @@
 import networkx as nx
 import pandas as pd
+import numpy as np
 
 
 def nodes_to_df(G: nx.MultiDiGraph) -> pd.DataFrame:
@@ -45,3 +46,11 @@ def edges_to_df(G: nx.MultiDiGraph) -> pd.DataFrame:
 
     edges_df = pd.DataFrame(edges_data, columns=["source", "target", "key"] + list(attrs.keys()))
     return edges_df
+
+
+def masked_assign(dst: pd.DataFrame, mask: np.ndarray | pd.Series, src: pd.DataFrame):
+    assert mask.sum() == len(src), f"Mask sum {mask.sum()} != src len {len(src)}"
+    assert list(dst.columns) == list(src.columns), f"Dst columns {dst.columns} != src columns {src.columns}"
+
+    for c in dst.columns:
+        dst.loc[mask, c] = src[c].to_numpy()

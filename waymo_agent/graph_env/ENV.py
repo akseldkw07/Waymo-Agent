@@ -6,17 +6,26 @@ from pathlib import Path
 
 import numpy as np
 
-from waymo_agent.data_classes import ActionDict, EnvConfig
-
+from ..data_classes.config import EnvConfig
+from ..data_classes.config_plot import PlotConfig
 from .mixin import ActionMixin, ObservationSpaceMixin, OSMnxWrapperMixin, RenderingMixin, TransitionMixin
+
+if t.TYPE_CHECKING:
+    from waymo_agent.data_classes import ActionDict
 
 
 class RideShareEnv(RenderingMixin, OSMnxWrapperMixin, ObservationSpaceMixin, ActionMixin, TransitionMixin):
     """Gymnasium environment for simulating ride-share dispatch on OSMnx road networks."""
 
-    def __init__(self, config: EnvConfig | None = None, render_mode: t.Literal["human", "ansi"] = "human"):
+    def __init__(
+        self,
+        config: EnvConfig | None = None,
+        plot_config: PlotConfig | None = None,
+        render_mode: t.Literal["human", "ansi"] = "human",
+    ):
         super().__init__()
         self.config = config or EnvConfig()
+        self.plt_cfg = plot_config or PlotConfig()
         self.render_mode = render_mode
         self.map_dir = Path(self.config.map_dir).expanduser()
         self.map_name = self.config.map_name
@@ -40,7 +49,7 @@ class RideShareEnv(RenderingMixin, OSMnxWrapperMixin, ObservationSpaceMixin, Act
 
         super().reset(seed=seed, options=options)
         self.reset_globals()
-        self.reset_debug_and_interim()
+        # self.reset_debug_and_interim()
 
         observation = self.reset_observation()
         return observation, self.info
@@ -52,7 +61,6 @@ class RideShareEnv(RenderingMixin, OSMnxWrapperMixin, ObservationSpaceMixin, Act
             self.error_msg = str(e)
             terminated = True
             return self.observation_curr, 0.0, terminated, False, self.info
-        # TODO implement transition logic
         reward = 0.0
 
         terminated = False

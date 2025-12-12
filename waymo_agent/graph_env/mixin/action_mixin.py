@@ -9,6 +9,7 @@ from gymnasium import spaces
 from waymo_agent.data_classes import ActionDict, validate_keys
 
 from .interface import GymEnvInterface
+import numpy as np
 
 
 class ActionMixin(GymEnvInterface):
@@ -29,7 +30,9 @@ class ActionMixin(GymEnvInterface):
         """
         action_space = spaces.Dict(
             {
-                "prices": spaces.Box(low=0.0, high=self.config.max_price, shape=(self.config.max_pending_requests,)),
+                "prices": spaces.Box(
+                    low=0.0, high=self.config.max_price, shape=(self.config.max_pending_requests,), dtype=np.float64
+                ),
                 "reposition": spaces.Box(low=-1.0, high=1.0, shape=(self.num_vehicles, 2)),
                 "dispatch": spaces.MultiDiscrete(
                     [self.num_vehicles + 1] * self.config.max_pending_requests,
