@@ -36,7 +36,7 @@ class EnvConfig:
     map_name: str = MANHATTAN_ENRICHED_GRAPH.format(782)  # "manhattan-sparse-782-nodes-enriched.graphml"
     map_dir: Path = MAP_DIR
     vehicle_per_node: float = 0.03  # must be greater than 0.0
-    max_vehicles: int = 25
+    max_vehicles: int = 50
     time_step_delta: dt.timedelta = dt.timedelta(minutes=1)
     max_episode_steps: int = 60 * 24  # 1 day
     day_per_week: int = 7
