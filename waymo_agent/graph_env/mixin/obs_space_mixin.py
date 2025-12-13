@@ -37,8 +37,8 @@ class ObservationSpaceMixin(GymEnvInterface):
     def global_space_config(self):
         """ """
         shape = (5,)
-        low = np.array([-1.0, -1.0, -1.0, -1.0, 0.0])
-        high = np.array([1.0, 1.0, 1.0, 1.0, len(WeatherEnum) - 1])
+        low = np.array([-1.0, -1.0, -1.0, -1.0, 0.0]).astype(np.float32)
+        high = np.array([1.0, 1.0, 1.0, 1.0, len(WeatherEnum) - 1]).astype(np.float32)
         return {"shape": shape, "low": low, "high": high}
 
     def define_observation_space(self):

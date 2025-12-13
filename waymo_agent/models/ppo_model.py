@@ -154,10 +154,11 @@ class RideShareActorCritic(nn.Module):
         If env expects dispatch in [-1..23] (start=-1), we output that shift.
         """
         obs = _to_device(obs)
+
         out = self.forward(obs)
 
         # --- prices: LogNormal ensures positivity with correct log-prob ---
-        price_sigma = torch.exp(self.price_logstd).detach()
+        price_sigma = torch.exp(self.price_logstd.detach().clone())
         price_dist = LogNormal(out["price_mu"], price_sigma)
         prices = price_dist.mean if deterministic else t.cast(torch.Tensor, price_dist.sample())  # (..., 50), > 0
 
@@ -168,7 +169,7 @@ class RideShareActorCritic(nn.Module):
             prices = prices * pm
 
         # --- reposition: tanh-squashed Normal matches Box([-1,1]) ---
-        repo_sigma = torch.exp(self.repo_logstd).detach().view(self.num_veh, 2)
+        repo_sigma = torch.exp(self.repo_logstd.detach().clone()).view(self.num_veh, 2)
         repo_dist = TanhNormal(out["repo_mu"], repo_sigma)
         reposition = repo_dist.mode() if deterministic else repo_dist.sample()  # (..., 24, 2)
 
