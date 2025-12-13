@@ -1,8 +1,13 @@
 from __future__ import annotations
+
 import typing as t
+
 import torch
 import torch.nn as nn
 from torch.distributions import Categorical, LogNormal, Normal
+
+from waymo_agent.data_classes.space_dicts import ObservationDict
+from waymo_agent.graph_env.ENV import RideShareEnv
 
 
 def _flat_obs(obs: dict[str, torch.Tensor]) -> torch.Tensor:
@@ -73,14 +78,23 @@ class RideShareActorCritic(nn.Module):
       dispatch:   MultiDiscrete([25]*50, start=[-1]*50)  # we'll emit categories 0..24, then shift to -1..23 if needed
     """
 
-    def __init__(self, hidden: int = 256, max_pending: int = 50, num_veh: int = 24):
+    def __init__(self, env: RideShareEnv, hidden: int = 256):
         super().__init__()
-        self.max_pending = max_pending
-        self.num_veh = num_veh
-        self.dispatch_n = num_veh + 1  # 25 (includes "no-action")
+        self.max_pending = env.config.max_pending_requests
+        self.num_veh = env.num_vehicles
+        self.dispatch_n = self.num_veh + 1  # 25 (includes "no-action")
 
         # compute input dim from your space
-        obs_dim = 5 + 3 + (num_veh * 4) + (max_pending * 9) + (num_veh * 9) + num_veh + max_pending
+        obs_space = t.cast(ObservationDict, env.observation_space)
+        size_globals = obs_space["globals"].shape[0]  # 5
+        size_sd_ratio = obs_space["supply_demand_ratio"].shape[0]  # 3
+        sz_cars = obs_space["vehicles"].shape[0] * obs_space["vehicles"].shape[1]  # 24*4
+        sz_reqs = obs_space["pending_requests"].shape[0] * obs_space["pending_requests"].shape[1]  # 50*9
+        sz_rides = obs_space["active_rides"].shape[0] * obs_space["active_rides"].shape[1]  # 24*9
+        sz_dispatch_mask = obs_space["dispatch_mask"].shape[0]  # 24
+        sz_pricing_mask = obs_space["pricing_mask"].shape[0]  #
+
+        obs_dim = size_globals + size_sd_ratio + sz_cars + sz_reqs + sz_rides + sz_dispatch_mask + sz_pricing_mask
 
         self.encoder = nn.Sequential(
             nn.Linear(obs_dim, hidden),
@@ -91,15 +105,15 @@ class RideShareActorCritic(nn.Module):
 
         # --- policy heads ---
         # prices
-        self.price_mu = nn.Linear(hidden, max_pending)
-        self.price_logstd = nn.Parameter(torch.full((max_pending,), -0.5))  # learned global log-std per dim
+        self.price_mu = nn.Linear(hidden, self.max_pending)
+        self.price_logstd = nn.Parameter(torch.full((self.max_pending,), -0.5))  # learned global log-std per dim
 
         # reposition (24,2)
-        self.repo_mu = nn.Linear(hidden, num_veh * 2)
-        self.repo_logstd = nn.Parameter(torch.full((num_veh * 2,), -0.5))
+        self.repo_mu = nn.Linear(hidden, self.num_veh * 2)
+        self.repo_logstd = nn.Parameter(torch.full((self.num_veh * 2,), -0.5))
 
         # dispatch logits (50, 25)
-        self.dispatch_logits = nn.Linear(hidden, max_pending * self.dispatch_n)
+        self.dispatch_logits = nn.Linear(hidden, self.max_pending * self.dispatch_n)
 
         # --- baseline ---
         self.value = nn.Linear(hidden, 1)
