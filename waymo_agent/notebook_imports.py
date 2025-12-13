@@ -9,4 +9,4 @@ import numpy as np
 import pandas as pd
 import torch
 from IPython.display import HTML, display
-from tqdm import tqdm
+from tqdm.auto import tqdm

@@ -152,7 +152,7 @@ class RideShareActorCritic(nn.Module):
         x = torch.nan_to_num(x, nan=0.0, posinf=0.0, neginf=0.0)
         h = self.encoder(x)
         h = torch.nan_to_num(h, nan=0.0, posinf=0.0, neginf=0.0)
-        h = self.encoder(x)
+
         out: dict[str, torch.Tensor] = {}
 
         out["price_mu"] = self.price_mu(h)  # (..., 50)
@@ -454,7 +454,7 @@ def train_ppo(
     best_eval_return = float("-inf")
     no_improve_checks = 0
 
-    pbar = tqdm(total=cfg.total_steps, desc="PPO steps", unit="step")
+    pbar = tqdm(total=cfg.total_steps, desc="PPO steps", unit="step", position=0)
     try:
 
         while steps_done < cfg.total_steps:
@@ -517,7 +517,7 @@ def train_ppo(
             loss_u = pl_u = vl_u = ent_u = kl_u = clip_u = 0.0
             n_mb = 0
 
-            for _ep in range(cfg.update_epochs):
+            for _ep in tqdm(range(cfg.update_epochs), desc="PPO update epochs", leave=True, position=1):
                 perm = idxs[torch.randperm(T, device=DEVICE)]
                 for start in range(0, T, cfg.minibatch_size):
                     mb = perm[start : start + cfg.minibatch_size]
