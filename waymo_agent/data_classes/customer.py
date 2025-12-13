@@ -47,6 +47,34 @@ class CustomerDF(pd.DataFrame):
 
 
 def price_acceptance_probability(
+    requests: RequestDF,
+    prices: np.ndarray,
+    supply_demand_ratio_z: float,  # this is a scalar, sigmoid of supply-demand ratio
+    config: EnvConfig | None = None,
+):
+    """
+    Compute the probability that a customer will accept a ride request
+    based on the pricing and other factors.
+    TODO implement the acceptance model based on margin (price - cost), supply-demand ratio, customer bias and temperature.
+    Return a float between 0.0 and 1.0
+    """
+    assert len(requests) == len(prices), f"Length of requests {len(requests)=} != length of prices {len(prices)=}"
+    config = config or EnvConfig()
+
+    profit_margin = (prices - requests["est_cost"]) / (requests["est_cost"] + 1e-5)
+
+    z = (
+        requests.cust_bias
+        + profit_margin * config.acceptance_margin_weight
+        + config.acceptance_supply_demand_weight * supply_demand_ratio_z
+    ) / requests.cust_temperature
+
+    acceptance_prob = 1.0 / (1.0 + np.exp(-z))
+
+    return acceptance_prob, z
+
+
+def price_acceptance_probability_old(
     cust: CustomerDF,
     requests: RequestDF,
     prices: np.ndarray,

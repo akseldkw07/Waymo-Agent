@@ -91,11 +91,24 @@ class ObservationSpaceMixin(GymEnvInterface):
         vehicles = init_vehicle_df(self)
         rides = init_active_ride_df(self, vehicles)
 
+        assert (
+            len(requests) == self.config.max_pending_requests
+        ), f"Requests len {len(requests)} != max_pending_requests {self.config.max_pending_requests}"
+        assert (
+            len(vehicles) == self.num_vehicles == vehicles.f_idle.sum()
+        ), f"VehicleDF len {len(vehicles)} != num_vehicles {self.num_vehicles} != f_idle sum {vehicles.f_idle.sum()}"
+        assert len(rides) == len(vehicles), f"Rides len {len(rides)} != Vehicles len {len(vehicles)}"
+        assert rides.f_valid.sum() == 0, f"Rides f_valid sum {rides.f_valid.sum()} != 0 on reset"
+
         sd_ratio = get_sd_ratio(self.config, requests, vehicles)
+        assert (
+            sd_ratio.shape == SupplyDemandDF.space_config(self.config)["shape"]
+        ), f"SupplyDemandDF ratio shape {sd_ratio.shape} != (3,)"
+        print(sd_ratio, sd_ratio.shape)
         self.bc_row.update({"supply_demand_ratio": sd_ratio[0]})
 
         # Observation
-        observation: ObservationDict = {
+        observation_full: ObservationDict = {
             "globals": self.MetaState,
             "supply_demand_ratio": sd_ratio,
             "vehicles": vehicles,
@@ -104,17 +117,19 @@ class ObservationSpaceMixin(GymEnvInterface):
             "dispatch_mask": vehicles.f_idle.astype(np.int8),
             "pricing_mask": requests.f_awaiting_price.astype(np.int8),
         }
-        validate_keys(ObservationDict, observation)
-        self.observation_curr = observation
-        self.observation_prev = observation  # TODO should I be doing this?
+        validate_keys(ObservationDict, observation_full)
+        self.observation_curr = observation_full
+        self.observation_prev = observation_full  # TODO should I be doing this?
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            self.observation_space.contains(observation)  # This will fail due to dataframes instead of numpy arrays
+            self.observation_space.contains(
+                observation_full
+            )  # This will fail due to dataframes instead of numpy arrays
 
         # Breadcrumbs
         self.bc_row.update({"error_msg": self.error_msg, "rewards": 0})
         self.append_breadcrumbs()
-        return observation
+        return observation_full
 
     def reset_globals(self):
         """

@@ -96,7 +96,7 @@ class TransitionMixin(RewardMixin):
 
         self._assert_state_consistency(action)
         sd_ratio_post_step = get_sd_ratio(self.config, self._req_interim, self._veh_interim)
-        observation = ObservationDict(
+        observation_full = ObservationDict(
             {
                 "globals": self.MetaState,
                 "supply_demand_ratio": sd_ratio_post_step,
@@ -107,7 +107,7 @@ class TransitionMixin(RewardMixin):
                 "pricing_mask": self._req_interim.f_awaiting_price.astype(np.float32),
             }
         )
-        self.observation_curr = observation
+        self.observation_curr = observation_full
 
         rewards = sum(self._rewards.values())
         self.bc_row.update(
@@ -116,7 +116,7 @@ class TransitionMixin(RewardMixin):
 
         self.append_breadcrumbs()
 
-        return observation, rewards
+        return observation_full, rewards
 
     def _update_requests_from_action(self, action: ActionDict):
         """
@@ -137,9 +137,7 @@ class TransitionMixin(RewardMixin):
             raise ValueError("Supply-demand ratio contains NaN values; cannot compute price acceptance.")
 
         # cust_df = self.cust_df[self.cust_df["cust_id"].isin(requests["cust_id"])]
-        acceptance_prob, z = price_acceptance_probability(
-            self.cust_df, requests, action["prices"], sd_ratio_avg, self.config
-        )
+        acceptance_prob, z = price_acceptance_probability(requests, action["prices"], sd_ratio_avg, self.config)
         await_mask = requests["status"] == RequestStatusEnum.AWAITING_PRICE
         accept_mask = acceptance_prob >= np.random.uniform(0.0, 1.0, size=acceptance_prob.shape)
         new_status = np.select(

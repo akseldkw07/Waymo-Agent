@@ -91,6 +91,23 @@ class RequestDF(EnrichedDF):
         "status": RequestStatusEnum.INVALID,
     }
 
+    # Training view (based on define_observation_space docstring):
+    # [pickup_x_norm, pickup_y_norm, dropoff_x_norm, dropoff_y_norm,
+    #  distance_meters, est_cost, max_wait_time, wait_time] + status_one_hot
+    cols_to_pass_to_model: t.ClassVar[list[str]] = [
+        "pickup_x_norm",
+        "pickup_y_norm",
+        "dropoff_x_norm",
+        "dropoff_y_norm",
+        "distance_meters",
+        "cust_bias",
+        "cust_temperature",
+        "est_cost",
+        "max_wait_time",
+        "wait_time",
+        "status",
+    ]
+
     @property
     def f_valid(self):
         try:
@@ -145,21 +162,6 @@ class RequestDF(EnrichedDF):
     def f_plot_route(self, plt_cfg: PlotConfig) -> np.ndarray:
         valid_types_asint = [e.value for e in plt_cfg.request_status_colors.keys() if isinstance(e, RequestStatusEnum)]
         return np.isin(self.status, valid_types_asint)
-
-    # Training view (based on define_observation_space docstring):
-    # [pickup_x_norm, pickup_y_norm, dropoff_x_norm, dropoff_y_norm,
-    #  distance_meters, est_cost, max_wait_time, wait_time] + status_one_hot
-    cols_to_keep: t.ClassVar[list[str]] = [
-        "pickup_x_norm",
-        "pickup_y_norm",
-        "dropoff_x_norm",
-        "dropoff_y_norm",
-        "distance_meters",
-        "est_cost",
-        "max_wait_time",
-        "wait_time",
-        "status",
-    ]
 
     @staticmethod
     def space_config(config: EnvConfig):

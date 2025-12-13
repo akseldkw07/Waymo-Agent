@@ -29,7 +29,7 @@ class VehicleDF(EnrichedDF):
     status: pd.Series  # VehicleStatusEnum value
 
     # Training view: [loc_x_norm, loc_y_norm, battery, status] -> 4 dims
-    cols_to_keep: t.ClassVar[list[str]] = ["loc_x_norm", "loc_y_norm", "battery", "status"]
+    cols_to_pass_to_model: t.ClassVar[list[str]] = ["loc_x_norm", "loc_y_norm", "battery", "status"]
     target_dtypes = {
         "vehicle_id": np.int64,
         "ride_id": np.int64,

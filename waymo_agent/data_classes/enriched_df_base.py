@@ -1,5 +1,4 @@
 from __future__ import annotations
-
 import typing as t
 
 import numpy as np
@@ -7,7 +6,6 @@ import pandas as pd
 
 from waymo_agent.data_classes.config import EnvConfig
 
-BASE_CLASS_ATTRS = {"cols_to_keep", "enum_fields", "target_dtypes", "default_vals"}
 if t.TYPE_CHECKING:
     from waymo_agent.graph_env.mixin.interface import GymEnvInterface
 
@@ -22,7 +20,7 @@ class EnrichedDF(pd.DataFrame):
         in the model input (e.g. coordinates, distances, costs, etc.).
     """
 
-    cols_to_keep: t.ClassVar[list[str]] = []
+    cols_to_pass_to_model: t.ClassVar[list[str]] = []
     target_dtypes: t.ClassVar[dict[str, type]] = {}
     default_vals: t.ClassVar[dict[str, t.Any]] = {}
 
@@ -56,18 +54,18 @@ class EnrichedDF(pd.DataFrame):
         Compute the width (number of features) of the training
         representation for this class.
         """
-        return len(cls.cols_to_keep)
+        return len(cls.cols_to_pass_to_model)
 
-    def to_training_df(self) -> pd.DataFrame:
+    def to_training_df(self):
         """ """
-        training_df = pd.DataFrame(self)[self.cols_to_keep]
+        training_df = pd.DataFrame(self)[self.cols_to_pass_to_model]
         # Sanity check: width matches our calculation
         assert training_df.shape[1] == self.calc_width(), (
             f"{self.__class__.__name__}.to_training_df produced width {training_df.shape[1]}, "
             f"but calc_width()={self.calc_width()}."
         )
 
-        return training_df
+        return self.__class__(training_df)
 
     def to_obs_numpy(self):
         """ """
@@ -78,7 +76,7 @@ class EnrichedDF(pd.DataFrame):
     @classmethod
     def from_obs_numpy(cls, obs_array: np.ndarray | pd.DataFrame) -> EnrichedDF:
         """ """
-        training_df = pd.DataFrame(obs_array, columns=cls.cols_to_keep)
+        training_df = pd.DataFrame(obs_array, columns=cls.cols_to_pass_to_model)
 
         return cls(training_df)
 
@@ -156,9 +154,10 @@ def validate_typed_df_keys(
     Validate that a pandas DataFrame conforms to the specified typed DataFrame structure.
     TODO convert down to warning instead of raising
     """
+    base_class_attrs = set(vars(EnrichedDF).keys())
     exp_cols = df_type.target_dtypes.keys() if isinstance(df_type, EnrichedDF) else df_type.__annotations__.keys()
-    expected_columns = set(exp_cols) - BASE_CLASS_ATTRS
-    actual_columns = set(df.keys()) - BASE_CLASS_ATTRS
+    expected_columns = set(exp_cols) - base_class_attrs
+    actual_columns = set(df.keys()) - base_class_attrs
 
     missing = expected_columns - actual_columns
     extra = actual_columns - expected_columns

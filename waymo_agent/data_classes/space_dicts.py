@@ -19,6 +19,28 @@ class ObservationDict(t.TypedDict):
     pricing_mask: np.ndarray
 
 
+def prune_obs_dict_gymnasium(obs: ObservationDict) -> ObservationDict:
+    """
+    Prune the observation dictionary to be compatible with Gymnasium.
+
+    Args:
+        obs (ObservationDict): The original observation dictionary.
+
+    Returns:
+        ObservationDict: The pruned observation dictionary.
+    """
+    obs_gymnasium: ObservationDict = {
+        "globals": obs["globals"],
+        "supply_demand_ratio": obs["supply_demand_ratio"],
+        "vehicles": obs["vehicles"].to_training_df(),
+        "pending_requests": obs["pending_requests"].to_training_df(),
+        "active_rides": obs["active_rides"].to_training_df(),
+        "dispatch_mask": obs["dispatch_mask"],
+        "pricing_mask": obs["pricing_mask"],
+    }
+    return obs_gymnasium
+
+
 class ActionDict(t.TypedDict):
     """
     TypedDict for the action space of the RideShare environment.
