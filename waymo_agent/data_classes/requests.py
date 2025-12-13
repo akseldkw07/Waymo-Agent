@@ -59,17 +59,17 @@ class RequestDF(EnrichedDF):
 
     max_wait_time: np.timedelta64
     wait_time: pd.Series
-    status: pd.Series  # RequestStatusEnum value
+    status: pd.Series  # RequestStatusEnum value as int
     target_dtypes = {
         "request_id": np.int64,
-        "request_dt": np.datetime64,  # datetime64[ns]
+        "request_dt": "datetime64[ns]",  # datetime64[ns]
         "cust_id": np.int64,
         "cust_bias": np.float64,
         "cust_temperature": np.float64,
         "est_cost": np.float64,
         "price": np.float64,
-        "max_wait_time": np.timedelta64,
-        "wait_time": np.timedelta64,
+        "max_wait_time": "timedelta64[ns]",
+        "wait_time": "timedelta64[ns]",
         "status": np.int64,
         "pickup_node_id": np.int64,
         "pickup_x_norm": np.float64,
@@ -88,7 +88,7 @@ class RequestDF(EnrichedDF):
         "wait_time": 0,
         "price": -1.0,
         "est_cost": -1.0,
-        "status": RequestStatusEnum.INVALID,
+        "status": RequestStatusEnum.INVALID.value,
     }
 
     # Training view (based on define_observation_space docstring):
@@ -222,7 +222,7 @@ class RequestDF(EnrichedDF):
         request_df["price"] = np.nan
         request_df["max_wait_time"] = pd.Timedelta(minutes=config.max_wait_time_minutes)
         request_df["wait_time"] = pd.Timedelta(0)
-        request_df["status"] = RequestStatusEnum.AWAITING_PRICE
+        request_df["status"] = RequestStatusEnum.AWAITING_PRICE.value
         request_df["request_dt"] = pd.to_datetime(env.time_dt)
 
         if max_req is not None and len(request_df) > max_req:

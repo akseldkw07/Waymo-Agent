@@ -4,7 +4,6 @@ Define action space and apply actions to the environment.
 
 from __future__ import annotations
 
-
 import numpy as np
 from gymnasium import spaces
 

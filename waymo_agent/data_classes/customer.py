@@ -7,12 +7,12 @@ import typing as t
 
 import numpy as np
 import pandas as pd
+from scipy.special import expit
 
 from waymo_agent.constants import DATA_DIR
 from waymo_agent.data_classes.config import EnvConfig
 
 from . import RequestDF
-from scipy.special import expit
 
 
 class CustomerDFGenator:

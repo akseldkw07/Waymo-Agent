@@ -1,8 +1,10 @@
 from __future__ import annotations
+
 import typing as t
 
 import numpy as np
 import pandas as pd
+from pandas.api.types import is_datetime64_any_dtype, is_timedelta64_dtype
 
 from waymo_agent.data_classes.config import EnvConfig
 
@@ -21,7 +23,7 @@ class EnrichedDF(pd.DataFrame):
     """
 
     cols_to_pass_to_model: t.ClassVar[list[str]] = []
-    target_dtypes: t.ClassVar[dict[str, type]] = {}
+    target_dtypes: t.ClassVar[dict[str, type | str]] = {}
     default_vals: t.ClassVar[dict[str, t.Any]] = {}
 
     @classmethod
@@ -65,7 +67,7 @@ class EnrichedDF(pd.DataFrame):
             f"but calc_width()={self.calc_width()}."
         )
 
-        return training_df
+        return self.__class__(training_df)
 
     def to_obs_numpy(self):
         """Return a pure-numeric numpy array for model input (no datetime/timedelta/object)."""
@@ -127,11 +129,11 @@ class EnrichedDF(pd.DataFrame):
                 def_val = def_val if def_val is not None else False
                 data[col] = np.full(num_rows, def_val, dtype=bool)
 
-            elif dtype is np.datetime64:
+            elif is_datetime64_any_dtype(dtype):
                 # Pandas requires datetime64[ns] explicitly
                 def_val = def_val if def_val is not None else "2025-01-01"
                 data[col] = pd.to_datetime([def_val] * num_rows)  # type: ignore
-            elif dtype in (np.timedelta64, pd.Timedelta):
+            elif is_timedelta64_dtype(dtype):
                 def_val = def_val if def_val is not None else np.timedelta64(0, "s")
                 data[col] = pd.Timedelta(def_val, unit="m")  # type: ignore
             elif dtype in (object, np.object_):

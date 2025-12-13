@@ -181,6 +181,7 @@ class TransitionMixin(RewardMixin):
             new_status,
         )
         requests["status"] = new_status
+        print(requests["status"].value_counts(), requests["status"].dtype)
 
         return requests, matches_orig
 
@@ -395,8 +396,9 @@ class TransitionMixin(RewardMixin):
             dr["discard_step"] = self.current_step
 
         self._remove_requests.extend(discarded_requests_ts)
-        validate_typed_df_keys(requests, RequestDF)
-        self._req_interim = RequestDF(requests)
+
+        self._req_interim = RequestDF(requests.astype(RequestDF.target_dtypes))
+
         return self._req_interim
 
     def _assert_state_consistency(self, action: ActionDict):

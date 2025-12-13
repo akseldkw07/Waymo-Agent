@@ -36,7 +36,7 @@ class VehicleDF(EnrichedDF):
         "loc_x_norm": np.float32,
         "loc_y_norm": np.float32,
         "battery": np.float32,
-        "status": np.int8,
+        "status": np.int64,
     }
 
     @property
@@ -82,7 +82,7 @@ class VehicleDF(EnrichedDF):
                 "loc_y_norm": nodes["y_norm"],
                 "battery": batteries,
                 "status": status,
-                "ride_id": -1 * np.ones(env.num_vehicles, dtype=np.int64),
+                "ride_id": env.config.invalid_id * np.ones(env.num_vehicles, dtype=np.int64),
             }
         )
         validate_typed_df_keys(ret, VehicleDF)
