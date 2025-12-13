@@ -4,7 +4,6 @@ Define action space and apply actions to the environment.
 
 from __future__ import annotations
 
-import warnings
 
 import numpy as np
 from gymnasium import spaces
@@ -48,6 +47,4 @@ class ActionMixin(GymEnvInterface):
     def _validate_action(self, action: ActionDict):
         validate_keys(ActionDict, action)
         if not self.action_space.contains(action):
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                raise ValueError("Action is outside the defined action space.")
+            raise ValueError("Action is outside the defined action space.")

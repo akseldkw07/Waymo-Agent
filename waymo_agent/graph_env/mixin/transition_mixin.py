@@ -358,7 +358,10 @@ class TransitionMixin(RewardMixin):
         self._active_rides_debug = active_rides.copy(deep=True)
         self._vehicles_debug = vehicles.copy(deep=True)
 
-        return VehicleDF(vehicles), ActiveRideDF(active_rides), discard_ride_ids
+        # Cleanup dtypes
+        vehicles = VehicleDF(vehicles)
+
+        return (vehicles), ActiveRideDF(active_rides), discard_ride_ids
 
     def _cycle_requests(self, discard_ride_ids: pd.Series) -> RequestDF:
         """

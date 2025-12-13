@@ -60,12 +60,8 @@ class RideShareEnv(RenderingMixin, OSMnxWrapperMixin, ObservationSpaceMixin, Act
         return obs_pruned, self.info
 
     def step(self, action: ActionDict):  # type: ignore
-        try:
-            self._validate_action(action)
-        except Exception as e:
-            self.error_msg = str(e)
-            terminated = True
-            return self.observation_curr, 0.0, terminated, False, self.info
+        self._validate_action(action)
+
         reward = 0.0
 
         terminated = False
@@ -73,11 +69,14 @@ class RideShareEnv(RenderingMixin, OSMnxWrapperMixin, ObservationSpaceMixin, Act
 
         observation_full, reward = self.get_observation(action)
         obs_pruned = prune_obs_dict_gymnasium(observation_full)
-        try:
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                self.observation_space.contains(obs_pruned)
-        except Exception as e:
-            self.error_msg = str(e)
-            terminated = True
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            self.observation_space.contains(obs_pruned)
+        # try:
+        #     with warnings.catch_warnings():
+        #         warnings.simplefilter("ignore")
+        #         self.observation_space.contains(obs_pruned)
+        # except Exception as e:
+        #     self.error_msg = str(e)
+        #     terminated = True
         return obs_pruned, reward, terminated, bool(truncated), self.info

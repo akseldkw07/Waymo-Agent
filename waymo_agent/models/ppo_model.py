@@ -158,15 +158,24 @@ class RideShareActorCritic(nn.Module):
         out = self.forward(obs)
 
         # --- prices: LogNormal ensures positivity with correct log-prob ---
-        price_sigma = torch.exp(self.price_logstd.detach().clone())
-        price_dist = LogNormal(out["price_mu"], price_sigma)
-        prices = price_dist.mean if deterministic else t.cast(torch.Tensor, price_dist.sample())  # (..., 50), > 0
+        eps_price = 1e-6
 
-        # If a request is not priceable (mask==0), force price to 0.0 so these dims
-        # don't inject noise into the environment (and we'll also mask them in log_prob).
+        price_mu = out["price_mu"].clamp(min=-10.0, max=10.0)
+        price_sigma = torch.exp(self.price_logstd.detach().clone()).clamp(min=1e-4, max=10.0)
+        price_dist = LogNormal(price_mu, price_sigma)
+
+        if deterministic:
+            prices = torch.exp(price_mu.detach().clone())  # median (stable)
+        else:
+            prices = price_dist.rsample()  # rsample for PPO friendliness
+
+        prices = torch.nan_to_num(prices, nan=eps_price, posinf=1e6, neginf=eps_price)
+        prices = prices.clamp(min=eps_price)
+
         if "pricing_mask" in obs:
-            pm = obs["pricing_mask"].to(device=prices.device, dtype=prices.dtype)  # (..., 50)
-            prices = prices * pm
+            pm = obs["pricing_mask"].to(device=prices.device, dtype=prices.dtype)
+            # IMPORTANT: masked dims become eps (not 0) so log_prob is defined
+            prices = torch.where(pm > 0.0, prices, prices.new_full(prices.shape, eps_price))
 
         # --- reposition: tanh-squashed Normal matches Box([-1,1]) ---
         repo_sigma = torch.exp(self.repo_logstd.detach().clone()).view(self.num_veh, 2)
@@ -209,16 +218,23 @@ class RideShareActorCritic(nn.Module):
         out = self.forward(obs)
 
         # prices (LogNormal): consistent with act()
-        price_sigma = torch.exp(self.price_logstd).detach()
-        price_dist = LogNormal(out["price_mu"], price_sigma)
+        eps_price = 1e-6
+
+        price_mu = out["price_mu"].clamp(min=-10.0, max=10.0)
+        price_sigma = torch.exp(self.price_logstd.detach()).clamp(min=1e-4, max=10.0)
+        price_dist = LogNormal(price_mu, price_sigma)
+
+        prices_a = action["prices"].to(device=price_mu.device, dtype=price_mu.dtype)
+        prices_a = torch.nan_to_num(prices_a, nan=eps_price, posinf=1e6, neginf=eps_price)
+        prices_a = prices_a.clamp(min=eps_price)
 
         if "pricing_mask" in obs:
-            pm = obs["pricing_mask"].to(device=action["prices"].device, dtype=action["prices"].dtype)  # (..., 50)
-            price_logp = (price_dist.log_prob(action["prices"]) * pm).sum(dim=-1)
+            pm = obs["pricing_mask"].to(device=prices_a.device, dtype=prices_a.dtype)
+            price_logp = (price_dist.log_prob(prices_a) * pm).sum(dim=-1)
+            price_ent = (price_dist.entropy() * pm).sum(dim=-1)
         else:
-            price_logp = price_dist.log_prob(action["prices"]).sum(dim=-1)
-
-        price_ent = price_dist.entropy().sum(dim=-1)
+            price_logp = price_dist.log_prob(prices_a).sum(dim=-1)
+            price_ent = price_dist.entropy().sum(dim=-1)
 
         # reposition (tanh-squashed Normal): consistent with act()
         repo_mu = out["repo_mu"]
@@ -279,8 +295,8 @@ class PPOTrainConfig:
     eval_episodes: int = 2
 
 
-def obs_numpy_to_torch(obs: dict[str, np.ndarray] | ObservationDict) -> dict[str, torch.Tensor]:
-    """Convert env obs (numpy) -> torch tensors on DEVICE."""
+def obs_pd_to_torch(obs: ObservationDict) -> dict[str, torch.Tensor]:
+    """Convert env obs (pd.DataFrame | EnrichedDF) -> torch tensors on DEVICE."""
     ret = {}
 
     for k, v in obs.items():
@@ -290,7 +306,10 @@ def obs_numpy_to_torch(obs: dict[str, np.ndarray] | ObservationDict) -> dict[str
         elif isinstance(v, pd.DataFrame):
             v = v.to_numpy()
 
-        ret[k] = torch.as_tensor(v, device=DEVICE, dtype=torch.float32)
+        try:
+            ret[k] = torch.as_tensor(v, device=DEVICE, dtype=torch.float32)
+        except Exception as e:
+            raise ValueError(f"Failed to convert obs key '{k}' with type {(v.dtype)} to tensor.") from e
 
     return ret
 
@@ -347,9 +366,9 @@ def evaluate_policy(
         done = False
         ep = 0.0
         while not done:
-            obs_t = obs_numpy_to_torch(obs_np)
+            obs_t = obs_pd_to_torch(obs_np)
             act_t = model.act(obs_t, deterministic=deterministic)
-            obs_np, r, term, trunc, _info = env.step(action_torch_to_np(act_t))  # type: ignore[arg-type]
+            obs_np, r, term, trunc, _info = env.step(action_torch_to_numpy(act_t))  # type: ignore[arg-type]
             ep += float(r)
             done = bool(term) or bool(trunc)
         total += ep
@@ -401,7 +420,7 @@ def train_ppo(
 
         model.eval()
         for _ in range(cfg.rollout_len):
-            obs_t = obs_numpy_to_torch(obs_np)
+            obs_t = obs_pd_to_torch(obs_np)
 
             # sample action + compute logp/value on same obs
             act_t = model.act(obs_t, deterministic=False)
@@ -412,7 +431,7 @@ def train_ppo(
             logp_buf.append(logp_t.detach())
             val_buf.append(v_t.detach())
 
-            obs_np, r, term, trunc, _info = env.step(action_torch_to_np(act_t))  # type: ignore[arg-type]
+            obs_np, r, term, trunc, _info = env.step(action_torch_to_numpy(act_t))  # type: ignore[arg-type]
             done = bool(term) or bool(trunc)
 
             rew_buf.append(float(r))
@@ -427,7 +446,7 @@ def train_ppo(
 
         # bootstrap value from final obs
         with torch.no_grad():
-            obs_last_t = obs_numpy_to_torch(obs_np)
+            obs_last_t = obs_pd_to_torch(obs_np)
             v_last = model.forward(obs_last_t)["value"].detach()
 
         T = len(rew_buf)

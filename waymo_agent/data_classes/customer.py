@@ -12,6 +12,7 @@ from waymo_agent.constants import DATA_DIR
 from waymo_agent.data_classes.config import EnvConfig
 
 from . import RequestDF
+from scipy.special import expit
 
 
 class CustomerDFGenator:
@@ -69,7 +70,7 @@ def price_acceptance_probability(
         + config.acceptance_supply_demand_weight * supply_demand_ratio_z
     ) / requests.cust_temperature
 
-    acceptance_prob = 1.0 / (1.0 + np.exp(-z))
+    acceptance_prob: np.ndarray = expit(z)
 
     return acceptance_prob, z
 
@@ -99,6 +100,6 @@ def price_acceptance_probability_old(
         + config.acceptance_supply_demand_weight * supply_demand_ratio_z
     ) / cust_enrich.temperature
 
-    acceptance_prob = 1.0 / (1.0 + np.exp(-z))
+    acceptance_prob: np.ndarray = expit(z)
 
     return acceptance_prob, z

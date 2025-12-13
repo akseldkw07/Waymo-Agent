@@ -1,5 +1,4 @@
 from __future__ import annotations
-
 import typing as t
 
 import numpy as np
@@ -59,22 +58,22 @@ class EnrichedDF(pd.DataFrame):
 
     def to_training_df(self):
         """ """
-        training_df = pd.DataFrame(self)[self.cols_to_pass_to_model]
+        training_df = (self)[self.cols_to_pass_to_model].copy()
         # Sanity check: width matches our calculation
         assert training_df.shape[1] == self.calc_width(), (
             f"{self.__class__.__name__}.to_training_df produced width {training_df.shape[1]}, "
             f"but calc_width()={self.calc_width()}."
         )
 
-        return self.__class__(training_df)
+        return training_df
 
     def to_obs_numpy(self):
-        """ """
-        training_df: pd.DataFrame = self.to_training_df().copy(deep=True)
+        """Return a pure-numeric numpy array for model input (no datetime/timedelta/object)."""
+        training_df: pd.DataFrame = self.to_training_df()
 
         for col in training_df.columns:
             arr = training_df[col]
-            if str(arr.dtype) == "timedelta64[ns]":
+            if str(arr.dtype) == "datetime64[ns]":
                 training_df[col] = training_df[col].to_numpy(dtype="datetime64[ns]").view("int64")  # int64
             elif str(arr.dtype) == "timedelta64[ns]":
                 training_df[col] = training_df[col].to_numpy(dtype="timedelta64[ns]").view("int64")  # int64
