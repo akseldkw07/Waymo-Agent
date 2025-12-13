@@ -6,8 +6,12 @@ import torch
 import torch.nn as nn
 from torch.distributions import Categorical, LogNormal, Normal
 
+from waymo_agent.constants import DEVICE_TORCH_STR
 from waymo_agent.data_classes.space_dicts import ObservationDict, ActionDict
 from waymo_agent.graph_env.ENV import RideShareEnv
+
+
+DEVICE = torch.device(DEVICE_TORCH_STR)
 
 
 def _flat_obs(obs: dict[str, torch.Tensor]) -> torch.Tensor:
@@ -32,6 +36,11 @@ def _flat_obs(obs: dict[str, torch.Tensor]) -> torch.Tensor:
         obs["pricing_mask"].reshape(obs["pricing_mask"].shape[:-1] + (-1,)),
     ]
     return torch.cat(parts, dim=-1)
+
+
+def _to_device(d: dict[str, torch.Tensor], device: torch.device = DEVICE) -> dict[str, torch.Tensor]:
+    """Move all tensors in a dict to the desired device."""
+    return {k: v.to(device, non_blocking=True) for k, v in d.items()}
 
 
 class TanhNormal:
@@ -75,7 +84,7 @@ class RideShareActorCritic(nn.Module):
     Actor-Critic for:
       prices:     Box(0, inf, (50,))
       reposition: Box(-1, 1, (24,2))
-      dispatch:   MultiDiscrete([25]*50, start=[-1]*50)  # we'll emit categories 0..24, then shift to -1..23 if needed
+      dispatch:   MultiDiscrete([25]*50, start=[-1]*50)  # emit categories 0..24, then shift to -1..23
     """
 
     def __init__(self, env: RideShareEnv, hidden: int = 256):
@@ -93,7 +102,7 @@ class RideShareActorCritic(nn.Module):
         sz_reqs = self.obs_space["pending_requests"].shape[0] * self.obs_space["pending_requests"].shape[1]  # 50*9
         sz_rides = self.obs_space["active_rides"].shape[0] * self.obs_space["active_rides"].shape[1]  # 24*9
         sz_dispatch_mask = self.obs_space["dispatch_mask"].shape[0]  # 24
-        sz_pricing_mask = self.obs_space["pricing_mask"].shape[0]  #
+        sz_pricing_mask = self.obs_space["pricing_mask"].shape[0]  # 50
 
         obs_dim = size_globals + size_sd_ratio + sz_cars + sz_reqs + sz_rides + sz_dispatch_mask + sz_pricing_mask
 
@@ -109,20 +118,22 @@ class RideShareActorCritic(nn.Module):
         self.price_mu = nn.Linear(hidden, self.max_pending)
         self.price_logstd = nn.Parameter(torch.full((self.max_pending,), -0.5))  # learned global log-std per dim
 
-        # reposition (24,2)
+        # reposition (num_veh,2)
         self.repo_mu = nn.Linear(hidden, self.num_veh * 2)
         self.repo_logstd = nn.Parameter(torch.full((self.num_veh * 2,), -0.5))
 
-        # dispatch logits (50, 25)
+        # dispatch logits (max_pending, num_veh+1)
         self.dispatch_logits = nn.Linear(hidden, self.max_pending * self.dispatch_n)
 
         # --- baseline ---
         self.value = nn.Linear(hidden, 1)
+        self.to(DEVICE)
 
     def forward(self, obs: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
+        obs = _to_device(obs)
         x = _flat_obs(obs)
         h = self.encoder(x)
-        out = {}
+        out: dict[str, torch.Tensor] = {}
 
         out["price_mu"] = self.price_mu(h)  # (..., 50)
         out["repo_mu"] = self.repo_mu(h).view(*h.shape[:-1], self.num_veh, 2)  # (..., 24, 2)
@@ -137,8 +148,9 @@ class RideShareActorCritic(nn.Module):
     def act(self, obs: dict[str, torch.Tensor], deterministic: bool = False) -> dict[str, torch.Tensor]:
         """
         Samples an action dict matching your env.
-        If your env expects dispatch in [-1..23] (start=-1), we output that shift.
+        If env expects dispatch in [-1..23] (start=-1), we output that shift.
         """
+        obs = _to_device(obs)
         out = self.forward(obs)
 
         # --- prices: LogNormal ensures positivity with correct log-prob ---
@@ -149,32 +161,31 @@ class RideShareActorCritic(nn.Module):
         # If a request is not priceable (mask==0), force price to 0.0 so these dims
         # don't inject noise into the environment (and we'll also mask them in log_prob).
         if "pricing_mask" in obs:
-            pm = obs["pricing_mask"].to(prices.dtype)
+            pm = obs["pricing_mask"].to(device=prices.device, dtype=prices.dtype)  # (..., 50)
             prices = prices * pm
 
         # --- reposition: tanh-squashed Normal matches Box([-1,1]) ---
         repo_sigma = out["repo_mu"].new_tensor(self.repo_logstd).exp().view(self.num_veh, 2)
         repo_dist = TanhNormal(out["repo_mu"], repo_sigma)
-        reposition = repo_dist.mode() if deterministic else repo_dist.sample()  # (...,24,2)
+        reposition = repo_dist.mode() if deterministic else repo_dist.sample()  # (..., 24, 2)
 
-        # --- dispatch: Categorical per request over 25 choices ---
-        logits = out["dispatch_logits"].clone()  # (...,50,25)
+        # --- dispatch: Categorical per request over (num_veh+1) choices ---
+        logits = out["dispatch_logits"].clone()  # (..., 50, 25)
 
-        # mask unavailable vehicles (dispatch_mask is (24,))
-        # idea: only allow choosing vehicle j if dispatch_mask[j]=1; always allow "no-action" bin
+        # mask unavailable vehicles (dispatch_mask is (..., 24))
+        # allow "no-action" always (the last column)
         if "dispatch_mask" in obs:
-            veh_mask = obs["dispatch_mask"].to(logits.dtype)  # (...,24)
-            # expand to (...,50,24)
-            veh_mask = veh_mask.unsqueeze(-2).expand(*logits.shape[:-1], self.num_veh)
-            # build full mask (...,50,25) where last index is no-action
-            full_mask = torch.cat([veh_mask, torch.ones_like(veh_mask[..., :1])], dim=-1)
+            veh_mask = obs["dispatch_mask"].to(device=logits.device, dtype=logits.dtype)  # (..., 24)
+            # expand to (..., 50, 24) using batch dims only
+            veh_mask = veh_mask.unsqueeze(-2).expand(*logits.shape[:-2], self.max_pending, self.num_veh)
+            full_mask = torch.cat([veh_mask, torch.ones_like(veh_mask[..., :1])], dim=-1)  # (..., 50, 25)
             logits = logits.masked_fill(full_mask <= 0.0, -1e9)
 
         dispatch_dist = Categorical(logits=logits)
-        dispatch_cat = logits.argmax(dim=-1) if deterministic else dispatch_dist.sample()  # (...,50) in [0..24]
+        dispatch_cat = logits.argmax(dim=-1) if deterministic else dispatch_dist.sample()  # (..., 50) in [0..24]
 
-        # shift so "no-action" is -1 and vehicles are 0..23 (matches your start=-1 convention)
-        dispatch = dispatch_cat - 1  # (...,50) in [-1..23]
+        # shift so "no-action" is -1 and vehicles are 0..23 (matches start=-1 convention)
+        dispatch = dispatch_cat - 1  # (..., 50) in [-1..23]
 
         return {
             "prices": prices,
@@ -191,6 +202,8 @@ class RideShareActorCritic(nn.Module):
         For PPO update: returns (logp, entropy, value)
         logp/entropy are summed across action components.
         """
+        obs = _to_device(obs)
+        action = _to_device(action)
         out = self.forward(obs)
 
         # prices (LogNormal): consistent with act()
@@ -198,7 +211,7 @@ class RideShareActorCritic(nn.Module):
         price_dist = LogNormal(out["price_mu"], price_sigma)
 
         if "pricing_mask" in obs:
-            pm = obs["pricing_mask"].to(action["prices"].dtype)
+            pm = obs["pricing_mask"].to(device=action["prices"].device, dtype=action["prices"].dtype)  # (..., 50)
             price_logp = (price_dist.log_prob(action["prices"]) * pm).sum(dim=-1)
         else:
             price_logp = price_dist.log_prob(action["prices"]).sum(dim=-1)
@@ -217,13 +230,15 @@ class RideShareActorCritic(nn.Module):
         logits = out["dispatch_logits"].clone()
 
         if "dispatch_mask" in obs:
-            veh_mask = obs["dispatch_mask"].to(logits.dtype)  # (...,24)
-            veh_mask = veh_mask.unsqueeze(-2).expand(*logits.shape[:-1], self.num_veh)
-            full_mask = torch.cat([veh_mask, torch.ones_like(veh_mask[..., :1])], dim=-1)
+            veh_mask = obs["dispatch_mask"].to(device=logits.device, dtype=logits.dtype)  # (..., 24)
+            veh_mask = veh_mask.unsqueeze(-2).expand(
+                *logits.shape[:-2], self.max_pending, self.num_veh
+            )  # (..., 50, 24)
+            full_mask = torch.cat([veh_mask, torch.ones_like(veh_mask[..., :1])], dim=-1)  # (..., 50, 25)
             logits = logits.masked_fill(full_mask <= 0.0, -1e9)
 
         dispatch_dist = Categorical(logits=logits)
-        dispatch_cat = action["dispatch"] + 1
+        dispatch_cat = action["dispatch"] + 1  # unshift back to [0..24]
         disp_logp = dispatch_dist.log_prob(dispatch_cat).sum(dim=-1)
         disp_ent = dispatch_dist.entropy().sum(dim=-1)
 
