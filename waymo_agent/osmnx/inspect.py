@@ -194,15 +194,9 @@ def sum_graph_attr(G: nx.MultiDiGraph, attr_str: ATTR_LITERAL, edge_node: EDGE_N
     """Helper to sum up all numeric values of a given edge attribute in the graph."""
     total = 0.0
     if edge_node == "edge":
-        for u, v, k, data in G.edges(keys=True, data=True):
-            value = data.get(attr_str)
-            if isinstance(value, (int, float)):
-                total += value
-            elif isinstance(value, list):
-                raise ValueError(f"Attribute '{attr_str}' has list values on edge ({u}, {v}, {k}), cannot sum.")
+        attr_values = nx.get_edge_attributes(G, attr_str)
+        total = sum(attr_values.values(), total)
     elif edge_node == "node":
-        for node, data in G.nodes(data=True):
-            value = data.get(attr_str)
-            if isinstance(value, (int, float)):
-                total += value
+        attr_values = nx.get_node_attributes(G, attr_str)
+        total = sum(attr_values.values(), total)
     return total

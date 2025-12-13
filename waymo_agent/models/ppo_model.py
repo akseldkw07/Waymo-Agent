@@ -444,6 +444,7 @@ def train_ppo(
             )
             logs["eval_return"].append(eval_ret)
             eval_bar.set_postfix({"update": update_idx, "eval_return": f"{eval_ret:.3f}"})
+            eval_bar.refresh()
             pbar.set_postfix({"eval_return": f"{eval_ret:.3f}"})
 
             if eval_ret > best_eval_return + train_cfg.min_delta:

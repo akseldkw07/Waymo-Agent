@@ -71,9 +71,9 @@ class EnvConfig:
     max_chargers_per_node: int = 1
 
     # Rewards & Penalties
-    penalty_rejected: float = -1.0
-    penalty_expire: float = -2.0
-    penalty_overflow: float = -1.5
+    penalty_rejected: float = -0.01
+    penalty_expire: float = -0.5
+    penalty_overflow: float = 0  # not used
     reward_frac_ride_completion: float = 15.0  # fraction of ride price rewarded upon ride completion
     operating_cost_per_km: float = 1.0
 

@@ -63,7 +63,6 @@ def obs_pd_to_torch(obs: ObservationDict) -> dict[str, torch.Tensor]:
         # Raw pandas df (should be rare if prune_obs_dict_gymnasium is used)
         elif isinstance(v, pd.DataFrame):
             arr = v.to_numpy()
-
         else:
             # Already a numpy array from prune_obs_dict_gymnasium
             arr = v
