@@ -1,11 +1,12 @@
+import typing as t
+
 import matplotlib.pyplot as plt
 import numpy as np
-import matplotlib.pyplot as plt
 from tqdm.auto import tqdm
-import typing as t
+
 from waymo_agent import RideShareEnv
 from waymo_agent.action_heuristic.heuristic_simple import DispatchAgent, PricingAgent, RepositionAgent
-from waymo_agent.data_classes.space_dicts import ObservationDict, ActionDict
+from waymo_agent.data_classes.space_dicts import ActionDict, ObservationDict
 from waymo_agent.models.ppo_model import action_torch_to_numpy, obs_pd_to_torch
 
 
@@ -84,6 +85,15 @@ def heuristic_policy(agents):  # or env_heuristic
     def _fn(obs_np):
         # call your heuristic action function here
         return get_act_dict(agents, obs_np)  # must be numpy action dict
+
+    return _fn
+
+
+def ppo_policy_stochastic(model):
+    def _fn(obs_np):
+        obs_t = obs_pd_to_torch(obs_np)
+        act_t = model.act(obs_t, deterministic=False)  # <- important
+        return action_torch_to_numpy(act_t)
 
     return _fn
 

@@ -1,20 +1,18 @@
 from __future__ import annotations
 
 import typing as t
-from dataclasses import dataclass
 from pathlib import Path
 
-import numpy as np
-import pandas as pd
 import torch
 import torch.nn as nn
 from torch.distributions import Categorical, LogNormal, Normal
 from tqdm.auto import tqdm
 
 from waymo_agent.constants import DEVICE_TORCH_STR
-from waymo_agent.data_classes.enriched_df_base import EnrichedDF
 from waymo_agent.data_classes.space_dicts import ActionDict, ObservationDict
 from waymo_agent.graph_env.ENV import RideShareEnv
+
+from .train_utils import *
 
 DEVICE = torch.device(DEVICE_TORCH_STR)
 
@@ -289,137 +287,10 @@ class RideShareActorCritic(nn.Module):
         return logp, ent, value
 
 
-# =========================================================
-# PPO training loop for RideShareEnv
-# =========================================================
-
-
-def obs_pd_to_torch(obs: ObservationDict) -> dict[str, torch.Tensor]:
-    """Convert env obs (numpy | pd.DataFrame | EnrichedDF) -> finite float32 tensors on DEVICE."""
-    ret: dict[str, torch.Tensor] = {}
-
-    for k, v in obs.items():
-        # Preferred path: EnrichedDF knows how to produce a numeric training view
-        if isinstance(v, EnrichedDF):
-            arr = v.to_obs_numpy()
-
-        # Raw pandas df (should be rare if prune_obs_dict_gymnasium is used)
-        elif isinstance(v, pd.DataFrame):
-            arr = v.to_numpy()
-
-        else:
-            # Already a numpy array from prune_obs_dict_gymnasium
-            arr = v
-
-        try:
-            tns = torch.as_tensor(arr, device=DEVICE, dtype=torch.float32)
-        except Exception as e:
-            dtype_str = getattr(arr, "dtype", type(arr))
-            raise ValueError(f"Failed to convert obs key '{k}' with dtype/type {dtype_str} to tensor.") from e
-
-        # Critical: PPO must never see NaN/inf features
-        tns = torch.nan_to_num(tns, nan=0.0, posinf=0.0, neginf=0.0)
-
-        ret[k] = tns
-
-    return ret
-
-
-def action_torch_to_numpy(action: dict[str, torch.Tensor]) -> dict[str, np.ndarray]:
-    """Convert model action (torch) -> env action (numpy) with expected dtypes."""
-    return {
-        "prices": action["prices"].detach().cpu().numpy().astype(np.float64),
-        "reposition": action["reposition"].detach().cpu().numpy().astype(np.float32),
-        "dispatch": action["dispatch"].detach().cpu().numpy().astype(np.int64),
-    }
-
-
-def _stack_dict(buf: list[dict[str, torch.Tensor]]) -> dict[str, torch.Tensor]:
-    """Stack list of dict[tensor] into dict[tensor] with leading time/batch dim."""
-    keys = buf[0].keys()
-    return {k: torch.stack([b[k] for b in buf], dim=0) for k in keys}
-
-
-def _compute_gae(
-    rewards: torch.Tensor,  # (T,)
-    values: torch.Tensor,  # (T+1,)
-    dones: torch.Tensor,  # (T,) 1.0 if done else 0.0
-    gamma: float,
-    lam: float,
-) -> tuple[torch.Tensor, torch.Tensor]:
-    """GAE-Lambda: returns (advantages (T,), returns (T,))."""
-    T = rewards.shape[0]
-    adv = torch.zeros(T, device=rewards.device, dtype=torch.float32)
-    gae = torch.zeros((), device=rewards.device, dtype=torch.float32)
-
-    for t in reversed(range(T)):
-        nonterminal = 1.0 - dones[t]
-        delta = rewards[t] + gamma * values[t + 1] * nonterminal - values[t]
-        gae = delta + gamma * lam * nonterminal * gae
-        adv[t] = gae
-
-    returns = adv + values[:-1]
-    return adv, returns
-
-
-@torch.no_grad()
-def evaluate_policy(
-    env: RideShareEnv,
-    model: RideShareActorCritic,
-    episodes: int = 2,
-    deterministic: bool = True,
-) -> float:
-    """Average episodic reward (undiscounted)."""
-    model.eval()
-    total = 0.0
-    for _ in range(episodes):
-        obs_np, _ = env.reset()
-        done = False
-        ep = 0.0
-        while not done:
-            obs_t = obs_pd_to_torch(obs_np)
-            act_t = model.act(obs_t, deterministic=deterministic)
-            obs_np, r, term, trunc, _info = env.step(action_torch_to_numpy(act_t))  # type: ignore[arg-type]
-            ep += float(r)
-            done = bool(term) or bool(trunc)
-        total += ep
-    return total / float(episodes)
-
-
-@dataclass
-class PPOTrainConfig:
-    """Minimal PPO config tuned for your RideShareEnv shapes."""
-
-    total_steps: int = 2_000
-    rollout_len: int = 60 * 2
-
-    gamma: float = 0.997
-    gae_lambda: float = 0.95
-
-    lr: float = 3e-4
-    clip_eps: float = 0.2
-    vf_coef: float = 0.5
-    ent_coef: float = 0.01
-    max_grad_norm: float = 0.5
-
-    update_epochs: int = 4
-    minibatch_size: int = 256
-
-    deterministic_eval: bool = True
-    log_every_updates: int = 5
-    eval_episodes: int = 2
-
-    # Early stopping
-    eval_every_updates: int = 5
-    patience: int = 20
-    min_delta: float = 1e-3
-    save_best: bool = True
-
-
 def train_ppo(
     env: RideShareEnv,
     model: RideShareActorCritic | None = None,
-    cfg: PPOTrainConfig | None = None,
+    train_cfg: PPOTrainConfig | None = None,
     save_path: str | Path | None = None,
 ) -> tuple[RideShareActorCritic, dict[str, list[float]]]:
     """
@@ -431,11 +302,11 @@ def train_ppo(
 
     Returns: (trained_model, logs)
     """
-    cfg = cfg or PPOTrainConfig()
+    train_cfg = train_cfg or PPOTrainConfig()
     model = model or RideShareActorCritic(env)
     model.to(DEVICE)
 
-    optim = torch.optim.Adam(model.parameters(), lr=cfg.lr)
+    optim = torch.optim.Adam(model.parameters(), lr=train_cfg.lr)
 
     logs: dict[str, list[float]] = {
         "loss": [],
@@ -454,145 +325,146 @@ def train_ppo(
     best_eval_return = float("-inf")
     no_improve_checks = 0
 
-    pbar = tqdm(total=cfg.total_steps, desc="PPO steps", unit="step", position=0)
-    try:
+    pbar = tqdm(total=train_cfg.total_steps, desc="PPO steps", unit="step", position=0)
 
-        while steps_done < cfg.total_steps:
-            # --- rollout buffers ---
-            obs_buf: list[dict[str, torch.Tensor]] = []
-            act_buf: list[dict[str, torch.Tensor]] = []
-            logp_buf: list[torch.Tensor] = []
-            val_buf: list[torch.Tensor] = []
-            rew_buf: list[float] = []
-            done_buf: list[float] = []
+    while steps_done < train_cfg.total_steps:
+        # --- rollout buffers ---
+        obs_buf: list[dict[str, torch.Tensor]] = []
+        act_buf: list[dict[str, torch.Tensor]] = []
+        logp_buf: list[torch.Tensor] = []
+        val_buf: list[torch.Tensor] = []
+        rew_buf: list[float] = []
+        done_buf: list[float] = []
 
-            model.eval()
-            for _ in range(cfg.rollout_len):
-                obs_t = obs_pd_to_torch(obs_np)
+        model.eval()
+        for _ in range(env.config.max_episode_steps):
+            obs_t = obs_pd_to_torch(obs_np)
 
-                # sample action + compute logp/value on same obs
-                act_t = model.act(obs_t, deterministic=False)
-                logp_t, ent_t, v_t = model.log_prob_and_entropy(obs_t, act_t)
+            # sample action + compute logp/value on same obs
+            act_t = model.act(obs_t, deterministic=False)
+            logp_t, ent_t, v_t = model.log_prob_and_entropy(obs_t, act_t)
 
-                obs_buf.append({k: v.detach() for k, v in obs_t.items()})
-                act_buf.append({k: v.detach() for k, v in act_t.items()})
-                logp_buf.append(logp_t.detach())
-                val_buf.append(v_t.detach())
+            obs_buf.append({k: v.detach() for k, v in obs_t.items()})
+            act_buf.append({k: v.detach() for k, v in act_t.items()})
+            logp_buf.append(logp_t.detach())
+            val_buf.append(v_t.detach())
 
-                obs_np, r, term, trunc, _info = env.step(action_torch_to_numpy(act_t))  # type: ignore[arg-type]
-                done = bool(term) or bool(trunc)
+            obs_np, r, term, trunc, _info = env.step(action_torch_to_numpy(act_t))  # type: ignore[arg-type]
+            done = bool(term) or bool(trunc)
 
-                rew_buf.append(float(r))
-                done_buf.append(1.0 if done else 0.0)
+            rew_buf.append(float(r))
+            done_buf.append(1.0 if done else 0.0)
 
-                steps_done += 1
-                pbar.update(1)
-                if steps_done >= cfg.total_steps:
+            steps_done += 1
+            pbar.update(1)
+            if steps_done >= train_cfg.total_steps:
+                break
+
+            if done:
+                obs_np, _ = env.reset()
+
+        # bootstrap value from final obs
+        with torch.no_grad():
+            obs_last_t = obs_pd_to_torch(obs_np)
+            v_last = model.forward(obs_last_t)["value"].detach()
+
+        T = len(rew_buf)
+        rewards = torch.as_tensor(rew_buf, device=DEVICE, dtype=torch.float32)  # (T,)
+        dones = torch.as_tensor(done_buf, device=DEVICE, dtype=torch.float32)  # (T,)
+        values = torch.stack(val_buf + [v_last], dim=0).view(T + 1)  # (T+1,)
+        old_logp = torch.stack(logp_buf, dim=0).view(T)  # (T,)
+
+        adv, rets = compute_gae(rewards, values, dones, train_cfg.gamma, train_cfg.gae_lambda)
+        adv = (adv - adv.mean()) / (adv.std() + 1e-8)
+
+        obs_batch = stack_dict(obs_buf)
+        act_batch = stack_dict(act_buf)
+
+        # --- PPO update ---
+        model.train()
+        idxs = torch.arange(T, device=DEVICE)
+
+        loss_u = pl_u = vl_u = ent_u = kl_u = clip_u = 0.0
+        n_mb = 0
+
+        eval_bar = tqdm(range(train_cfg.update_epochs), desc="PPO update epochs", leave=True, position=1)
+        for _ep in eval_bar:
+            perm = idxs[torch.randperm(T, device=DEVICE)]
+            for start in range(0, T, train_cfg.minibatch_size):
+                mb = perm[start : start + train_cfg.minibatch_size]
+                if mb.numel() == 0:
+                    continue
+
+                mb_obs = {k: v[mb] for k, v in obs_batch.items()}
+                mb_act = {k: v[mb] for k, v in act_batch.items()}
+                mb_old_logp = old_logp[mb]
+                mb_adv = adv[mb]
+                mb_rets = rets[mb]
+
+                logp, entropy, value = model.log_prob_and_entropy(mb_obs, mb_act)
+
+                ratio = torch.exp(logp - mb_old_logp)
+                unclipped = ratio * mb_adv
+                clipped = torch.clamp(ratio, 1.0 - train_cfg.clip_eps, 1.0 + train_cfg.clip_eps) * mb_adv
+                policy_loss = -torch.mean(torch.minimum(unclipped, clipped))
+
+                value_loss = 0.5 * torch.mean((mb_rets - value) ** 2)
+                entropy_mean = torch.mean(entropy)
+
+                loss = policy_loss + train_cfg.vf_coef * value_loss - train_cfg.ent_coef * entropy_mean
+
+                optim.zero_grad(set_to_none=True)
+                loss.backward()
+                torch.nn.utils.clip_grad_norm_(model.parameters(), train_cfg.max_grad_norm)
+                optim.step()
+
+                with torch.no_grad():
+                    approx_kl = torch.mean(mb_old_logp - logp).item()
+                    clip_frac = torch.mean((torch.abs(ratio - 1.0) > train_cfg.clip_eps).to(torch.float32)).item()
+
+                loss_u += float(loss.item())
+                pl_u += float(policy_loss.item())
+                vl_u += float(value_loss.item())
+                ent_u += float(entropy_mean.item())
+                kl_u += float(approx_kl)
+                clip_u += float(clip_frac)
+                n_mb += 1
+
+        if n_mb > 0:
+            logs["loss"].append(loss_u / n_mb)
+            logs["policy_loss"].append(pl_u / n_mb)
+            logs["value_loss"].append(vl_u / n_mb)
+            logs["entropy"].append(ent_u / n_mb)
+            logs["approx_kl"].append(kl_u / n_mb)
+            logs["clip_frac"].append(clip_u / n_mb)
+
+        if update_idx % train_cfg.log_every_updates == 0:
+            eval_ret = evaluate_policy(
+                env, model, episodes=train_cfg.eval_episodes, deterministic=train_cfg.deterministic_eval
+            )
+            logs["eval_return"].append(eval_ret)
+            eval_bar.set_postfix({"update": update_idx, "eval_return": f"{eval_ret:.3f}"})
+            pbar.set_postfix({"eval_return": f"{eval_ret:.3f}"})
+
+            if eval_ret > best_eval_return + train_cfg.min_delta:
+                best_eval_return = float(eval_ret)
+                no_improve_checks = 0
+
+                if train_cfg.save_best and save_path is not None:
+                    sp = Path(save_path)
+                    # If save_path is a directory, write best.pt inside it
+                    if sp.suffix == "":
+                        sp.mkdir(parents=True, exist_ok=True)
+                        best_path = sp / "best.pt"
+                    else:
+                        sp.parent.mkdir(parents=True, exist_ok=True)
+                        best_path = sp
+                    torch.save(model.state_dict(), best_path)
+            else:
+                no_improve_checks += 1
+                if train_cfg.patience > 0 and no_improve_checks >= train_cfg.patience:
+                    pbar.set_postfix({"stopped": "early", "best_eval": f"{best_eval_return:.3f}"})
                     break
-
-                if done:
-                    obs_np, _ = env.reset()
-
-            # bootstrap value from final obs
-            with torch.no_grad():
-                obs_last_t = obs_pd_to_torch(obs_np)
-                v_last = model.forward(obs_last_t)["value"].detach()
-
-            T = len(rew_buf)
-            rewards = torch.as_tensor(rew_buf, device=DEVICE, dtype=torch.float32)  # (T,)
-            dones = torch.as_tensor(done_buf, device=DEVICE, dtype=torch.float32)  # (T,)
-            values = torch.stack(val_buf + [v_last], dim=0).view(T + 1)  # (T+1,)
-            old_logp = torch.stack(logp_buf, dim=0).view(T)  # (T,)
-
-            adv, rets = _compute_gae(rewards, values, dones, cfg.gamma, cfg.gae_lambda)
-            adv = (adv - adv.mean()) / (adv.std() + 1e-8)
-
-            obs_batch = _stack_dict(obs_buf)
-            act_batch = _stack_dict(act_buf)
-
-            # --- PPO update ---
-            model.train()
-            idxs = torch.arange(T, device=DEVICE)
-
-            loss_u = pl_u = vl_u = ent_u = kl_u = clip_u = 0.0
-            n_mb = 0
-
-            for _ep in tqdm(range(cfg.update_epochs), desc="PPO update epochs", leave=True, position=1):
-                perm = idxs[torch.randperm(T, device=DEVICE)]
-                for start in range(0, T, cfg.minibatch_size):
-                    mb = perm[start : start + cfg.minibatch_size]
-                    if mb.numel() == 0:
-                        continue
-
-                    mb_obs = {k: v[mb] for k, v in obs_batch.items()}
-                    mb_act = {k: v[mb] for k, v in act_batch.items()}
-                    mb_old_logp = old_logp[mb]
-                    mb_adv = adv[mb]
-                    mb_rets = rets[mb]
-
-                    logp, entropy, value = model.log_prob_and_entropy(mb_obs, mb_act)
-
-                    ratio = torch.exp(logp - mb_old_logp)
-                    unclipped = ratio * mb_adv
-                    clipped = torch.clamp(ratio, 1.0 - cfg.clip_eps, 1.0 + cfg.clip_eps) * mb_adv
-                    policy_loss = -torch.mean(torch.minimum(unclipped, clipped))
-
-                    value_loss = 0.5 * torch.mean((mb_rets - value) ** 2)
-                    entropy_mean = torch.mean(entropy)
-
-                    loss = policy_loss + cfg.vf_coef * value_loss - cfg.ent_coef * entropy_mean
-
-                    optim.zero_grad(set_to_none=True)
-                    loss.backward()
-                    torch.nn.utils.clip_grad_norm_(model.parameters(), cfg.max_grad_norm)
-                    optim.step()
-
-                    with torch.no_grad():
-                        approx_kl = torch.mean(mb_old_logp - logp).item()
-                        clip_frac = torch.mean((torch.abs(ratio - 1.0) > cfg.clip_eps).to(torch.float32)).item()
-
-                    loss_u += float(loss.item())
-                    pl_u += float(policy_loss.item())
-                    vl_u += float(value_loss.item())
-                    ent_u += float(entropy_mean.item())
-                    kl_u += float(approx_kl)
-                    clip_u += float(clip_frac)
-                    n_mb += 1
-
-            if n_mb > 0:
-                logs["loss"].append(loss_u / n_mb)
-                logs["policy_loss"].append(pl_u / n_mb)
-                logs["value_loss"].append(vl_u / n_mb)
-                logs["entropy"].append(ent_u / n_mb)
-                logs["approx_kl"].append(kl_u / n_mb)
-                logs["clip_frac"].append(clip_u / n_mb)
-
-            if update_idx % cfg.log_every_updates == 0:
-                eval_ret = evaluate_policy(env, model, episodes=cfg.eval_episodes, deterministic=cfg.deterministic_eval)
-                logs["eval_return"].append(eval_ret)
-                pbar.set_postfix({"update": update_idx, "eval_return": f"{eval_ret:.3f}"})
-
-                if eval_ret > best_eval_return + cfg.min_delta:
-                    best_eval_return = float(eval_ret)
-                    no_improve_checks = 0
-
-                    if cfg.save_best and save_path is not None:
-                        sp = Path(save_path)
-                        # If save_path is a directory, write best.pt inside it
-                        if sp.suffix == "":
-                            sp.mkdir(parents=True, exist_ok=True)
-                            best_path = sp / "best.pt"
-                        else:
-                            sp.parent.mkdir(parents=True, exist_ok=True)
-                            best_path = sp
-                        torch.save(model.state_dict(), best_path)
-                else:
-                    no_improve_checks += 1
-                    if cfg.patience > 0 and no_improve_checks >= cfg.patience:
-                        pbar.set_postfix({"stopped": "early", "best_eval": f"{best_eval_return:.3f}"})
-                        break
-            update_idx += 1
-    finally:
-        pbar.close()
+        update_idx += 1
 
     return model, logs
