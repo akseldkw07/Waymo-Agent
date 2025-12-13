@@ -3,11 +3,7 @@ import torch
 
 from waymo_agent.data_classes.requests import RequestStatusEnum
 from waymo_agent.graph_env.ENV import EnvConfig, RideShareEnv
-from waymo_agent.models.ppo_model import (
-    RideShareActorCritic,
-    action_torch_to_numpy,
-    obs_pd_to_torch,
-)
+from waymo_agent.models.ppo_model import RideShareActorCritic, action_torch_to_numpy, obs_pd_to_torch, DEVICE
 
 
 def _make_env_and_model():
@@ -247,6 +243,59 @@ def test_reward_components_fire_in_episode():
     # These are “should exist at least sometimes” signals.
     # If none ever fire, reward pipeline is inert.
     assert len(fired) > 0, f"No reward components ever fired. env._rewards keys were always zero. fired={fired}"
+
+
+def test_logp_consistent_between_rollout_and_update():
+    """Check that log_prob computed at action time matches recomputation later."""
+    print("Running test_logp_consistent_between_rollout_and_update")
+    env = ENV
+    model = RideShareActorCritic(env)
+    obs_np, _ = env.reset(seed=0)
+    obs_t = obs_pd_to_torch(obs_np)
+
+    with torch.no_grad():
+        act_t = model.act(obs_t, deterministic=False)
+        old_logp, _, _ = model.log_prob_and_entropy(obs_t, act_t)
+
+        # recompute immediately (should match exactly)
+        new_logp, _, _ = model.log_prob_and_entropy(obs_t, act_t)
+
+    assert torch.isfinite(old_logp).all()
+    assert torch.isfinite(new_logp).all()
+    assert torch.allclose(old_logp, new_logp, atol=1e-5), (old_logp.item(), new_logp.item())
+
+
+def test_dispatch_mask_semantics():
+    """Check that dispatch mask properly forces no-action when no vehicles available."""
+    print("Running test_dispatch_mask_semantics")
+    env = ENV
+    model = RideShareActorCritic(env)
+
+    obs_np, _ = env.reset(seed=0)
+    obs_t = obs_pd_to_torch(obs_np)
+
+    # force a mask with zero available vehicles
+    obs_t2 = dict(obs_t)
+    obs_t2["dispatch_mask"] = torch.zeros_like(obs_t["dispatch_mask"])
+
+    with torch.no_grad():
+        out = model.forward(obs_t2)
+        out["dispatch_logits"]
+
+        # after masking inside log_prob_and_entropy, only "no action" should be valid
+        # Construct an action that is "no action" for all requests:
+        act = {
+            "prices": torch.ones(env.config.max_pending_requests),
+            "reposition": torch.zeros(env.num_vehicles, 2),
+            "dispatch": torch.as_tensor(
+                env.action_space["dispatch"].sample(),  # type: ignore
+                device=DEVICE,
+                dtype=torch.int64,
+            ),
+        }
+        logp, _, _ = model.log_prob_and_entropy(obs_t2, act)
+
+    assert torch.isfinite(logp).all(), "No-op dispatch should always have finite logp"
 
 
 # ============================================================

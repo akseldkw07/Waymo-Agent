@@ -147,9 +147,13 @@ class RideShareActorCritic(nn.Module):
 
     def forward(self, obs: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
         x = _flat_obs(obs)
+        print(f"X:{x}\n\n")
         x = torch.nan_to_num(x, nan=0.0, posinf=0.0, neginf=0.0)
+        print(f"X:{x}\n\n")
         h = self.encoder(x)
+        print(f"H:{h}\n\n")
         h = torch.nan_to_num(h, nan=0.0, posinf=0.0, neginf=0.0)
+        print(f"H:{h}\n\n")
 
         out: dict[str, torch.Tensor] = {}
 
@@ -158,6 +162,7 @@ class RideShareActorCritic(nn.Module):
         out["dispatch_logits"] = self.dispatch_logits(h).view(
             *h.shape[:-1], self.max_pending, self.dispatch_n
         )  # (..., 50, 25)
+        print(f"DISPATCH: {out['dispatch_logits']}\n\n")
 
         out["value"] = self.value(h).squeeze(-1)  # (...,)
         return out
@@ -176,9 +181,9 @@ class RideShareActorCritic(nn.Module):
             out[kk] = torch.nan_to_num(out[kk], nan=0.0, posinf=0.0, neginf=0.0)
 
         # --- prices: LogNormal ensures positivity with correct log-prob ---
-        eps_price = 1e-6
+        eps_price = 1.0
 
-        price_mu = out["price_mu"].clamp(min=-10.0, max=10.0)
+        price_mu = out["price_mu"].clamp(min=-2.0, max=10.0)
         price_sigma = torch.exp(self.price_logstd.detach().clone()).clamp(min=1e-4, max=10.0)
         price_dist = LogNormal(price_mu, price_sigma)
 
@@ -343,6 +348,10 @@ def train_ppo(
             # sample action + compute logp/value on same obs
             act_t = model.act(obs_t, deterministic=False)
             logp_t, ent_t, v_t = model.log_prob_and_entropy(obs_t, act_t)
+            assert torch.isfinite(logp_t).all(), f"logp_t bad: {logp_t}"
+            assert torch.isfinite(v_t).all(), f"value bad: {v_t}"
+            for k, v in act_t.items():
+                assert torch.isfinite(v).all(), f"act[{k}] has non-finite"
 
             obs_buf.append({k: v.detach() for k, v in obs_t.items()})
             act_buf.append({k: v.detach() for k, v in act_t.items()})
@@ -350,6 +359,7 @@ def train_ppo(
             val_buf.append(v_t.detach())
 
             obs_np, r, term, trunc, _info = env.step(action_torch_to_numpy(act_t))  # type: ignore[arg-type]
+            assert np.isfinite(r), f"reward non-finite: {r}"
             done = bool(term) or bool(trunc)
 
             rew_buf.append(float(r))
