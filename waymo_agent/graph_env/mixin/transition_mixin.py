@@ -100,9 +100,9 @@ class TransitionMixin(RewardMixin):
             {
                 "globals": self.MetaState,
                 "supply_demand_ratio": sd_ratio_post_step,
-                "vehicles": self._veh_interim,
-                "pending_requests": self._req_interim,
-                "active_rides": self._active_rides_interim,
+                "vehicles": VehicleDF(self._veh_interim.astype(VehicleDF.target_dtypes)),
+                "pending_requests": RequestDF(self._req_interim.astype(RequestDF.target_dtypes)),
+                "active_rides": ActiveRideDF(self._active_rides_interim.astype(ActiveRideDF.target_dtypes)),
                 "dispatch_mask": self._veh_interim.f_idle,
                 "pricing_mask": self._req_interim.f_awaiting_price.astype(np.float32),
             }
@@ -181,7 +181,6 @@ class TransitionMixin(RewardMixin):
             new_status,
         )
         requests["status"] = new_status
-        print(requests["status"].value_counts(), requests["status"].dtype)
 
         return requests, matches_orig
 
