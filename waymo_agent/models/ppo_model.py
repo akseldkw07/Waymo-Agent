@@ -1,9 +1,8 @@
 from __future__ import annotations
-
+import typing as t
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from torch.distributions import Categorical, Normal
+from torch.distributions import Categorical, LogNormal, Normal
 
 
 def _flat_obs(obs: dict[str, torch.Tensor]) -> torch.Tensor:
@@ -28,6 +27,42 @@ def _flat_obs(obs: dict[str, torch.Tensor]) -> torch.Tensor:
         obs["pricing_mask"].reshape(obs["pricing_mask"].shape[:-1] + (-1,)),
     ]
     return torch.cat(parts, dim=-1)
+
+
+class TanhNormal:
+    """
+    Squashed Normal distribution: a = tanh(z),  z ~ Normal(mu, sigma).
+
+    We use the change-of-variables correction for log_prob:
+      log p(a) = log p(z) - sum log(1 - tanh(z)^2)
+    where z = atanh(a).
+
+    Entropy has no clean closed-form; return None and treat entropy bonus as 0
+    for this head (or approximate via Monte Carlo later).
+    """
+
+    def __init__(self, mu: torch.Tensor, sigma: torch.Tensor, eps: float = 1e-6):
+        self.mu = mu
+        self.sigma = sigma
+        self.base = Normal(mu, sigma)
+        self.eps = eps
+
+    def sample(self) -> torch.Tensor:
+        z = self.base.rsample()
+        return torch.tanh(z)
+
+    def mode(self) -> torch.Tensor:
+        return torch.tanh(self.mu)
+
+    def log_prob(self, a: torch.Tensor) -> torch.Tensor:
+        a = a.clamp(-1.0 + self.eps, 1.0 - self.eps)
+        z = 0.5 * (torch.log1p(a) - torch.log1p(-a))  # atanh(a)
+        log_pz = self.base.log_prob(z)
+        log_det = -torch.log(1.0 - a * a + self.eps)  # -log(1-a^2)
+        return log_pz + log_det
+
+    def entropy(self):
+        return None
 
 
 class RideShareActorCritic(nn.Module):
@@ -91,21 +126,21 @@ class RideShareActorCritic(nn.Module):
         """
         out = self.forward(obs)
 
-        # --- prices: Gaussian then squash to [0, inf) via softplus ---
-        price_std = out["price_mu"].new_tensor(self.price_logstd).exp()
-        price_dist = Normal(out["price_mu"], price_std)
-        price_raw = out["price_mu"] if deterministic else price_dist.sample()
-        prices = F.softplus(price_raw)  # (..,50), >=0
+        # --- prices: LogNormal ensures positivity with correct log-prob ---
+        price_sigma = out["price_mu"].new_tensor(self.price_logstd).exp()
+        price_dist = LogNormal(out["price_mu"], price_sigma)
+        prices = price_dist.mean if deterministic else t.cast(torch.Tensor, price_dist.sample())  # (..., 50), > 0
 
-        # optional: enforce pricing_mask (zero out where mask=0)
+        # If a request is not priceable (mask==0), force price to 0.0 so these dims
+        # don't inject noise into the environment (and we'll also mask them in log_prob).
         if "pricing_mask" in obs:
-            prices = prices * obs["pricing_mask"]
+            pm = obs["pricing_mask"].to(prices.dtype)
+            prices = prices * pm
 
-        # --- reposition: Gaussian then clamp to [-1,1] via tanh ---
-        repo_std = out["repo_mu"].new_tensor(self.repo_logstd).exp().view(self.num_veh, 2)
-        repo_dist = Normal(out["repo_mu"], repo_std)
-        repo_raw = out["repo_mu"] if deterministic else repo_dist.sample()
-        reposition = torch.tanh(repo_raw)  # (...,24,2)
+        # --- reposition: tanh-squashed Normal matches Box([-1,1]) ---
+        repo_sigma = out["repo_mu"].new_tensor(self.repo_logstd).exp().view(self.num_veh, 2)
+        repo_dist = TanhNormal(out["repo_mu"], repo_sigma)
+        reposition = repo_dist.mode() if deterministic else repo_dist.sample()  # (...,24,2)
 
         # --- dispatch: Categorical per request over 25 choices ---
         logits = out["dispatch_logits"].clone()  # (...,50,25)
@@ -118,7 +153,6 @@ class RideShareActorCritic(nn.Module):
             veh_mask = veh_mask.unsqueeze(-2).expand(*logits.shape[:-1], self.num_veh)
             # build full mask (...,50,25) where last index is no-action
             full_mask = torch.cat([veh_mask, torch.ones_like(veh_mask[..., :1])], dim=-1)
-            logits = logits + (full_mask.log() - full_mask.log())  # no-op to keep shape
             logits = logits.masked_fill(full_mask <= 0.0, -1e9)
 
         dispatch_dist = Categorical(logits=logits)
@@ -144,28 +178,37 @@ class RideShareActorCritic(nn.Module):
         """
         out = self.forward(obs)
 
-        # prices
-        price_std = out["price_mu"].new_tensor(self.price_logstd).exp()
-        price_dist = Normal(out["price_mu"], price_std)
-        # action["prices"] is >=0 after softplus; strictly speaking this isn't the same RV.
-        # Practical hack: treat it as pre-softplus or use Beta/LogNormal. For now: assume you store pre-softplus in rollout.
-        # If you DON'T store pre-softplus, switch to LogNormal or Beta.
-        price_logp = price_dist.log_prob(action["prices"]).sum(dim=-1)
+        # prices (LogNormal): consistent with act()
+        price_sigma = out["price_mu"].new_tensor(self.price_logstd).exp()
+        price_dist = LogNormal(out["price_mu"], price_sigma)
+
+        if "pricing_mask" in obs:
+            pm = obs["pricing_mask"].to(action["prices"].dtype)
+            price_logp = (price_dist.log_prob(action["prices"]) * pm).sum(dim=-1)
+        else:
+            price_logp = price_dist.log_prob(action["prices"]).sum(dim=-1)
+
         price_ent = price_dist.entropy().sum(dim=-1)
 
-        # reposition
+        # reposition (tanh-squashed Normal): consistent with act()
         repo_mu = out["repo_mu"]
-        repo_std = repo_mu.new_tensor(self.repo_logstd).exp()
-        repo_mu_flat = repo_mu.view(*repo_mu.shape[:-2], self.num_veh * 2)
-        repo_dist = Normal(repo_mu_flat, repo_std)
-        repo_act_flat = action["reposition"].view(*repo_mu_flat.shape)
-        repo_logp = repo_dist.log_prob(repo_act_flat).sum(dim=-1)
-        repo_ent = repo_dist.entropy().sum(dim=-1)
+        repo_sigma = repo_mu.new_tensor(self.repo_logstd).exp().view(self.num_veh, 2)
+        repo_dist = TanhNormal(repo_mu, repo_sigma)
+
+        repo_logp = repo_dist.log_prob(action["reposition"]).sum(dim=(-2, -1))
+        repo_ent = repo_logp.new_zeros(repo_logp.shape)
 
         # dispatch
-        logits = out["dispatch_logits"]
+        logits = out["dispatch_logits"].clone()
+
+        if "dispatch_mask" in obs:
+            veh_mask = obs["dispatch_mask"].to(logits.dtype)  # (...,24)
+            veh_mask = veh_mask.unsqueeze(-2).expand(*logits.shape[:-1], self.num_veh)
+            full_mask = torch.cat([veh_mask, torch.ones_like(veh_mask[..., :1])], dim=-1)
+            logits = logits.masked_fill(full_mask <= 0.0, -1e9)
+
         dispatch_dist = Categorical(logits=logits)
-        dispatch_cat = action["dispatch"] + 1  # unshift back to [0..24]
+        dispatch_cat = action["dispatch"] + 1
         disp_logp = dispatch_dist.log_prob(dispatch_cat).sum(dim=-1)
         disp_ent = dispatch_dist.entropy().sum(dim=-1)
 
