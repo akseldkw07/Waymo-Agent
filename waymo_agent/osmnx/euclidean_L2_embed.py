@@ -1,7 +1,7 @@
 import networkx as nx
 import numpy as np
 import osmnx as ox
-from scipy.spatial.kdtree import cKDTree
+from scipy.spatial import cKDTree  # type: ignore
 
 PRECISION = 6
 import typing as t
