@@ -110,9 +110,9 @@ class ObservationSpaceMixin(GymEnvInterface):
         observation_full: ObservationDict = {
             "globals": self.MetaState,
             "supply_demand_ratio": sd_ratio,
-            "vehicles": vehicles,
-            "pending_requests": requests,
-            "active_rides": rides,
+            "vehicles": VehicleDF(vehicles.astype(VehicleDF.target_dtypes)),
+            "pending_requests": RequestDF(requests.astype(RequestDF.target_dtypes)),
+            "active_rides": ActiveRideDF(rides.astype(ActiveRideDF.target_dtypes)),
             "dispatch_mask": vehicles.f_idle.astype(np.int8),
             "pricing_mask": requests.f_awaiting_price.astype(np.int8),
         }

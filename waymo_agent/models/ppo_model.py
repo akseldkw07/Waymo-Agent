@@ -305,11 +305,11 @@ def obs_pd_to_torch(obs: ObservationDict) -> dict[str, torch.Tensor]:
 
         elif isinstance(v, pd.DataFrame):
             v = v.to_numpy()
-
         try:
             ret[k] = torch.as_tensor(v, device=DEVICE, dtype=torch.float32)
         except Exception as e:
-            raise ValueError(f"Failed to convert obs key '{k}' with type {(v.dtype)} to tensor.") from e
+            types = v.dtypes if isinstance(v, pd.DataFrame) else v.dtype if isinstance(v, np.ndarray) else type(v)
+            raise ValueError(f"Failed to convert obs key '{k}' with type {types} to tensor.") from e
 
     return ret
 

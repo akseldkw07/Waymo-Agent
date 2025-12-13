@@ -355,13 +355,14 @@ class TransitionMixin(RewardMixin):
         # Cleanup indexes
         vehicles.reset_index(drop=True, inplace=True)
         active_rides.reset_index(drop=True, inplace=True)
-        self._active_rides_debug = active_rides.copy(deep=True)
-        self._vehicles_debug = vehicles.copy(deep=True)
+        self._active_rides_debug = active_rides.copy(deep=True).astype(ActiveRideDF.target_dtypes)
+        self._vehicles_debug = vehicles.copy(deep=True).astype(VehicleDF.target_dtypes)
 
         # Cleanup dtypes
-        vehicles = VehicleDF(vehicles)
+        vehicles = VehicleDF(vehicles.astype(VehicleDF.target_dtypes))
+        active_rides = ActiveRideDF(active_rides.astype(ActiveRideDF.target_dtypes))
 
-        return (vehicles), ActiveRideDF(active_rides), discard_ride_ids
+        return (vehicles), (active_rides), discard_ride_ids
 
     def _cycle_requests(self, discard_ride_ids: pd.Series) -> RequestDF:
         """

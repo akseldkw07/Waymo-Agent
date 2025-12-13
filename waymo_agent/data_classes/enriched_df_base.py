@@ -76,9 +76,9 @@ class EnrichedDF(pd.DataFrame):
         for col in training_df.columns:
             arr = training_df[col]
             if str(arr.dtype) == "datetime64[ns]":
-                training_df[col] = training_df[col].to_numpy(dtype="datetime64[ns]").view("int64")  # int64
+                training_df[col] = training_df[col].to_numpy(dtype="datetime64[ns]").view("int64") / 1e9  # int64
             elif str(arr.dtype) == "timedelta64[ns]":
-                training_df[col] = training_df[col].to_numpy(dtype="timedelta64[ns]").view("int64")  # int64
+                training_df[col] = training_df[col].to_numpy(dtype="timedelta64[ns]").view("int64") / 1e9  # int64
 
         ret = training_df.to_numpy()
         return ret
