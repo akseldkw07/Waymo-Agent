@@ -88,6 +88,10 @@ class ObservationSpaceMixin(GymEnvInterface):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             requests = RequestDF(pd.concat([real_requests, filler_requests], ignore_index=True).reset_index(drop=True))
+        if len(requests) > self.config.max_pending_requests:
+            f_prune = requests.index >= self.config.max_pending_requests
+            requests.drop(index=requests.index[f_prune], inplace=True)
+
         vehicles = init_vehicle_df(self)
         rides = init_active_ride_df(self, vehicles)
 
