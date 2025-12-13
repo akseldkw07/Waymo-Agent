@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 from torch.distributions import Categorical, LogNormal, Normal
 
-from waymo_agent.data_classes.space_dicts import ObservationDict
+from waymo_agent.data_classes.space_dicts import ObservationDict, ActionDict
 from waymo_agent.graph_env.ENV import RideShareEnv
 
 
@@ -83,16 +83,17 @@ class RideShareActorCritic(nn.Module):
         self.max_pending = env.config.max_pending_requests
         self.num_veh = env.num_vehicles
         self.dispatch_n = self.num_veh + 1  # 25 (includes "no-action")
+        self.obs_space = t.cast(ObservationDict, env.observation_space)
+        self.action_space = t.cast(ActionDict, env.action_space)
 
         # compute input dim from your space
-        obs_space = t.cast(ObservationDict, env.observation_space)
-        size_globals = obs_space["globals"].shape[0]  # 5
-        size_sd_ratio = obs_space["supply_demand_ratio"].shape[0]  # 3
-        sz_cars = obs_space["vehicles"].shape[0] * obs_space["vehicles"].shape[1]  # 24*4
-        sz_reqs = obs_space["pending_requests"].shape[0] * obs_space["pending_requests"].shape[1]  # 50*9
-        sz_rides = obs_space["active_rides"].shape[0] * obs_space["active_rides"].shape[1]  # 24*9
-        sz_dispatch_mask = obs_space["dispatch_mask"].shape[0]  # 24
-        sz_pricing_mask = obs_space["pricing_mask"].shape[0]  #
+        size_globals = self.obs_space["globals"].shape[0]  # 5
+        size_sd_ratio = self.obs_space["supply_demand_ratio"].shape[0]  # 3
+        sz_cars = self.obs_space["vehicles"].shape[0] * self.obs_space["vehicles"].shape[1]  # 24*4
+        sz_reqs = self.obs_space["pending_requests"].shape[0] * self.obs_space["pending_requests"].shape[1]  # 50*9
+        sz_rides = self.obs_space["active_rides"].shape[0] * self.obs_space["active_rides"].shape[1]  # 24*9
+        sz_dispatch_mask = self.obs_space["dispatch_mask"].shape[0]  # 24
+        sz_pricing_mask = self.obs_space["pricing_mask"].shape[0]  #
 
         obs_dim = size_globals + size_sd_ratio + sz_cars + sz_reqs + sz_rides + sz_dispatch_mask + sz_pricing_mask
 
