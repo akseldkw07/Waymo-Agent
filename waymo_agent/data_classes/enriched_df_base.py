@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import typing as t
 
 import numpy as np
@@ -69,7 +70,15 @@ class EnrichedDF(pd.DataFrame):
 
     def to_obs_numpy(self):
         """ """
-        training_df = self.to_training_df()
+        training_df: pd.DataFrame = self.to_training_df().copy(deep=True)
+
+        for col in training_df.columns:
+            arr = training_df[col]
+            if str(arr.dtype) == "timedelta64[ns]":
+                training_df[col] = training_df[col].to_numpy(dtype="datetime64[ns]").view("int64")  # int64
+            elif str(arr.dtype) == "timedelta64[ns]":
+                training_df[col] = training_df[col].to_numpy(dtype="timedelta64[ns]").view("int64")  # int64
+
         ret = training_df.to_numpy()
         return ret
 

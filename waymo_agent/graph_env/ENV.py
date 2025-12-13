@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import typing as t
+import warnings
 from math import ceil
 from pathlib import Path
-
 
 from waymo_agent.data_classes.space_dicts import prune_obs_dict_gymnasium
 
@@ -54,7 +54,9 @@ class RideShareEnv(RenderingMixin, OSMnxWrapperMixin, ObservationSpaceMixin, Act
 
         observation_full = self.reset_observation()
         obs_pruned = prune_obs_dict_gymnasium(observation_full)
-        self.observation_space.contains(obs_pruned)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            self.observation_space.contains(obs_pruned)
         return obs_pruned, self.info
 
     def step(self, action: ActionDict):  # type: ignore
@@ -72,7 +74,9 @@ class RideShareEnv(RenderingMixin, OSMnxWrapperMixin, ObservationSpaceMixin, Act
         observation_full, reward = self.get_observation(action)
         obs_pruned = prune_obs_dict_gymnasium(observation_full)
         try:
-            self.observation_space.contains(obs_pruned)
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                self.observation_space.contains(obs_pruned)
         except Exception as e:
             self.error_msg = str(e)
             terminated = True

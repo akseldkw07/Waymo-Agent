@@ -1,17 +1,18 @@
 from __future__ import annotations
 
 import typing as t
+from dataclasses import dataclass
 
+import numpy as np
+import pandas as pd
 import torch
 import torch.nn as nn
 from torch.distributions import Categorical, LogNormal, Normal
 
 from waymo_agent.constants import DEVICE_TORCH_STR
-from waymo_agent.data_classes.space_dicts import ObservationDict, ActionDict
+from waymo_agent.data_classes.enriched_df_base import EnrichedDF
+from waymo_agent.data_classes.space_dicts import ActionDict, ObservationDict
 from waymo_agent.graph_env.ENV import RideShareEnv
-
-import numpy as np
-from dataclasses import dataclass
 
 DEVICE = torch.device(DEVICE_TORCH_STR)
 
@@ -156,7 +157,7 @@ class RideShareActorCritic(nn.Module):
         out = self.forward(obs)
 
         # --- prices: LogNormal ensures positivity with correct log-prob ---
-        price_sigma = out["price_mu"].new_tensor(self.price_logstd).exp()
+        price_sigma = torch.exp(self.price_logstd).detach()
         price_dist = LogNormal(out["price_mu"], price_sigma)
         prices = price_dist.mean if deterministic else t.cast(torch.Tensor, price_dist.sample())  # (..., 50), > 0
 
@@ -167,7 +168,7 @@ class RideShareActorCritic(nn.Module):
             prices = prices * pm
 
         # --- reposition: tanh-squashed Normal matches Box([-1,1]) ---
-        repo_sigma = out["repo_mu"].new_tensor(self.repo_logstd).exp().view(self.num_veh, 2)
+        repo_sigma = torch.exp(self.repo_logstd).detach().view(self.num_veh, 2)
         repo_dist = TanhNormal(out["repo_mu"], repo_sigma)
         reposition = repo_dist.mode() if deterministic else repo_dist.sample()  # (..., 24, 2)
 
@@ -207,7 +208,7 @@ class RideShareActorCritic(nn.Module):
         out = self.forward(obs)
 
         # prices (LogNormal): consistent with act()
-        price_sigma = out["price_mu"].new_tensor(self.price_logstd).exp()
+        price_sigma = torch.exp(self.price_logstd).detach()
         price_dist = LogNormal(out["price_mu"], price_sigma)
 
         if "pricing_mask" in obs:
@@ -220,7 +221,7 @@ class RideShareActorCritic(nn.Module):
 
         # reposition (tanh-squashed Normal): consistent with act()
         repo_mu = out["repo_mu"]
-        repo_sigma = repo_mu.new_tensor(self.repo_logstd).exp().view(self.num_veh, 2)
+        repo_sigma = torch.exp(self.repo_logstd).detach().view(self.num_veh, 2)
         repo_dist = TanhNormal(repo_mu, repo_sigma)
 
         repo_logp = repo_dist.log_prob(action["reposition"]).sum(dim=(-2, -1))
@@ -279,7 +280,18 @@ class PPOTrainConfig:
 
 def obs_numpy_to_torch(obs: dict[str, np.ndarray] | ObservationDict) -> dict[str, torch.Tensor]:
     """Convert env obs (numpy) -> torch tensors on DEVICE."""
-    return {k: torch.as_tensor(v, device=DEVICE, dtype=torch.float32) for k, v in obs.items()}
+    ret = {}
+
+    for k, v in obs.items():
+        if isinstance(v, EnrichedDF):
+            v = v.to_obs_numpy()
+
+        elif isinstance(v, pd.DataFrame):
+            v = v.to_numpy()
+
+        ret[k] = torch.as_tensor(v, device=DEVICE, dtype=torch.float32)
+
+    return ret
 
 
 def action_torch_to_numpy(action: dict[str, torch.Tensor]) -> dict[str, np.ndarray]:

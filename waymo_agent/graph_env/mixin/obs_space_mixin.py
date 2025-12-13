@@ -104,7 +104,6 @@ class ObservationSpaceMixin(GymEnvInterface):
         assert (
             sd_ratio.shape == SupplyDemandDF.space_config(self.config)["shape"]
         ), f"SupplyDemandDF ratio shape {sd_ratio.shape} != (3,)"
-        print(sd_ratio, sd_ratio.shape)
         self.bc_row.update({"supply_demand_ratio": sd_ratio[0]})
 
         # Observation
@@ -122,9 +121,7 @@ class ObservationSpaceMixin(GymEnvInterface):
         self.observation_prev = observation_full  # TODO should I be doing this?
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            self.observation_space.contains(
-                observation_full
-            )  # This will fail due to dataframes instead of numpy arrays
+            self.observation_space.contains(observation_full)
 
         # Breadcrumbs
         self.bc_row.update({"error_msg": self.error_msg, "rewards": 0})
