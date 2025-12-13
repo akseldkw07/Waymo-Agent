@@ -86,8 +86,7 @@ def assign_lambda_values(G: nx.MultiDiGraph, config: "EnvConfig"):
         # noise = np.random.normal(0, noise_std)
         noise = np.random.uniform(-noise_std, noise_std)
 
-        norm = 0.85
-        lambda_values[node] = max(0.0, lambda_values[node] + noise) * norm
+        lambda_values[node] = max(0.0, lambda_values[node] + noise)
         G.nodes[node]["lambda"] = round(float(lambda_values[node]), PRECISION)
 
     sum_lambda = sum_graph_attr(G, "lambda", "node")
