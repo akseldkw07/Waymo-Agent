@@ -1,14 +1,11 @@
 import gym
-from gym import spaces
+import matplotlib.patches as patches
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
+from gym import spaces
 from matplotlib.collections import LineCollection
-from matplotlib.colors import ListedColormap, BoundaryNorm
+from matplotlib.colors import BoundaryNorm, ListedColormap
 
 # ---------------------------------------------------------
 # 0. Device Setup
@@ -19,6 +16,7 @@ print(f"Using device: {device}")
 # ---------------------------------------------------------
 # 1. Custom City Environment (Multi-Agent)
 # ---------------------------------------------------------
+
 
 class CityTaxiEnv(gym.Env):
     """
@@ -37,7 +35,7 @@ class CityTaxiEnv(gym.Env):
     """
 
     def __init__(self, num_taxis=100):
-        super(CityTaxiEnv, self).__init__()
+        super().__init__()
 
         self.rows = 4
         self.cols = 5
@@ -48,14 +46,9 @@ class CityTaxiEnv(gym.Env):
         self.action_space = spaces.Discrete(5)
 
         # Observation: My Position (1) + Demand Map (20)
-        self.observation_space = spaces.Box(
-            low=0,
-            high=100,
-            shape=(1 + self.num_nodes,),
-            dtype=np.float32
-        )
+        self.observation_space = spaces.Box(low=0, high=100, shape=(1 + self.num_nodes,), dtype=np.float32)
 
-        self.max_steps = 72 # 24 hours / 20 min steps
+        self.max_steps = 72  # 24 hours / 20 min steps
         self.current_step = 0
         self.taxi_locs = np.zeros(self.num_taxis, dtype=int)
         self.demand = np.zeros(self.num_nodes)
@@ -73,7 +66,7 @@ class CityTaxiEnv(gym.Env):
         # --- MODIFIED DEMAND ZONES ---
         # Highest Row (Nodes 0-4): High Demand
         for i in range(5):
-            demand[i] = np.random.poisson(lam=0.8)
+            demand[i] = np.random.poisson(lam=2)
 
         # All other rows (Nodes 5-19): Low Demand
         for i in range(5, 20):
@@ -102,41 +95,61 @@ class CityTaxiEnv(gym.Env):
             loc = self.taxi_locs[i]
             r, c = self._get_coords(loc)
 
-            if action == 0: # PICK UP
+            if action == 0:  # PICK UP
                 if self.demand[loc] > 0:
 
-                    # --- MODIFIED REWARD STRUCTURE ---
+                    # --- REWARD STRUCTURE ---
                     if loc == 4:
-                        # Top-Right Node (Super Bonus)
-                        rewards[i] = 100.0
+                        rewards[i] = 100.0  # Top-Right Node (Super Bonus)
                     elif loc < 5:
-                        # Rest of Highest Row (Nodes 0,1,2,3)
-                        rewards[i] = 50.0
+                        rewards[i] = 20.0  # Rest of Highest Row
                     else:
-                        # Standard Zone
-                        rewards[i] = 10.0
-                    # ---------------------------------
+                        rewards[i] = 10.0  # Standard Zone
+                    # ------------------------
 
                     self.demand[loc] -= 1
                     picked_up_map[loc] += 1
-                    self.taxi_locs[i] = np.random.randint(0, self.num_nodes)
+
+                    # --- NEW DROPOFF LOGIC (Nearest Nodes Only) ---
+                    # Defines a random shift of -1, 0, or +1 for both row and col
+                    dr = np.random.choice([-1, 0, 1])
+                    dc = np.random.choice([-1, 0, 1])
+
+                    # Calculate new coords
+                    drop_r = r + dr
+                    drop_c = c + dc
+
+                    # Boundary Check: Clip to stay within grid limits
+                    drop_r = np.clip(drop_r, 0, self.rows - 1)
+                    drop_c = np.clip(drop_c, 0, self.cols - 1)
+
+                    # Update location
+                    self.taxi_locs[i] = self._get_node(drop_r, drop_c)
+                    # ----------------------------------------------
+
                 else:
                     rewards[i] = -1.0
 
-            else: # MOVE
+            else:  # MOVE
                 new_r, new_c = r, c
-                if action == 1: new_r -= 1
-                elif action == 2: new_r += 1
-                elif action == 3: new_c -= 1
-                elif action == 4: new_c += 1
+                if action == 1:
+                    new_r -= 1
+                elif action == 2:
+                    new_r += 1
+                elif action == 3:
+                    new_c -= 1
+                elif action == 4:
+                    new_c += 1
 
                 if 0 <= new_r < self.rows and 0 <= new_c < self.cols:
                     self.taxi_locs[i] = self._get_node(new_r, new_c)
+                    rewards[i] -= 0.1  # small time cost to discourage aimless movement
                 else:
                     rewards[i] = -0.5
 
+        # Demand Update (Correction applied: No accumulation, just replacement)
         new_demand = self._generate_demand()
-        self.demand += new_demand
+        self.demand = new_demand
         self.demand = np.clip(self.demand, 0, 50)
 
         self.current_step += 1
@@ -144,14 +157,16 @@ class CityTaxiEnv(gym.Env):
             done = True
 
         next_obs = self._get_observation_batch()
-        info = {'generated_demand': new_demand, 'picked_up_map': picked_up_map}
+        info = {"generated_demand": new_demand, "picked_up_map": picked_up_map}
         return next_obs, rewards, done, info
+
 
 # ---------------------------------------------------------
 # 2. PPO Classes
 # ---------------------------------------------------------
 
-class Policy(object):
+
+class Policy:
     def __init__(self, obssize, actsize, lr, device):
         self.device = device
         self.actsize = actsize
@@ -160,7 +175,7 @@ class Policy(object):
             torch.nn.ReLU(),
             torch.nn.Linear(64, 64),
             torch.nn.ReLU(),
-            torch.nn.Linear(64, actsize)
+            torch.nn.Linear(64, actsize),
         ).to(self.device)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=lr)
 
@@ -186,7 +201,8 @@ class Policy(object):
         self.optimizer.step()
         return loss.detach().cpu().data.numpy()
 
-class ValueFunction(object):
+
+class ValueFunction:
     def __init__(self, obssize, lr, device):
         self.device = device
         self.model = torch.nn.Sequential(
@@ -194,7 +210,7 @@ class ValueFunction(object):
             torch.nn.ReLU(),
             torch.nn.Linear(64, 64),
             torch.nn.ReLU(),
-            torch.nn.Linear(64, 1)
+            torch.nn.Linear(64, 1),
         ).to(self.device)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=lr)
 
@@ -212,6 +228,7 @@ class ValueFunction(object):
         self.optimizer.step()
         return loss.detach().cpu().data.numpy()
 
+
 def discounted_rewards(r, gamma):
     discounted_r = np.zeros_like(r, dtype=np.float32)
     running_sum = 0
@@ -220,9 +237,11 @@ def discounted_rewards(r, gamma):
         running_sum = discounted_r[i]
     return list(discounted_r)
 
+
 # ---------------------------------------------------------
 # 3. Training & Visualization
 # ---------------------------------------------------------
+
 
 def evaluate(policy, env, episodes):
     total_score = 0
@@ -242,6 +261,7 @@ def evaluate(policy, env, episodes):
         total_score += episode_reward
     return total_score / episodes
 
+
 def run_baseline(env, episodes=50):
     print(f"\nRunning Baseline...")
     total_score = 0
@@ -250,16 +270,58 @@ def run_baseline(env, episodes=50):
         done = False
         episode_reward = 0
         while not done:
-            actions = []
-            current_demand_snapshot = env.demand.copy()
-            for i in range(env.num_taxis):
-                loc = env.taxi_locs[i]
-                if current_demand_snapshot[loc] > 0:
-                    action = 0 # Pickup
-                    current_demand_snapshot[loc] -= 1
+            actions = [0] * env.num_taxis
+            demand_nodes = np.where(env.demand > 0)[0]
+            taxi_coords = [env._get_coords(loc) for loc in env.taxi_locs]
+            assigned = set()
+            taxi_targets = {}
+
+            # Assign nearest idle taxi to each demand node
+            for node in demand_nodes:
+                node_r, node_c = env._get_coords(node)
+                best_idx = None
+                best_dist = float("inf")
+                for idx, (taxi_r, taxi_c) in enumerate(taxi_coords):
+                    if idx in assigned:
+                        continue
+                    dist = abs(node_r - taxi_r) + abs(node_c - taxi_c)
+                    if dist < best_dist:
+                        best_dist = dist
+                        best_idx = idx
+                if best_idx is not None:
+                    taxi_targets[best_idx] = node
+                    assigned.add(best_idx)
+
+            # Choose actions based on assignments
+            for idx in range(env.num_taxis):
+                loc = env.taxi_locs[idx]
+                cur_r, cur_c = taxi_coords[idx]
+
+                if env.demand[loc] > 0:
+                    actions[idx] = 0  # immediate pickup
+                    continue
+
+                target_node = taxi_targets.get(idx)
+                if target_node is None:
+                    # Gravitate toward the highest-demand node (default to top row)
+                    if env.demand.sum() > 0:
+                        target_node = int(np.argmax(env.demand))
+                    else:
+                        target_node = 2  # center of top row for lack of signal
+                target_r, target_c = env._get_coords(target_node)
+
+                if target_r < cur_r:
+                    actions[idx] = 1
+                elif target_r > cur_r:
+                    actions[idx] = 2
+                elif target_c < cur_c:
+                    actions[idx] = 3
+                elif target_c > cur_c:
+                    actions[idx] = 4
                 else:
-                    action = np.random.randint(1, 5)
-                actions.append(action)
+                    # Already at target but no demand, wander horizontally
+                    actions[idx] = np.random.choice([3, 4])
+
             obs_batch, rewards, done, _ = env.step(actions)
             episode_reward += np.sum(rewards)
         total_score += episode_reward
@@ -306,46 +368,47 @@ def _run_logged_episode(policy, env, log_taxis=3):
 
         current_profit += reward_step
         cumulative_profit.append(current_profit)
-        demand_generated += info['generated_demand']
-        demand_matched += info['picked_up_map']
+        demand_generated += info["generated_demand"]
+        demand_matched += info["picked_up_map"]
 
         for idx in tracked_indices:
             taxi_paths[idx].append(env.taxi_locs[idx])
             tracked_actions[idx].append(actions[idx])
 
     return {
-        'taxi_visits': taxi_visits,
-        'demand_generated': demand_generated,
-        'demand_matched': demand_matched,
-        'cumulative_profit': cumulative_profit,
-        'action_history': np.array(action_history),
-        'reward_history': np.array(reward_history),
-        'taxi_paths': taxi_paths,
-        'demand_history': np.array(demand_history),
-        'per_taxi_actions': np.array(per_taxi_actions),
-        'tracked_actions': tracked_actions
+        "taxi_visits": taxi_visits,
+        "demand_generated": demand_generated,
+        "demand_matched": demand_matched,
+        "cumulative_profit": cumulative_profit,
+        "action_history": np.array(action_history),
+        "reward_history": np.array(reward_history),
+        "taxi_paths": taxi_paths,
+        "demand_history": np.array(demand_history),
+        "per_taxi_actions": np.array(per_taxi_actions),
+        "tracked_actions": tracked_actions,
     }
+
 
 def visualize_last_day(policy, env, log_taxis=3, return_logs=False):
     """Visualize fleet stats plus per-step action usage for the last episode."""
     print("\nVisualizing last day (1 Episode)...")
     logs = _run_logged_episode(policy, env, log_taxis=log_taxis)
 
-    taxi_visits = logs['taxi_visits']
-    demand_generated = logs['demand_generated']
-    demand_matched = logs['demand_matched']
-    cumulative_profit = logs['cumulative_profit']
-    action_history = logs['action_history']
-    taxi_paths = logs['taxi_paths']
-    demand_history = logs['demand_history']
-    per_taxi_actions = logs['per_taxi_actions']
-    tracked_actions = logs['tracked_actions']
+    taxi_visits = logs["taxi_visits"]
+    demand_generated = logs["demand_generated"]
+    demand_matched = logs["demand_matched"]
+    cumulative_profit = logs["cumulative_profit"]
+    action_history = logs["action_history"]
+    taxi_paths = logs["taxi_paths"]
+    demand_history = logs["demand_history"]
+    per_taxi_actions = logs["per_taxi_actions"]
+    tracked_actions = logs["tracked_actions"]
 
     # --- VISUALIZATION LOGIC ---
     fig = plt.figure(figsize=(10, 22))
     gs = fig.add_gridspec(5, 1, height_ratios=[1, 1, 1, 0.6, 0.8])
 
-    def plot_grid_graph(ax, data, title, cmap='Blues'):
+    def plot_grid_graph(ax, data, title, cmap="Blues"):
         """Plots a graph representation with nodes and edges."""
         rows, cols = env.rows, env.cols
 
@@ -358,10 +421,10 @@ def visualize_last_day(policy, env, log_taxis=3, return_logs=False):
             for c in range(cols):
                 # Horizontal
                 if c < cols - 1:
-                    ax.plot([c, c+1], [-r, -r], color='#CCCCCC', linewidth=2, zorder=1)
+                    ax.plot([c, c + 1], [-r, -r], color="#CCCCCC", linewidth=2, zorder=1)
                 # Vertical
                 if r < rows - 1:
-                    ax.plot([c, c], [-r, -r-1], color='#CCCCCC', linewidth=2, zorder=1)
+                    ax.plot([c, c], [-r, -r - 1], color="#CCCCCC", linewidth=2, zorder=1)
 
         # 2. Draw Nodes (Circles)
         for r in range(rows):
@@ -372,17 +435,25 @@ def visualize_last_day(policy, env, log_taxis=3, return_logs=False):
                 ax.add_patch(circle)
 
                 # Contrast check for text
-                brightness = (0.299*color[0] + 0.587*color[1] + 0.114*color[2])
-                text_color = 'white' if brightness < 0.5 else 'black'
+                brightness = 0.299 * color[0] + 0.587 * color[1] + 0.114 * color[2]
+                text_color = "white" if brightness < 0.5 else "black"
 
-                ax.text(c, -r, f"{int(val)}",
-                        ha='center', va='center',
-                        color=text_color, fontweight='bold', fontsize=10, zorder=3)
+                ax.text(
+                    c,
+                    -r,
+                    f"{int(val)}",
+                    ha="center",
+                    va="center",
+                    color=text_color,
+                    fontweight="bold",
+                    fontsize=10,
+                    zorder=3,
+                )
 
         ax.set_title(title, fontsize=14, pad=20)
-        ax.set_xlim(-0.5, cols-0.5)
-        ax.set_ylim(-rows+0.5, 0.5)
-        ax.axis('off')
+        ax.set_xlim(-0.5, cols - 0.5)
+        ax.set_ylim(-rows + 0.5, 0.5)
+        ax.axis("off")
         ax.set_aspect(1.5)
 
     # Reshape data
@@ -392,17 +463,17 @@ def visualize_last_day(policy, env, log_taxis=3, return_logs=False):
 
     # Plot Graphs
     ax1 = fig.add_subplot(gs[0])
-    plot_grid_graph(ax1, visit_grid, "Taxi Presence (Total Visits)", cmap='Purples')
+    plot_grid_graph(ax1, visit_grid, "Taxi Presence (Total Visits)", cmap="Purples")
 
     ax2 = fig.add_subplot(gs[1])
-    plot_grid_graph(ax2, gen_grid, "Total Demand Generated (High only in Top Row)", cmap='Reds')
+    plot_grid_graph(ax2, gen_grid, "Total Demand Generated (High only in Top Row)", cmap="Reds")
 
     ax3 = fig.add_subplot(gs[2])
-    plot_grid_graph(ax3, match_grid, "Total Demand Matched (Pickups)", cmap='Greens')
+    plot_grid_graph(ax3, match_grid, "Total Demand Matched (Pickups)", cmap="Greens")
 
     # Plot Profit Curve
     ax4 = fig.add_subplot(gs[3])
-    ax4.plot(cumulative_profit, color='blue', linewidth=2)
+    ax4.plot(cumulative_profit, color="blue", linewidth=2)
     ax4.set_title("Cumulative Profit", fontsize=12)
     ax4.set_xlabel("Time Step (20 mins)")
     ax4.set_ylabel("Profit ($)")
@@ -412,14 +483,14 @@ def visualize_last_day(policy, env, log_taxis=3, return_logs=False):
     ax5 = fig.add_subplot(gs[4])
     if action_history.size > 0:
         steps = np.arange(1, action_history.shape[0] + 1)
-        action_labels = ['Pickup', 'Up', 'Down', 'Left', 'Right']
+        action_labels = ["Pickup", "Up", "Down", "Left", "Right"]
         for action_id in range(env.action_space.n):
             label = action_labels[action_id] if action_id < len(action_labels) else f"Action {action_id}"
             ax5.plot(steps, action_history[:, action_id], label=label)
         ax5.set_xlim(1, len(steps))
-        ax5.legend(loc='upper right')
+        ax5.legend(loc="upper right")
     else:
-        ax5.text(0.5, 0.5, "No action history logged", ha='center', va='center', fontsize=12)
+        ax5.text(0.5, 0.5, "No action history logged", ha="center", va="center", fontsize=12)
     ax5.set_title("Action Usage Per Step", fontsize=12)
     ax5.set_xlabel("Time Step (20 mins)")
     ax5.set_ylabel("# of Taxis")
@@ -432,11 +503,11 @@ def visualize_last_day(policy, env, log_taxis=3, return_logs=False):
     if taxi_paths:
         fig_paths, ax_paths = plt.subplots(figsize=(6, 6))
         for r in range(env.rows + 1):
-            ax_paths.plot([-0.5, env.cols - 0.5], [-r, -r], color='#DDDDDD', linewidth=1)
+            ax_paths.plot([-0.5, env.cols - 0.5], [-r, -r], color="#DDDDDD", linewidth=1)
         for c in range(env.cols + 1):
-            ax_paths.plot([c - 0.5, c - 0.5], [0.5, -env.rows + 0.5], color='#DDDDDD', linewidth=1)
+            ax_paths.plot([c - 0.5, c - 0.5], [0.5, -env.rows + 0.5], color="#DDDDDD", linewidth=1)
 
-        traj_cmap = plt.cm.get_cmap('plasma')
+        traj_cmap = plt.cm.get_cmap("plasma")
         cmap_norm = plt.Normalize(0, 1)
         sm = plt.cm.ScalarMappable(cmap=traj_cmap, norm=cmap_norm)
         handles = []
@@ -456,12 +527,14 @@ def visualize_last_day(policy, env, log_taxis=3, return_logs=False):
 
             start_color = traj_cmap(0.0)
             end_color = traj_cmap(1.0)
-            ax_paths.scatter(xs[0], ys[0], marker='o', color=start_color, edgecolors='black', s=40)
-            handle = ax_paths.scatter(xs[-1], ys[-1], marker='^', color=end_color, edgecolors='black', s=50, label=f"Taxi {idx}")
+            ax_paths.scatter(xs[0], ys[0], marker="o", color=start_color, edgecolors="black", s=40)
+            handle = ax_paths.scatter(
+                xs[-1], ys[-1], marker="^", color=end_color, edgecolors="black", s=50, label=f"Taxi {idx}"
+            )
             handles.append(handle)
 
         if handles:
-            ax_paths.legend(handles=handles, loc='best', title="Taxi Destinations")
+            ax_paths.legend(handles=handles, loc="best", title="Taxi Destinations")
         cbar = fig_paths.colorbar(sm, ax=ax_paths, fraction=0.046, pad=0.04)
         cbar.set_label("Path Progression")
 
@@ -470,7 +543,7 @@ def visualize_last_day(policy, env, log_taxis=3, return_logs=False):
         ax_paths.set_ylim(-env.rows + 0.5, 0.5)
         ax_paths.set_xlabel("Column")
         ax_paths.set_ylabel("Row")
-        ax_paths.set_aspect('equal')
+        ax_paths.set_aspect("equal")
         fig_paths.tight_layout()
 
         if return_logs:
@@ -480,7 +553,7 @@ def visualize_last_day(policy, env, log_taxis=3, return_logs=False):
         if demand_history.size > 0 and per_taxi_actions.size > 0:
             fig_day, (ax_demand, ax_moves) = plt.subplots(2, 1, figsize=(12, 8), constrained_layout=True)
 
-            im = ax_demand.imshow(demand_history, aspect='auto', cmap='Reds')
+            im = ax_demand.imshow(demand_history, aspect="auto", cmap="Reds")
             ax_demand.set_title("Demand Heatmap Over Day (Step x Node)")
             ax_demand.set_xlabel("Node ID")
             ax_demand.set_ylabel("Time Step")
@@ -490,17 +563,19 @@ def visualize_last_day(policy, env, log_taxis=3, return_logs=False):
                 tracked_ids = sorted(tracked_actions.keys())
                 action_matrix = np.array([tracked_actions[idx] for idx in tracked_ids])
                 if action_matrix.size > 0:
-                    action_cmap = ListedColormap(['#2ca02c', '#1f77b4', '#ff7f0e', '#9467bd', '#8c564b'])
+                    action_cmap = ListedColormap(["#2ca02c", "#1f77b4", "#ff7f0e", "#9467bd", "#8c564b"])
                     bounds = np.arange(-0.5, env.action_space.n + 0.5, 1)
                     norm = BoundaryNorm(bounds, action_cmap.N)
-                    moves = ax_moves.imshow(action_matrix, aspect='auto', cmap=action_cmap, norm=norm, interpolation='nearest')
+                    moves = ax_moves.imshow(
+                        action_matrix, aspect="auto", cmap=action_cmap, norm=norm, interpolation="nearest"
+                    )
                     ax_moves.set_title("Tracked Taxi Actions Over Day")
                     ax_moves.set_xlabel("Time Step")
                     ax_moves.set_ylabel("Taxi Index")
                     ax_moves.set_yticks(np.arange(len(tracked_ids)))
                     ax_moves.set_yticklabels(tracked_ids)
                     cbar_moves = fig_day.colorbar(moves, ax=ax_moves, ticks=range(env.action_space.n))
-                    cbar_moves.ax.set_yticklabels(['Pickup', 'Up', 'Down', 'Left', 'Right'])
+                    cbar_moves.ax.set_yticklabels(["Pickup", "Up", "Down", "Left", "Right"])
         plt.show()
 
 
@@ -589,6 +664,7 @@ def main():
         print("Result: PPO failed to beat the Baseline.")
 
     visualize_last_day(actor, env)
+
 
 if __name__ == "__main__":
     main()

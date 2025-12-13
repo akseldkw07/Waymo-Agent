@@ -1,6 +1,6 @@
 import networkx as nx
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 
 def nodes_to_df(G: nx.MultiDiGraph) -> pd.DataFrame:

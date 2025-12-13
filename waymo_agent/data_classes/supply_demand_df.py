@@ -1,8 +1,9 @@
-from math import ceil
 import typing as t
+from math import ceil
 
 import numpy as np
 import pandas as pd
+
 from waymo_agent.data_classes import EnvConfig, RequestDF, VehicleDF
 from waymo_agent.data_classes.enriched_df_base import EnrichedDF
 

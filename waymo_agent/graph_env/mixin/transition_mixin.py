@@ -11,10 +11,10 @@ from waymo_agent.data_classes.enriched_df_base import validate_typed_df_keys
 from waymo_agent.data_classes.requests import RequestStatusEnum
 from waymo_agent.data_classes.vehicles import VehicleDF, VehicleStatusEnum
 from waymo_agent.graph_env.cost_reward import compute_amortized_reward
+from waymo_agent.graph_env.df_utils import masked_assign
 from waymo_agent.osmnx.euclidean_L2_embed import interpolate_position_on_edge
 from waymo_agent.osmnx.traverse_graph import step_along_route
 from waymo_agent.simulation.generate_obs_state import get_sd_ratio, init_active_ride_df
-from waymo_agent.graph_env.df_utils import masked_assign
 
 from .interface import GymEnvInterface
 

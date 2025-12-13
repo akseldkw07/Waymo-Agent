@@ -1,12 +1,9 @@
 import gym
-from gym import spaces
+import matplotlib.patches as patches
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
+from gym import spaces
 from matplotlib.animation import FuncAnimation
 
 # ---------------------------------------------------------
@@ -19,6 +16,7 @@ print(f"Using device: {device}")
 # 1. Custom City Environment (Dynamic Spinning Bonus)
 # ---------------------------------------------------------
 
+
 class CityTaxiEnv(gym.Env):
     """
     A 4x5 Grid City Environment for Taxi Service (100 Cars).
@@ -26,7 +24,7 @@ class CityTaxiEnv(gym.Env):
     """
 
     def __init__(self, num_taxis=100):
-        super(CityTaxiEnv, self).__init__()
+        super().__init__()
 
         self.rows = 4
         self.cols = 5
@@ -34,22 +32,15 @@ class CityTaxiEnv(gym.Env):
         self.num_taxis = num_taxis
 
         # Clockwise perimeter path
-        self.perimeter_path = [
-            0, 1, 2, 3, 4,   # Top
-            9, 14,           # Right
-            19, 18, 17, 16, 15, # Bottom
-            10, 5            # Left
-        ]
-        self.special_path_idx = 0 
+        self.perimeter_path = [0, 1, 2, 3, 4, 9, 14, 19, 18, 17, 16, 15, 10, 5]  # Top  # Right  # Bottom  # Left
+        self.special_path_idx = 0
         self.steps_per_move = 4
 
         self.action_space = spaces.Discrete(5)
         # Observation: My Pos(1) + Demand(20) + Next Ultra Pos(1)
-        self.observation_space = spaces.Box(
-            low=0, high=100, shape=(1 + self.num_nodes + 1,), dtype=np.float32
-        )
+        self.observation_space = spaces.Box(low=0, high=100, shape=(1 + self.num_nodes + 1,), dtype=np.float32)
 
-        self.max_steps = 72 
+        self.max_steps = 72
         self.current_step = 0
         self.taxi_locs = np.zeros(self.num_taxis, dtype=int)
         self.demand = np.zeros(self.num_nodes)
@@ -63,10 +54,14 @@ class CityTaxiEnv(gym.Env):
     def _get_neighbors(self, node):
         r, c = self._get_coords(node)
         neighbors = []
-        if r > 0: neighbors.append(self._get_node(r-1, c))
-        if r < self.rows - 1: neighbors.append(self._get_node(r+1, c))
-        if c > 0: neighbors.append(self._get_node(r, c-1))
-        if c < self.cols - 1: neighbors.append(self._get_node(r, c+1))
+        if r > 0:
+            neighbors.append(self._get_node(r - 1, c))
+        if r < self.rows - 1:
+            neighbors.append(self._get_node(r + 1, c))
+        if c > 0:
+            neighbors.append(self._get_node(r, c - 1))
+        if c < self.cols - 1:
+            neighbors.append(self._get_node(r, c + 1))
         return neighbors
 
     def _generate_demand(self):
@@ -75,9 +70,12 @@ class CityTaxiEnv(gym.Env):
         high_nodes = self._get_neighbors(ultra_node)
 
         for i in range(self.num_nodes):
-            if i == ultra_node: demand[i] = np.random.poisson(lam=3.0)
-            elif i in high_nodes: demand[i] = np.random.poisson(lam=1.5)
-            else: demand[i] = np.random.poisson(lam=0.2)
+            if i == ultra_node:
+                demand[i] = np.random.poisson(lam=3.0)
+            elif i in high_nodes:
+                demand[i] = np.random.poisson(lam=1.5)
+            else:
+                demand[i] = np.random.poisson(lam=0.2)
         return demand
 
     def _get_next_special_node(self):
@@ -103,7 +101,7 @@ class CityTaxiEnv(gym.Env):
     def step(self, actions):
         rewards = np.zeros(self.num_taxis)
         done = False
-        
+
         current_ultra_node = self.perimeter_path[self.special_path_idx]
         current_high_nodes = self._get_neighbors(current_ultra_node)
 
@@ -112,25 +110,34 @@ class CityTaxiEnv(gym.Env):
             loc = self.taxi_locs[i]
             r, c = self._get_coords(loc)
 
-            if action == 0: # PICK UP
+            if action == 0:  # PICK UP
                 if self.demand[loc] > 0:
-                    if loc == current_ultra_node: rewards[i] = 100.0 
-                    elif loc in current_high_nodes: rewards[i] = 50.0
-                    else: rewards[i] = 10.0
+                    if loc == current_ultra_node:
+                        rewards[i] = 100.0
+                    elif loc in current_high_nodes:
+                        rewards[i] = 50.0
+                    else:
+                        rewards[i] = 10.0
                     self.demand[loc] -= 1
-                    
+
                     # Random dropoff
                     dr, dc = np.random.choice([-1, 0, 1], 2)
-                    self.taxi_locs[i] = self._get_node(np.clip(r+dr,0,self.rows-1), np.clip(c+dc,0,self.cols-1))
+                    self.taxi_locs[i] = self._get_node(
+                        np.clip(r + dr, 0, self.rows - 1), np.clip(c + dc, 0, self.cols - 1)
+                    )
                 else:
                     rewards[i] = -1.0
 
-            else: # MOVE
+            else:  # MOVE
                 nr, nc = r, c
-                if action == 1: nr -= 1
-                elif action == 2: nr += 1
-                elif action == 3: nc -= 1
-                elif action == 4: nc += 1
+                if action == 1:
+                    nr -= 1
+                elif action == 2:
+                    nr += 1
+                elif action == 3:
+                    nc -= 1
+                elif action == 4:
+                    nc += 1
 
                 if 0 <= nr < self.rows and 0 <= nc < self.cols:
                     self.taxi_locs[i] = self._get_node(nr, nc)
@@ -144,16 +151,18 @@ class CityTaxiEnv(gym.Env):
             done = True
 
         new_demand = self._generate_demand()
-        self.demand = new_demand 
+        self.demand = new_demand
         self.demand = np.clip(self.demand, 0, 50)
 
         return self._get_observation_batch(), rewards, done, {}
+
 
 # ---------------------------------------------------------
 # 2. PPO Classes
 # ---------------------------------------------------------
 
-class Policy(object):
+
+class Policy:
     def __init__(self, obssize, actsize, lr, device):
         self.device = device
         self.actsize = actsize
@@ -162,7 +171,7 @@ class Policy(object):
             torch.nn.ReLU(),
             torch.nn.Linear(128, 128),
             torch.nn.ReLU(),
-            torch.nn.Linear(128, actsize)
+            torch.nn.Linear(128, actsize),
         ).to(self.device)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=lr)
 
@@ -184,7 +193,8 @@ class Policy(object):
         self.optimizer.step()
         return loss.detach().cpu().data.numpy()
 
-class ValueFunction(object):
+
+class ValueFunction:
     def __init__(self, obssize, lr, device):
         self.device = device
         self.model = torch.nn.Sequential(
@@ -192,7 +202,7 @@ class ValueFunction(object):
             torch.nn.ReLU(),
             torch.nn.Linear(128, 128),
             torch.nn.ReLU(),
-            torch.nn.Linear(128, 1)
+            torch.nn.Linear(128, 1),
         ).to(self.device)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=lr)
 
@@ -208,6 +218,7 @@ class ValueFunction(object):
         self.optimizer.step()
         return loss.detach().cpu().data.numpy()
 
+
 def discounted_rewards(r, gamma):
     discounted_r = np.zeros_like(r, dtype=np.float32)
     running_sum = 0
@@ -216,9 +227,11 @@ def discounted_rewards(r, gamma):
         running_sum = discounted_r[i]
     return list(discounted_r)
 
+
 # ---------------------------------------------------------
 # 3. Training & NEW Dynamic Visualization
 # ---------------------------------------------------------
+
 
 def evaluate(policy, env, episodes):
     total_score = 0
@@ -228,11 +241,12 @@ def evaluate(policy, env, episodes):
         ep_reward = 0
         while not done:
             p = policy.compute_prob(obs)
-            actions = [np.random.choice(env.action_space.n, p=p[i]/np.sum(p[i])) for i in range(env.num_taxis)]
+            actions = [np.random.choice(env.action_space.n, p=p[i] / np.sum(p[i])) for i in range(env.num_taxis)]
             obs, rewards, done, _ = env.step(actions)
             ep_reward += np.sum(rewards)
         total_score += ep_reward
     return total_score / episodes
+
 
 def run_baseline(env, episodes=50):
     print(f"\nRunning Baseline...")
@@ -248,44 +262,44 @@ def run_baseline(env, episodes=50):
         total_score += ep_reward
     return total_score / episodes
 
+
 # --- NEW: Capture data step-by-step for animation ---
 def capture_last_episode_data(policy, env):
     print("\nCapturing data for final episode animation...")
     obs = env.reset()
     done = False
-    
+
     history = []
 
     while not done:
         # Record state at the beginning of the step
         current_ultra = env.perimeter_path[env.special_path_idx]
-        history.append({
-            'step': env.current_step,
-            'taxi_locs': env.taxi_locs.copy(),
-            'ultra_node': current_ultra
-        })
-        
+        history.append({"step": env.current_step, "taxi_locs": env.taxi_locs.copy(), "ultra_node": current_ultra})
+
         p = policy.compute_prob(obs)
-        actions = [np.random.choice(env.action_space.n, p=p[i]/np.sum(p[i])) for i in range(env.num_taxis)]
+        actions = [np.random.choice(env.action_space.n, p=p[i] / np.sum(p[i])) for i in range(env.num_taxis)]
         obs, _, done, _ = env.step(actions)
-        
+
     # Append final state
-    history.append({
-        'step': env.current_step,
-        'taxi_locs': env.taxi_locs.copy(),
-        'ultra_node': env.perimeter_path[env.special_path_idx]
-    })
+    history.append(
+        {
+            "step": env.current_step,
+            "taxi_locs": env.taxi_locs.copy(),
+            "ultra_node": env.perimeter_path[env.special_path_idx],
+        }
+    )
     return history
+
 
 # --- NEW: Animation Function ---
 def animate_dynamics(env, history_data):
     fig, ax = plt.subplots(figsize=(8, 6))
-    
+
     # 1. Setup Static Grid lines
     for r in range(env.rows + 1):
-        ax.plot([-0.5, env.cols - 0.5], [-r, -r], color='#DDDDDD', linewidth=1, zorder=0)
+        ax.plot([-0.5, env.cols - 0.5], [-r, -r], color="#DDDDDD", linewidth=1, zorder=0)
     for c in range(env.cols + 1):
-        ax.plot([c - 0.5, c - 0.5], [0.5, -env.rows + 0.5], color='#DDDDDD', linewidth=1, zorder=0)
+        ax.plot([c - 0.5, c - 0.5], [0.5, -env.rows + 0.5], color="#DDDDDD", linewidth=1, zorder=0)
 
     # 2. Initialize Node Circles and Text objects
     node_circles = []
@@ -293,25 +307,25 @@ def animate_dynamics(env, history_data):
     for r in range(env.rows):
         for c in range(env.cols):
             # Circle Patch
-            circle = patches.Circle((c, -r), 0.4, color='blue', alpha=0.7, zorder=1)
+            circle = patches.Circle((c, -r), 0.4, color="blue", alpha=0.7, zorder=1)
             ax.add_patch(circle)
             node_circles.append(circle)
             # Text Object for Car Count
-            text = ax.text(c, -r, '0', ha='center', va='center', color='white', fontweight='bold', zorder=2)
+            text = ax.text(c, -r, "0", ha="center", va="center", color="white", fontweight="bold", zorder=2)
             node_texts.append(text)
 
     ax.set_xlim(-0.5, env.cols - 0.5)
     ax.set_ylim(-env.rows + 0.5, 0.5)
-    ax.set_aspect('equal')
-    ax.axis('off')
+    ax.set_aspect("equal")
+    ax.axis("off")
     title_text = ax.set_title("Step: 0", fontsize=14)
 
     # 3. Update function for animation
     def update(frame_idx):
         data = history_data[frame_idx]
-        step_num = data['step']
-        taxi_locs = data['taxi_locs']
-        ultra_node = data['ultra_node']
+        step_num = data["step"]
+        taxi_locs = data["taxi_locs"]
+        ultra_node = data["ultra_node"]
         high_nodes = env._get_neighbors(ultra_node)
 
         # Count cars at each node
@@ -320,12 +334,15 @@ def animate_dynamics(env, history_data):
         # Update visuals for each node
         for i in range(env.num_nodes):
             # Determine Color based on Bonus Status
-            if i == ultra_node: color = '#8B0000' # Dark Red (Ultra)
-            elif i in high_nodes: color = '#FF4500' # OrangeRed (High)
-            else: color = '#4682B4' # SteelBlue (Standard)
-            
+            if i == ultra_node:
+                color = "#8B0000"  # Dark Red (Ultra)
+            elif i in high_nodes:
+                color = "#FF4500"  # OrangeRed (High)
+            else:
+                color = "#4682B4"  # SteelBlue (Standard)
+
             node_circles[i].set_color(color)
-            
+
             # Update Car Count Text
             node_texts[i].set_text(str(car_counts[i]))
 
@@ -334,18 +351,19 @@ def animate_dynamics(env, history_data):
 
     # Create Animation
     ani = FuncAnimation(fig, update, frames=len(history_data), interval=200, blit=False)
-    
+
     print("Displaying animation...")
     plt.show()
+
 
 def main():
     # Hyperparameters
     alpha = 1e-3
     beta = 1e-3
     numtrajs = 4
-    iterations = 600 
+    iterations = 600
     gamma = 0.99
-    num_taxis = 100 
+    num_taxis = 100
 
     env = CityTaxiEnv(num_taxis=num_taxis)
     obssize = env.observation_space.shape[0]
@@ -370,13 +388,16 @@ def main():
             done = False
 
             while not done:
-                for i in range(num_taxis): car_obss[i].append(obs[i])
+                for i in range(num_taxis):
+                    car_obss[i].append(obs[i])
                 probs = actor.compute_prob(obs)
-                actions = [np.random.choice(actsize, p=probs[i]/np.sum(probs[i])) for i in range(num_taxis)]
-                for i in range(num_taxis): car_acts[i].append(actions[i])
-                
+                actions = [np.random.choice(actsize, p=probs[i] / np.sum(probs[i])) for i in range(num_taxis)]
+                for i in range(num_taxis):
+                    car_acts[i].append(actions[i])
+
                 obs, rewards, done, _ = env.step(actions)
-                for i in range(num_taxis): car_rews[i].append(rewards[i])
+                for i in range(num_taxis):
+                    car_rews[i].append(rewards[i])
 
             ep_total = 0
             for i in range(num_taxis):
@@ -395,7 +416,8 @@ def main():
         baseline.train(obs_train, val_train)
         v_preds = baseline.compute_values(obs_train).flatten()
         adv = val_train - v_preds
-        if adv.std() > 1e-8: adv = (adv - adv.mean()) / adv.std()
+        if adv.std() > 1e-8:
+            adv = (adv - adv.mean()) / adv.std()
         actor.train(obs_train, acts_train, adv)
 
     test_score = evaluate(actor, env, episodes=20)
@@ -407,6 +429,7 @@ def main():
     # --- NEW: Capture data and Animate ---
     history_data = capture_last_episode_data(actor, env)
     animate_dynamics(env, history_data)
+
 
 if __name__ == "__main__":
     main()
