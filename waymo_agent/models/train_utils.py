@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import typing as t
 from dataclasses import dataclass
 
 import numpy as np
@@ -13,8 +12,8 @@ from waymo_agent.data_classes.space_dicts import ObservationDict
 from waymo_agent.graph_env.ENV import RideShareEnv
 
 DEVICE = torch.device(DEVICE_TORCH_STR)
-if t.TYPE_CHECKING:
-    from .ppo_model import RideShareActorCritic
+
+from .ppo_model import RideShareActorCritic
 
 
 @dataclass
