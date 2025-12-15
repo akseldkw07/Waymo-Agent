@@ -71,6 +71,8 @@ class VehicleDF(EnrichedDF):
     def generate_empty(cls, env: ObservationSpaceMixin) -> VehicleDF:
         idx_offset = env.config.no_action_id + 1  # leave space for no-action vehicle if needed
         idx = np.arange(env.num_vehicles) + idx_offset
+        assert (idx == np.arange(idx_offset, idx_offset + env.num_vehicles)).all()
+
         nodes = env.node_df.sample(env.num_vehicles, replace=True).reset_index(drop=True)
         batteries = np.random.uniform(0.6, 1.0, size=env.num_vehicles)
         status = np.full(shape=env.num_vehicles, fill_value=int(VehicleStatusEnum.IDLE), dtype=np.int8)

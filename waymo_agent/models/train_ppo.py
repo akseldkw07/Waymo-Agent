@@ -7,6 +7,7 @@ import torch
 from tqdm.auto import tqdm
 
 from waymo_agent.constants import DEVICE_TORCH_STR
+from waymo_agent.data_classes.space_dicts import action_torch_to_numpy
 from waymo_agent.graph_env.ENV import RideShareEnv
 from waymo_agent.models.torch_np_utils import stack_dict
 
@@ -14,6 +15,7 @@ DEVICE = torch.device(DEVICE_TORCH_STR)
 
 from .ppo_model import RideShareActorCritic
 from .train_utils import *
+from waymo_agent.models.train_debug import assert_finite_dict, assert_action_validity
 
 
 def train_ppo(
@@ -71,6 +73,16 @@ def train_ppo(
 
             # sample action + compute logp/value on same obs
             act_t = model.act(obs_t, deterministic=False)
+            if train_cfg.debug:
+                assert_finite_dict(obs_t, prefix="obs/")
+                assert_finite_dict(act_t, prefix="act/")
+                assert_action_validity(
+                    act=act_t,
+                    obs=obs_t,
+                    max_pending=env.config.max_pending_requests,
+                    num_veh=env.num_vehicles,
+                    eps_price=1e-6,
+                )
             logp_t, ent_t, v_t = model.log_prob_and_entropy(obs_t, act_t)
             assert torch.isfinite(logp_t).all(), f"logp_t bad: {logp_t}"
             assert torch.isfinite(v_t).all(), f"value bad: {v_t}"

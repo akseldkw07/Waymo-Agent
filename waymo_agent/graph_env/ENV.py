@@ -59,7 +59,7 @@ class RideShareEnv(RenderingMixin, OSMnxWrapperMixin, ObservationSpaceMixin, Act
             self.observation_space.contains(obs_pruned)
         return obs_pruned, self.info
 
-    def step(self, action: ActionDict):  # type: ignore
+    def step(self, action: ActionDict | ActionDictTorch):  # type: ignore
         self._validate_action(action)
 
         reward = 0.0

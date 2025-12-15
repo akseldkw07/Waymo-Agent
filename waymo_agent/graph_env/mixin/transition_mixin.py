@@ -4,11 +4,13 @@ import warnings
 
 import numpy as np
 import pandas as pd
+import torch
 
 from waymo_agent.data_classes import ActionDict, ObservationDict, RequestDF, price_acceptance_probability
 from waymo_agent.data_classes.active_rides import ActiveRideDF
 from waymo_agent.data_classes.enriched_df_base import validate_typed_df_keys
 from waymo_agent.data_classes.requests import RequestStatusEnum
+from waymo_agent.data_classes.space_dicts import ActionDictTorch, action_torch_to_numpy
 from waymo_agent.data_classes.vehicles import VehicleDF, VehicleStatusEnum
 from waymo_agent.graph_env.cost_reward import compute_amortized_reward
 from waymo_agent.graph_env.df_utils import masked_assign
@@ -70,13 +72,14 @@ class TransitionMixin(RewardMixin):
         self.calc_time_normed()
         self.bc_row.update({"step": self.current_step, "timestamp": self.time_dt})
 
-    def get_observation(self, action: ActionDict) -> tuple[ObservationDict, float]:
+    def get_observation(self, action: ActionDict | ActionDictTorch) -> tuple[ObservationDict, float]:
         """
         Construct the observation dictionary from the current environment state. The returned observaion
         is post-transition, i.e., after all updates have been applied for the current step.
 
         Deterministic
         """
+        action = action_torch_to_numpy(action)
         self.observation_prev = self.observation_curr
         del self.observation_curr  # to avoid accidental usage
         self._rewards = {}
@@ -203,7 +206,9 @@ class TransitionMixin(RewardMixin):
         RWD = self.config.shaped_reward_config
         rewards_df = RWD.reward_df_empty(len=len(requests))
 
-        dispatches = action["dispatch"]
+        dispatches = (
+            action["dispatch"].numpy(force=True) if isinstance(action["dispatch"], torch.Tensor) else action["dispatch"]
+        )
         vehicles = self.observation_prev["vehicles"]
 
         vehicle_id = np.full(shape=len(dispatches), fill_value=self.config.no_action_id, dtype=np.int64)
@@ -231,7 +236,7 @@ class TransitionMixin(RewardMixin):
 
         out = rewards_df.copy(deep=True)
         out["vehicle_id"] = vehicle_id
-        out = out[["vehicle_id"] + [col for col in out.columns if col != "vehicle_row"]]
+        out = out[["vehicle_id"] + [col for col in out.columns if col != "vehicle_id"]]
         self._dispatch_debug = out
         return out
 
@@ -279,6 +284,7 @@ class TransitionMixin(RewardMixin):
 
         Deterministic
         """
+
         # 1 - Merge new rides into active rides
         prev_rides = self.observation_prev["active_rides"].copy(deep=True)
         active_rides = ActiveRideDF(prev_rides.copy(deep=True))

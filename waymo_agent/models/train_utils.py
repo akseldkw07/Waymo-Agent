@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import torch
 
 from waymo_agent.constants import DEVICE_TORCH_STR
+from waymo_agent.data_classes.space_dicts import action_torch_to_numpy
 from waymo_agent.graph_env.ENV import RideShareEnv
 from waymo_agent.models.torch_np_utils import obs_pd_to_torch
 
@@ -18,6 +19,7 @@ class PPOTrainConfig:
     """Minimal PPO config tuned for your RideShareEnv shapes."""
 
     total_steps: int = 2_000
+    debug: bool = False
 
     gamma: float = 0.997
     gae_lambda: float = 0.95

@@ -10,6 +10,7 @@ import pandas as pd
 from waymo_agent.data_classes.config import EnvConfig
 from waymo_agent.data_classes.enriched_df_base import EnrichedDF, validate_typed_df_keys
 from waymo_agent.graph_env.cost_reward import compute_operating_cost
+from waymo_agent.graph_env.df_utils import trim_true_mask
 
 if t.TYPE_CHECKING:
     from waymo_agent.data_classes.config_plot import PlotConfig
@@ -196,6 +197,8 @@ class RequestDF(EnrichedDF):
         config = env.config
 
         f_requests = np.random.poisson(lam=env.node_df["lambda"]).astype(bool)
+        if max_req is not None and f_requests.sum() > max_req:
+            f_requests = trim_true_mask(f_requests, max_req, env.np_random)
 
         # CURR_REQ_ID
         new_ids = np.arange(CURR_REQ_ID, CURR_REQ_ID + (num_req := f_requests.sum()))
@@ -225,10 +228,10 @@ class RequestDF(EnrichedDF):
         request_df["status"] = RequestStatusEnum.AWAITING_PRICE.value
         request_df["request_dt"] = pd.to_datetime(env.time_dt)
 
-        if max_req is not None and len(request_df) > max_req:
-            request_df = request_df.sample(max_req)
-
         request_df = RequestDF(request_df[RequestDF.column_order()])
+
+        # Sort by request_id descending so that recent requests appear first
+        request_df.sort_values(by="request_id", inplace=True, ascending=False)
         validate_typed_df_keys(request_df, RequestDF)
 
         return request_df

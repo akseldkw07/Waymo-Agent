@@ -7,6 +7,7 @@ import typing as t
 
 import numpy as np
 import pandas as pd
+import torch
 from scipy.special import expit
 
 from waymo_agent.constants import DATA_DIR
@@ -49,7 +50,7 @@ class CustomerDF(pd.DataFrame):
 
 def price_acceptance_probability(
     requests: RequestDF,
-    prices: np.ndarray,
+    prices: np.ndarray | torch.Tensor,
     supply_demand_ratio_z: float,  # this is a scalar, sigmoid of supply-demand ratio
     config: EnvConfig | None = None,
 ):
@@ -61,6 +62,7 @@ def price_acceptance_probability(
     """
     assert len(requests) == len(prices), f"Length of requests {len(requests)=} != length of prices {len(prices)=}"
     config = config or EnvConfig()
+    prices = prices.numpy(force=True) if isinstance(prices, torch.Tensor) else prices
 
     profit_margin = (prices - requests["est_cost"]) / (requests["est_cost"] + 1e-5)
 

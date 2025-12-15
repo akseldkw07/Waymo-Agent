@@ -4,18 +4,21 @@ from abc import ABC, abstractmethod
 
 import torch
 import torch.nn as nn
+from torch.distributions import TransformedDistribution, ExponentialFamily, Categorical
 
 
 class SubActorHeadNN(nn.Module, ABC):
     @abstractmethod
-    def dist(self, h: torch.Tensor, obs: dict[str, torch.Tensor] | None = None):
+    def dist(
+        self, h: torch.Tensor, obs: dict[str, torch.Tensor] | None = None
+    ) -> TransformedDistribution | ExponentialFamily | Categorical:
         """Return a torch Distribution (or something equivalent) parameterized by h."""
         raise NotImplementedError
 
     @torch.no_grad()
     def act(self, h: torch.Tensor, obs: dict[str, torch.Tensor] | None = None, deterministic: bool = False):
         d = self.dist(h, obs)
-        return d.mode if deterministic and hasattr(d, "mode") else (d.sample() if deterministic else d.rsample())
+        return d.mode if deterministic and hasattr(d, "mode") else d.sample()
 
     @abstractmethod
     def log_prob_and_entropy(self, h: torch.Tensor, action: torch.Tensor, obs: dict[str, torch.Tensor] | None = None):

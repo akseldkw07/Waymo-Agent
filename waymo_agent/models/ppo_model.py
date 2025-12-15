@@ -13,9 +13,8 @@ from waymo_agent.graph_env.ENV import RideShareEnv
 from waymo_agent.models.submodel_dispatch import DispatchHead
 from waymo_agent.models.submodel_reposition import RepositionHead
 
-from .submodel_pricing import PricingHead
-
 from .submodel_base import SharedEncoder
+from .submodel_pricing import PricingHead
 from .torch_np_utils import _flat_obs
 
 DEVICE = torch.device(DEVICE_TORCH_STR)
@@ -98,6 +97,7 @@ class RideShareActorCritic(nn.Module):
         self.dispatch = DispatchHead(hidden, self.max_pending, self.num_veh)  # masking lives here
 
         self.value = nn.Linear(hidden, 1)
+        self.to(DEVICE)
 
     def forward(self, obs: dict[str, torch.Tensor]):
         x = _flat_obs(obs)

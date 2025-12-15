@@ -7,7 +7,8 @@ from tqdm.auto import tqdm
 from waymo_agent import RideShareEnv
 from waymo_agent.action_heuristic.heuristic_simple import DispatchAgent, PricingAgent, RepositionAgent
 from waymo_agent.data_classes.space_dicts import ActionDict, ObservationDict
-from waymo_agent.models.torch_np_utils import action_torch_to_numpy, obs_pd_to_torch
+from waymo_agent.models.torch_np_utils import obs_pd_to_torch
+from waymo_agent.data_classes.space_dicts import action_torch_to_numpy
 
 
 def get_act_dict(agents: tuple[PricingAgent, DispatchAgent, RepositionAgent], obs: ObservationDict) -> ActionDict:
