@@ -3,6 +3,7 @@ from __future__ import annotations
 import typing as t
 from pathlib import Path
 
+from attr import dataclass
 import torch
 import torch.nn as nn
 from torch.distributions import Categorical, LogNormal, Normal
@@ -92,6 +93,10 @@ class TanhNormal:
 
     def entropy(self):
         return None
+
+
+@dataclass
+class ActorCriticConfig: ...
 
 
 class RideShareActorCritic(nn.Module):
