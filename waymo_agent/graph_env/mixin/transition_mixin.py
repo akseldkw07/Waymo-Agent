@@ -230,8 +230,8 @@ class TransitionMixin(RewardMixin):
                 vehicle_id[req_idx] = veh_idx
 
         out = rewards_df.copy(deep=True)
-        out["vehicle_row"] = vehicle_id
-        out = out[["vehicle_row"] + [col for col in out.columns if col != "vehicle_row"]]
+        out["vehicle_id"] = vehicle_id
+        out = out[["vehicle_id"] + [col for col in out.columns if col != "vehicle_row"]]
         self._dispatch_debug = out
         return out
 
