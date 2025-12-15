@@ -5,7 +5,7 @@ import torch.nn as nn
 from torch.distributions import LogNormal
 
 from waymo_agent.data_classes.config import EnvConfig
-from waymo_agent.models.sub_actor import SubActorHeadNN
+from waymo_agent.models.submodel_base import SubActorHeadNN
 
 
 class PricingHead(SubActorHeadNN):

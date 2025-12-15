@@ -8,6 +8,7 @@ from tqdm.auto import tqdm
 
 from waymo_agent.constants import DEVICE_TORCH_STR
 from waymo_agent.graph_env.ENV import RideShareEnv
+from waymo_agent.models.torch_np_utils import stack_dict
 
 DEVICE = torch.device(DEVICE_TORCH_STR)
 
@@ -99,12 +100,12 @@ def train_ppo(
         # bootstrap value from final obs
         with torch.no_grad():
             obs_last_t = obs_pd_to_torch(obs_np)
-            v_last = model.forward(obs_last_t)["value"].detach()
+            h_last, v_last = model.forward(obs_last_t)
 
         T = len(rew_buf)
         rewards = torch.as_tensor(rew_buf, device=DEVICE, dtype=torch.float32)  # (T,)
         dones = torch.as_tensor(done_buf, device=DEVICE, dtype=torch.float32)  # (T,)
-        values = torch.stack(val_buf + [v_last], dim=0).view(T + 1)  # (T+1,)
+        values = torch.stack(val_buf + [v_last.detach()], dim=0).view(T + 1)  # (T+1,)
         old_logp = torch.stack(logp_buf, dim=0).view(T)  # (T,)
 
         adv, rets = compute_gae(rewards, values, dones, train_cfg.gamma, train_cfg.gae_lambda)

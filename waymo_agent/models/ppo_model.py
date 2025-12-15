@@ -10,9 +10,12 @@ from torch.distributions import Normal
 from waymo_agent.constants import DEVICE_TORCH_STR
 from waymo_agent.data_classes.space_dicts import ActionDict, ObservationDict
 from waymo_agent.graph_env.ENV import RideShareEnv
+from waymo_agent.models.submodel_dispatch import DispatchHead
+from waymo_agent.models.submodel_reposition import RepositionHead
 
-from .pricing_model import PricingHead
-from .sub_actor import SharedEncoder
+from .submodel_pricing import PricingHead
+
+from .submodel_base import SharedEncoder
 from .torch_np_utils import _flat_obs
 
 DEVICE = torch.device(DEVICE_TORCH_STR)
@@ -61,6 +64,7 @@ class ActorCriticConfig: ...
 class RideShareActorCritic(nn.Module):
     def __init__(self, env: RideShareEnv, hidden: int = 256):
         super().__init__()
+        self.env = env
         self.max_pending = env.config.max_pending_requests
         self.num_veh = env.num_vehicles
         self.dispatch_n = self.num_veh + 1  # 25 (includes "no-action")
@@ -82,7 +86,7 @@ class RideShareActorCritic(nn.Module):
 
         self.encoder = SharedEncoder(obs_dim, hidden)
 
-        self.pricing = PricingHead(hidden, self.max_pending)
+        self.pricing = PricingHead(hidden, self.env.config)
 
         # placeholders for your next heads
         self.reposition = RepositionHead(hidden, self.num_veh)  # you’ll implement similarly
