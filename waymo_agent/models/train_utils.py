@@ -18,7 +18,7 @@ from .ppo_model import RideShareActorCritic
 class PPOTrainConfig:
     """Minimal PPO config tuned for your RideShareEnv shapes."""
 
-    total_steps: int = 2_000
+    total_steps: int = 20_000
     debug: bool = False
 
     gamma: float = 0.997
@@ -30,7 +30,7 @@ class PPOTrainConfig:
     ent_coef: float = 0.01
     max_grad_norm: float = 0.5
 
-    update_epochs: int = 4
+    update_epochs: int = 5
     minibatch_size: int = 256
 
     deterministic_eval: bool = True
