@@ -58,11 +58,16 @@ class TanhNormal:
 
 
 @dataclass
-class ActorCriticConfig: ...
+class ActorCriticConfig:
+    hidden_size: int = 256
 
 
 class RideShareActorCritic(nn.Module):
-    def __init__(self, env: RideShareEnv, hidden: int = 256):
+    model_cfg: ActorCriticConfig
+
+    def __init__(self, env: RideShareEnv, model_cfg: ActorCriticConfig | None = None):
+        self.model_cfg = model_cfg or ActorCriticConfig()
+        hidden = self.model_cfg.hidden_size
         super().__init__()
         self.env = env
         self.max_pending = env.config.max_pending_requests
