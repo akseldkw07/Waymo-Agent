@@ -2,9 +2,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
 import torch
 
 from waymo_agent.constants import DEVICE_TORCH_STR
+from waymo_agent.data_classes.enriched_df_base import EnrichedDF
+from waymo_agent.data_classes.space_dicts import ObservationDict
 
 DEVICE = torch.device(DEVICE_TORCH_STR)
 
@@ -49,3 +53,48 @@ def _flat_obs(obs: dict[str, torch.Tensor]) -> torch.Tensor:
 def _to_device(d: dict[str, torch.Tensor], device: torch.device = DEVICE) -> dict[str, torch.Tensor]:
     """Move all tensors in a dict to the desired device."""
     return {k: v.to(device, non_blocking=True) for k, v in d.items()}
+
+
+def action_torch_to_numpy(action: dict[str, torch.Tensor]) -> dict[str, np.ndarray]:
+    """Convert model action (torch) -> env action (numpy) with expected dtypes."""
+    return {
+        "prices": action["prices"].detach().cpu().numpy().astype(np.float64),
+        "reposition": action["reposition"].detach().cpu().numpy().astype(np.float32),
+        "dispatch": action["dispatch"].detach().cpu().numpy().astype(np.int64),
+    }
+
+
+def stack_dict(buf: list[dict[str, torch.Tensor]]) -> dict[str, torch.Tensor]:
+    """Stack list of dict[tensor] into dict[tensor] with leading time/batch dim."""
+    keys = buf[0].keys()
+    return {k: torch.stack([b[k] for b in buf], dim=0) for k in keys}
+
+
+def obs_pd_to_torch(obs: ObservationDict) -> dict[str, torch.Tensor]:
+    """Convert env obs (numpy | pd.DataFrame | EnrichedDF) -> finite float32 tensors on DEVICE."""
+    ret: dict[str, torch.Tensor] = {}
+
+    for k, v in obs.items():
+        # Preferred path: EnrichedDF knows how to produce a numeric training view
+        if isinstance(v, EnrichedDF):
+            arr = v.to_obs_numpy()
+
+        # Raw pandas df (should be rare if prune_obs_dict_gymnasium is used)
+        elif isinstance(v, pd.DataFrame):
+            arr = v.to_numpy()
+        else:
+            # Already a numpy array from prune_obs_dict_gymnasium
+            arr = v
+
+        try:
+            tns = torch.as_tensor(arr, device=DEVICE, dtype=torch.float32)
+        except Exception as e:
+            dtype_str = getattr(arr, "dtype", type(arr))
+            raise ValueError(f"Failed to convert obs key '{k}' with dtype/type {dtype_str} to tensor.") from e
+
+        # Critical: PPO must never see NaN/inf features
+        tns = torch.nan_to_num(tns, nan=0.0, posinf=0.0, neginf=0.0)
+
+        ret[k] = tns
+
+    return ret

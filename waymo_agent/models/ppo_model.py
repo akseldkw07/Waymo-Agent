@@ -92,8 +92,8 @@ class RideShareActorCritic(nn.Module):
 
     def forward(self, obs: dict[str, torch.Tensor]):
         x = _flat_obs(obs)
-        h = self.encoder(x)
-        v = self.value(h).squeeze(-1)
+        h: torch.Tensor = self.encoder(x)
+        v: torch.Tensor = self.value(h).squeeze(-1)
         return h, v
 
     @torch.no_grad()

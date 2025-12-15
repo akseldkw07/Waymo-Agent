@@ -1,20 +1,19 @@
 from __future__ import annotations
 
-
 import torch
 import torch.nn as nn
 from torch.distributions import LogNormal
 
+from waymo_agent.data_classes.config import EnvConfig
 from waymo_agent.models.sub_actor import SubActorHeadNN
 
 
 class PricingHead(SubActorHeadNN):
-    def __init__(self, hidden: int, max_pending: int, init_logstd: float = -0.5):
+    def __init__(self, hidden: int, cfg: EnvConfig, init_logstd: float = -0.5):
         super().__init__()
-        self.max_pending = max_pending
-        self.mu = nn.Linear(hidden, max_pending)
-        self.logstd = nn.Parameter(torch.full((max_pending,), init_logstd))
-
+        self.max_pending = cfg.max_pending_requests
+        self.mu = nn.Linear(hidden, self.max_pending)
+        self.logstd = nn.Parameter(torch.full((self.max_pending,), init_logstd))
         # “masked” prices should still be valid for log_prob
         self.eps_price = 1.0
 

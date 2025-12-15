@@ -230,8 +230,8 @@ class TransitionMixin(RewardMixin):
                 vehicle_id[req_idx] = veh_idx
 
         out = rewards_df.copy(deep=True)
-        out["vehicle_id"] = vehicle_id
-        out = out[["vehicle_id"] + [col for col in out.columns if col != "vehicle_id"]]
+        out["vehicle_row"] = vehicle_id
+        out = out[["vehicle_row"] + [col for col in out.columns if col != "vehicle_row"]]
         self._dispatch_debug = out
         return out
 
@@ -423,7 +423,8 @@ class TransitionMixin(RewardMixin):
         """Vehicles and Active Rides"""
 
         # Check that vehicles and active rides are aligned
-        veh_ride_sanity_df["vehicle_id"] = vehicles["vehicle_id"] == active_rides["vehicle_id"]
+        veh_ride_sanity_df["veh_id_eq_req_id"] = vehicles["vehicle_id"] == active_rides["vehicle_id"]
+        veh_ride_sanity_df["veh_idx_start_0"] = vehicles["vehicle_id"].to_numpy() == np.arange(len(vehicles))
         veh_ride_sanity_df["ride_id"] = vehicles["ride_id"] == active_rides["ride_id"]
         veh_ride_sanity_df["validity_veh_ride"] = vehicles.f_should_have_ride_id == active_rides.f_valid
 
