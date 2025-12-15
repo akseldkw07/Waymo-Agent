@@ -12,6 +12,7 @@ from waymo_agent.models.torch_np_utils import obs_pd_to_torch
 DEVICE = torch.device(DEVICE_TORCH_STR)
 
 from .ppo_model import RideShareActorCritic
+from tqdm.auto import tqdm
 
 
 @dataclass
@@ -81,6 +82,7 @@ def evaluate_policy(
     """Average episodic reward (undiscounted)."""
     model.eval()
     total = 0.0
+    eval_bar = tqdm(total=episodes, desc="PPO evaluation episodes", leave=False, position=1, unit="episodes")
     for _ in range(episodes):
         obs_np, _ = env.reset()
         done = False
@@ -92,4 +94,6 @@ def evaluate_policy(
             ep += float(r)
             done = bool(term) or bool(trunc)
         total += ep
+        eval_bar.update(1)
+    eval_bar.close()
     return total / float(episodes)

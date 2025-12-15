@@ -133,8 +133,10 @@ def train_ppo(
         loss_u = pl_u = vl_u = ent_u = kl_u = clip_u = 0.0
         n_mb = 0
 
-        eval_bar = tqdm(range(train_cfg.update_epochs), desc="PPO update epochs", leave=True, position=1)
-        for _ep in eval_bar:
+        # Nested bar for PPO update epochs
+        eval_bar = tqdm(total=train_cfg.update_epochs, desc="PPO update epochs", leave=False, position=1, unit="epoch")
+
+        for _ep in range(train_cfg.update_epochs):
             perm = idxs[torch.randperm(T, device=DEVICE)]
             for start in range(0, T, train_cfg.minibatch_size):
                 mb = perm[start : start + train_cfg.minibatch_size]
@@ -176,6 +178,9 @@ def train_ppo(
                 clip_u += float(clip_frac)
                 n_mb += 1
 
+            eval_bar.update(1)
+        eval_bar.close()
+
         if n_mb > 0:
             logs["loss"].append(loss_u / n_mb)
             logs["policy_loss"].append(pl_u / n_mb)
@@ -191,6 +196,7 @@ def train_ppo(
             logs["eval_return"].append(eval_ret)
             eval_bar.set_postfix({"update": update_idx, "eval_return": f"{eval_ret:.3f}"})
             eval_bar.refresh()
+            tqdm.write(f"[eval] update={update_idx}  eval_return={eval_ret:.3f}")
             pbar.set_postfix({"eval_return": f"{eval_ret:.3f}"})
 
             if eval_ret > best_eval_return + train_cfg.min_delta:
