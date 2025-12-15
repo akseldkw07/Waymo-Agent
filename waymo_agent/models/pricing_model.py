@@ -1,52 +1,60 @@
 from __future__ import annotations
 
-import typing as t
-from pathlib import Path
 
 import torch
 import torch.nn as nn
-from torch.distributions import Categorical, LogNormal, Normal
+from torch.distributions import LogNormal
+
+from waymo_agent.models.sub_actor import SubActorHeadNN
 
 
-from waymo_agent.constants import DEVICE_TORCH_STR
-from waymo_agent.data_classes.space_dicts import ActionDict, ObservationDict
-from waymo_agent.graph_env.ENV import RideShareEnv
-from waymo_agent.models.sub_actor import SubActorNN
-
-DEVICE = torch.device(DEVICE_TORCH_STR)
-
-
-class PricingModel(SubActorNN):
-    """
-    Actor-Critic for:
-      prices:     Box(0, inf, (50,))
-    """
-
-    def __init__(self, env: RideShareEnv, hidden: int = 256):
+class PricingHead(SubActorHeadNN):
+    def __init__(self, hidden: int, max_pending: int, init_logstd: float = -0.5):
         super().__init__()
-        self.max_pending = env.config.max_pending_requests
-        self.num_veh = env.num_vehicles
-        self.dispatch_n = self.num_veh + 1  # 25 (includes "no-action")
-        self.obs_space = t.cast(ObservationDict, env.observation_space)
-        self.action_space = t.cast(ActionDict, env.action_space)
+        self.max_pending = max_pending
+        self.mu = nn.Linear(hidden, max_pending)
+        self.logstd = nn.Parameter(torch.full((max_pending,), init_logstd))
 
-    def forward(self, obs: dict[str, torch.Tensor]):
-        """
-        Take observation dict and return pricing
-        """
-        raise NotImplementedError("PricingModel.forward is not implemented yet.")
+        # “masked” prices should still be valid for log_prob
+        self.eps_price = 1.0
+
+    def dist(self, h: torch.Tensor, obs: dict[str, torch.Tensor] | None = None):
+        mu = self.mu(h).clamp(min=-2.0, max=10.0)  # stabilize
+        sigma = torch.exp(self.logstd).clamp(1e-4, 10.0)  # stabilize
+        return LogNormal(mu, sigma)
 
     @torch.no_grad()
-    def act(self, obs: dict[str, torch.Tensor], deterministic: bool = False) -> torch.Tensor:
-        """
-        Take observation dict and return pricing
-        """
-        raise NotImplementedError("PricingModel.act is not implemented yet.")
+    def act(self, h: torch.Tensor, obs: dict[str, torch.Tensor] | None = None, deterministic: bool = False):
+        d = self.dist(h, obs)
+        if deterministic:
+            # LogNormal median = exp(mu)
+            a = torch.exp(self.mu(h).clamp(min=-2.0, max=10.0))
+        else:
+            a = d.rsample()
 
-    def log_prob_and_entropy(
-        self, obs: dict[str, torch.Tensor], actions: torch.Tensor
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        """
-        Take observation dict and actions and return log probs and entropy
-        """
-        raise NotImplementedError("PricingModel.log_prob_and_entropy is not implemented yet.")
+        a = torch.nan_to_num(a, nan=self.eps_price, posinf=1e6, neginf=self.eps_price)
+        a = a.clamp(min=self.eps_price)
+
+        if obs is not None and "pricing_mask" in obs:
+            pm = obs["pricing_mask"].to(device=a.device, dtype=a.dtype)  # (..., 50)
+            a = torch.where(pm > 0.0, a, a.new_full(a.shape, self.eps_price))
+
+        return a
+
+    def log_prob_and_entropy(self, h: torch.Tensor, action: torch.Tensor, obs: dict[str, torch.Tensor] | None = None):
+        d = self.dist(h, obs)
+        a = action.to(device=h.device, dtype=torch.float32)
+        a = torch.nan_to_num(a, nan=1e-6, posinf=1e6, neginf=1e-6).clamp(min=1e-6)
+
+        logp = d.log_prob(a)  # (..., 50)
+        ent = d.entropy()  # (..., 50)
+
+        if obs is not None and "pricing_mask" in obs:
+            pm = obs["pricing_mask"].to(device=logp.device, dtype=logp.dtype)
+            logp = (logp * pm).sum(dim=-1)
+            ent = (ent * pm).sum(dim=-1)
+        else:
+            logp = logp.sum(dim=-1)
+            ent = ent.sum(dim=-1)
+
+        return logp, ent

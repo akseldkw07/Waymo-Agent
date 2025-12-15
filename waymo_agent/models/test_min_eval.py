@@ -3,7 +3,7 @@ import torch
 
 from waymo_agent.data_classes.requests import RequestStatusEnum
 from waymo_agent.graph_env.ENV import EnvConfig, RideShareEnv
-from waymo_agent.models.ppo_model import RideShareActorCritic, action_torch_to_numpy, obs_pd_to_torch, DEVICE
+from waymo_agent.models.ppo_model import DEVICE, RideShareActorCritic, action_torch_to_numpy, obs_pd_to_torch
 
 
 def _make_env_and_model():

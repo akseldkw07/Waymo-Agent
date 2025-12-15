@@ -1,37 +1,39 @@
 from __future__ import annotations
 
-from abc import abstractmethod
-from turtle import forward
-import typing as t
-from pathlib import Path
+from abc import ABC, abstractmethod
 
 import torch
 import torch.nn as nn
-from torch.distributions import Categorical, LogNormal, Normal
 
 
-from waymo_agent.constants import DEVICE_TORCH_STR
-from waymo_agent.data_classes.space_dicts import ActionDict, ObservationDict
-from waymo_agent.graph_env.ENV import RideShareEnv
-
-
-DEVICE = torch.device(DEVICE_TORCH_STR)
-
-
-class SubActorNN(nn.Module):
-    """ """
-
+class SubActorHeadNN(nn.Module, ABC):
     @abstractmethod
-    def forward(self, obs: dict[str, torch.Tensor]) -> torch.Tensor:
-        pass
+    def dist(self, h: torch.Tensor, obs: dict[str, torch.Tensor] | None = None):
+        """Return a torch Distribution (or something equivalent) parameterized by h."""
+        raise NotImplementedError
 
     @torch.no_grad()
-    @abstractmethod
-    def act(self, obs: dict[str, torch.Tensor], deterministic: bool = False) -> torch.Tensor:
-        pass
+    def act(self, h: torch.Tensor, obs: dict[str, torch.Tensor] | None = None, deterministic: bool = False):
+        d = self.dist(h, obs)
+        return d.mode if deterministic and hasattr(d, "mode") else (d.sample() if deterministic else d.rsample())
 
     @abstractmethod
-    def log_prob_and_entropy(
-        self, obs: dict[str, torch.Tensor], actions: torch.Tensor
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        pass
+    def log_prob_and_entropy(self, h: torch.Tensor, action: torch.Tensor, obs: dict[str, torch.Tensor] | None = None):
+        raise NotImplementedError
+
+
+class SharedEncoder(nn.Module):
+    def __init__(self, obs_dim: int, hidden: int = 256):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(obs_dim, hidden),
+            nn.ReLU(),
+            nn.Linear(hidden, hidden),
+            nn.ReLU(),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = torch.nan_to_num(x, nan=0.0, posinf=0.0, neginf=0.0)
+        h = self.net(x)
+        h = torch.nan_to_num(h, nan=0.0, posinf=0.0, neginf=0.0)
+        return h

@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+from pathlib import Path
 
 import numpy as np
 import torch
 from tqdm.auto import tqdm
+
 from waymo_agent.constants import DEVICE_TORCH_STR
 from waymo_agent.graph_env.ENV import RideShareEnv
-from pathlib import Path
 
 DEVICE = torch.device(DEVICE_TORCH_STR)
 

@@ -1,0 +1,51 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+import torch
+
+from waymo_agent.constants import DEVICE_TORCH_STR
+
+DEVICE = torch.device(DEVICE_TORCH_STR)
+
+
+def save_weights(model: torch.nn.Module, path: str | Path) -> None:
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    torch.save(model.state_dict(), path)
+
+
+def load_weights(model: torch.nn.Module, path: str | Path, device: str | torch.device = "cpu") -> torch.nn.Module:
+    state = torch.load(path, map_location=device)
+    model.load_state_dict(state)
+    model.to(device)
+    return model
+
+
+def _flat_obs(obs: dict[str, torch.Tensor]) -> torch.Tensor:
+    """
+    obs keys (per your space):
+      globals:            (5,)
+      supply_demand_ratio:(3,)
+      vehicles:           (24,4)
+      pending_requests:   (50,9)
+      active_rides:       (24,9)
+      dispatch_mask:      (24,)
+      pricing_mask:       (50,)
+    Returns: flat vector (batch, D) or (D,) if unbatched.
+    """
+    parts = [
+        obs["globals"].reshape(obs["globals"].shape[:-1] + (-1,)),
+        obs["supply_demand_ratio"].reshape(obs["supply_demand_ratio"].shape[:-1] + (-1,)),
+        obs["vehicles"].reshape(obs["vehicles"].shape[:-2] + (-1,)),
+        obs["pending_requests"].reshape(obs["pending_requests"].shape[:-2] + (-1,)),
+        obs["active_rides"].reshape(obs["active_rides"].shape[:-2] + (-1,)),
+        obs["dispatch_mask"].reshape(obs["dispatch_mask"].shape[:-1] + (-1,)),
+        obs["pricing_mask"].reshape(obs["pricing_mask"].shape[:-1] + (-1,)),
+    ]
+    return torch.cat(parts, dim=-1)
+
+
+def _to_device(d: dict[str, torch.Tensor], device: torch.device = DEVICE) -> dict[str, torch.Tensor]:
+    """Move all tensors in a dict to the desired device."""
+    return {k: v.to(device, non_blocking=True) for k, v in d.items()}
