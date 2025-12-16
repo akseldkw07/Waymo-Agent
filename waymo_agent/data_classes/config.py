@@ -84,3 +84,12 @@ class EnvConfig:
     # Verbose Rewards
     verbose_rewards: bool = True
     shaped_reward_config: RewardShapingConfig = field(default_factory=RewardShapingConfig)
+
+
+ENV_CFG_240step_V08_L01_MR_100_MRNew_20 = EnvConfig(
+    max_episode_steps=60 * 4,
+    vehicle_per_node=0.08,
+    lambda_per_node=0.01,
+    max_pending_requests=100,
+    max_new_requests_per_step=20,
+)

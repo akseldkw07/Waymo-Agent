@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import signal
 from pathlib import Path
 
 import numpy as np
@@ -38,6 +39,16 @@ def train_ppo(
     model.to(DEVICE)
 
     optim = torch.optim.Adam(model.parameters(), lr=train_cfg.lr)
+
+    # Set up graceful interrupt handling
+    interrupted = False
+
+    def signal_handler(_sig, _frame):
+        nonlocal interrupted
+        interrupted = True
+        tqdm.write("\nKeyboard interrupt received. Finishing current update...")
+
+    _original_handler = signal.signal(signal.SIGINT, signal_handler)
 
     logs: dict[str, list[float]] = {
         "loss": [],
@@ -219,5 +230,14 @@ def train_ppo(
                     pbar.set_postfix({"stopped": "early", "best_eval": f"{best_eval_return:.3f}"})
                     break
         update_idx += 1
+
+        # Check for interrupt at the end of each update
+        if interrupted:
+            tqdm.write(f"Training interrupted at step {steps_done}/{train_cfg.total_steps}")
+            break
+
+    # Restore original signal handler
+    signal.signal(signal.SIGINT, _original_handler)
+    pbar.close()
 
     return model, logs

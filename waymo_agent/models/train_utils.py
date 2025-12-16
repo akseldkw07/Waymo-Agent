@@ -45,6 +45,8 @@ class PPOTrainConfig:
     save_best: bool = True
 
 
+PPO_TRN_CFG_TS5k_Debug_EvalEp2 = PPOTrainConfig(total_steps=5_000, eval_every_updates=1, eval_episodes=2, debug=True)
+
 # =========================================================
 # PPO training loop for RideShareEnv
 # =========================================================

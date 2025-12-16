@@ -98,6 +98,7 @@ class RideShareActorCritic(nn.Module):
 
         self.value = nn.Linear(hidden, 1)
         self.to(DEVICE)
+        self.device = DEVICE
 
     def forward(self, obs: dict[str, torch.Tensor]):
         x = _flat_obs(obs)

@@ -18,7 +18,7 @@ def save_weights(model: torch.nn.Module, path: str | Path) -> None:
     torch.save(model.state_dict(), path)
 
 
-def load_weights(model: torch.nn.Module, path: str | Path, device: str | torch.device = "cpu") -> torch.nn.Module:
+def load_weights(model: torch.nn.Module, path: str | Path, device: str | torch.device = "mps") -> torch.nn.Module:
     state = torch.load(path, map_location=device)
     model.load_state_dict(state)
     model.to(device)
