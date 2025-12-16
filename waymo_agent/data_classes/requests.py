@@ -10,6 +10,7 @@ import pandas as pd
 from waymo_agent.data_classes.config import EnvConfig
 from waymo_agent.data_classes.enriched_df_base import EnrichedDF, validate_typed_df_keys
 from waymo_agent.graph_env.cost_reward import compute_operating_cost
+from waymo_agent.graph_env.df_utils import trim_true_mask
 
 if t.TYPE_CHECKING:
     from waymo_agent.data_classes.config_plot import PlotConfig
@@ -59,17 +60,17 @@ class RequestDF(EnrichedDF):
 
     max_wait_time: np.timedelta64
     wait_time: pd.Series
-    status: pd.Series  # RequestStatusEnum value
+    status: pd.Series  # RequestStatusEnum value as int
     target_dtypes = {
         "request_id": np.int64,
-        "request_dt": np.datetime64,  # datetime64[ns]
+        "request_dt": "datetime64[ns]",  # datetime64[ns]
         "cust_id": np.int64,
         "cust_bias": np.float64,
         "cust_temperature": np.float64,
         "est_cost": np.float64,
         "price": np.float64,
-        "max_wait_time": np.timedelta64,
-        "wait_time": np.timedelta64,
+        "max_wait_time": "timedelta64[ns]",
+        "wait_time": "timedelta64[ns]",
         "status": np.int64,
         "pickup_node_id": np.int64,
         "pickup_x_norm": np.float64,
@@ -88,8 +89,25 @@ class RequestDF(EnrichedDF):
         "wait_time": 0,
         "price": -1.0,
         "est_cost": -1.0,
-        "status": RequestStatusEnum.INVALID,
+        "status": RequestStatusEnum.INVALID.value,
     }
+
+    # Training view (based on define_observation_space docstring):
+    # [pickup_x_norm, pickup_y_norm, dropoff_x_norm, dropoff_y_norm,
+    #  distance_meters, est_cost, max_wait_time, wait_time] + status_one_hot
+    cols_to_pass_to_model: t.ClassVar[list[str]] = [
+        "pickup_x_norm",
+        "pickup_y_norm",
+        "dropoff_x_norm",
+        "dropoff_y_norm",
+        "distance_meters",
+        "cust_bias",
+        "cust_temperature",
+        "est_cost",
+        "max_wait_time",
+        "wait_time",
+        "status",
+    ]
 
     @property
     def f_valid(self):
@@ -146,21 +164,6 @@ class RequestDF(EnrichedDF):
         valid_types_asint = [e.value for e in plt_cfg.request_status_colors.keys() if isinstance(e, RequestStatusEnum)]
         return np.isin(self.status, valid_types_asint)
 
-    # Training view (based on define_observation_space docstring):
-    # [pickup_x_norm, pickup_y_norm, dropoff_x_norm, dropoff_y_norm,
-    #  distance_meters, est_cost, max_wait_time, wait_time] + status_one_hot
-    cols_to_keep: t.ClassVar[list[str]] = [
-        "pickup_x_norm",
-        "pickup_y_norm",
-        "dropoff_x_norm",
-        "dropoff_y_norm",
-        "distance_meters",
-        "est_cost",
-        "max_wait_time",
-        "wait_time",
-        "status",
-    ]
-
     @staticmethod
     def space_config(config: EnvConfig):
         cls = RequestDF
@@ -194,6 +197,8 @@ class RequestDF(EnrichedDF):
         config = env.config
 
         f_requests = np.random.poisson(lam=env.node_df["lambda"]).astype(bool)
+        if max_req is not None and f_requests.sum() > max_req:
+            f_requests = trim_true_mask(f_requests, max_req, env.np_random)
 
         # CURR_REQ_ID
         new_ids = np.arange(CURR_REQ_ID, CURR_REQ_ID + (num_req := f_requests.sum()))
@@ -220,13 +225,13 @@ class RequestDF(EnrichedDF):
         request_df["price"] = np.nan
         request_df["max_wait_time"] = pd.Timedelta(minutes=config.max_wait_time_minutes)
         request_df["wait_time"] = pd.Timedelta(0)
-        request_df["status"] = RequestStatusEnum.AWAITING_PRICE
+        request_df["status"] = RequestStatusEnum.AWAITING_PRICE.value
         request_df["request_dt"] = pd.to_datetime(env.time_dt)
 
-        if max_req is not None and len(request_df) > max_req:
-            request_df = request_df.sample(max_req)
-
         request_df = RequestDF(request_df[RequestDF.column_order()])
+
+        # Sort by request_id descending so that recent requests appear first
+        request_df.sort_values(by="request_id", inplace=True, ascending=False)
         validate_typed_df_keys(request_df, RequestDF)
 
         return request_df

@@ -2,7 +2,7 @@ import typing as t
 
 import numpy as np
 
-from waymo_agent.data_classes import ActiveRideDF, EnvConfig, RequestDF, VehicleDF, SupplyDemandDF
+from waymo_agent.data_classes import ActiveRideDF, EnvConfig, RequestDF, SupplyDemandDF, VehicleDF
 
 if t.TYPE_CHECKING:
     from waymo_agent.graph_env.mixin import ObservationSpaceMixin, TransitionMixin

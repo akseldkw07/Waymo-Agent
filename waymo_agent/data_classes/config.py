@@ -71,9 +71,9 @@ class EnvConfig:
     max_chargers_per_node: int = 1
 
     # Rewards & Penalties
-    penalty_rejected: float = -1.0
-    penalty_expire: float = -2.0
-    penalty_overflow: float = -1.5
+    penalty_rejected: float = -0.01
+    penalty_expire: float = -0.5
+    penalty_overflow: float = 0  # not used
     reward_frac_ride_completion: float = 15.0  # fraction of ride price rewarded upon ride completion
     operating_cost_per_km: float = 1.0
 
@@ -84,3 +84,12 @@ class EnvConfig:
     # Verbose Rewards
     verbose_rewards: bool = True
     shaped_reward_config: RewardShapingConfig = field(default_factory=RewardShapingConfig)
+
+
+ENV_CFG_240step_V08_L01_MR_100_MRNew_20 = EnvConfig(
+    max_episode_steps=60 * 4,
+    vehicle_per_node=0.08,
+    lambda_per_node=0.01,
+    max_pending_requests=100,
+    max_new_requests_per_step=20,
+)

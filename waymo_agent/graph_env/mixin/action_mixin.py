@@ -4,12 +4,12 @@ Define action space and apply actions to the environment.
 
 from __future__ import annotations
 
+import numpy as np
 from gymnasium import spaces
 
 from waymo_agent.data_classes import ActionDict, validate_keys
 
 from .interface import GymEnvInterface
-import numpy as np
 
 
 class ActionMixin(GymEnvInterface):

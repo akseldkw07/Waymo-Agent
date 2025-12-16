@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import enum
 import typing as t
 
 import numpy as np
@@ -51,7 +50,7 @@ class ActiveRideDF(EnrichedDF):
     # [pickup_x_norm, pickup_y_norm, dropoff_x_norm, dropoff_y_norm,
     #  price, total_trip_distance_meters, trip_distance_remaining_meters,
     #  pickup_distance_remaining_meters] -> 8 dims, no enums.
-    cols_to_keep: t.ClassVar[list[str]] = [
+    cols_to_pass_to_model: t.ClassVar[list[str]] = [
         "pickup_x_norm",
         "pickup_y_norm",
         "dropoff_x_norm",
@@ -62,7 +61,6 @@ class ActiveRideDF(EnrichedDF):
         "trip_distance_remaining_meters",
         "pickup_distance_remaining_meters",
     ]
-    enum_fields: t.ClassVar[dict[str, type[enum.IntEnum]]] = {}
     target_dtypes = {
         "ride_id": np.int64,
         "vehicle_id": np.int64,

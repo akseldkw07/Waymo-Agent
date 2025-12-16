@@ -1,8 +1,9 @@
-from math import ceil
 import typing as t
+from math import ceil
 
 import numpy as np
 import pandas as pd
+
 from waymo_agent.data_classes import EnvConfig, RequestDF, VehicleDF
 from waymo_agent.data_classes.enriched_df_base import EnrichedDF
 
@@ -15,7 +16,7 @@ class SupplyDemandDF(EnrichedDF):
     vehicle_per_node: pd.Series
     lambda_per_node: pd.Series
 
-    cols_to_keep: t.ClassVar[list[str]] = ["sd_current", "vehicle_per_node", "lambda_per_node"]
+    cols_to_pass_to_model: t.ClassVar[list[str]] = ["sd_current", "vehicle_per_node", "lambda_per_node"]
     target_dtypes = {
         "sd_current": np.float32,
         "vehicle_per_node": np.float32,
@@ -57,5 +58,5 @@ class SupplyDemandDF(EnrichedDF):
         """
         if isinstance(obs_array, np.ndarray) and obs_array.ndim == 1:
             obs_array = obs_array.reshape(1, -1)
-            ret = pd.DataFrame(obs_array, columns=cls.cols_to_keep)
-        return cls(pd.DataFrame(obs_array, columns=cls.cols_to_keep))
+            ret = pd.DataFrame(obs_array, columns=cls.cols_to_pass_to_model)
+        return cls(pd.DataFrame(obs_array, columns=cls.cols_to_pass_to_model))

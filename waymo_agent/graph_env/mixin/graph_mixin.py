@@ -6,7 +6,7 @@ from functools import cached_property
 import networkx as nx
 import numpy as np
 import pandas as pd
-from scipy.spatial.kdtree import cKDTree
+from scipy.spatial import cKDTree  # type: ignore
 
 from waymo_agent.graph_env.df_utils import edges_to_df, nodes_to_df
 from waymo_agent.osmnx.distances import calculate_longest_path

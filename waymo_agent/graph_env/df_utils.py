@@ -1,6 +1,6 @@
 import networkx as nx
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 
 def nodes_to_df(G: nx.MultiDiGraph) -> pd.DataFrame:
@@ -62,3 +62,18 @@ def masked_assign(dst: pd.DataFrame, mask: np.ndarray, src: pd.DataFrame, cols: 
         ), f"Cols {cols} not subset of dst columns {dst.columns} and src columns   {src.columns}"
         for c in cols:
             dst.loc[mask, c] = src[c].to_numpy()
+
+
+def trim_true_mask(mask: np.ndarray, n: int, rng: np.random.Generator | None = None) -> np.ndarray:
+    assert mask.dtype == bool
+    rng = rng or np.random.default_rng()
+
+    true_idx = np.flatnonzero(mask)
+
+    if len(true_idx) <= n:
+        return mask  # nothing to trim
+
+    keep = rng.choice(true_idx, size=n, replace=False)
+    new_mask = np.zeros_like(mask, dtype=bool)
+    new_mask[keep] = True
+    return new_mask

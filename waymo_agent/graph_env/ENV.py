@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import typing as t
+import warnings
 from math import ceil
 from pathlib import Path
 
-import numpy as np
+from waymo_agent.data_classes.space_dicts import prune_obs_dict_gymnasium
 
 from ..data_classes.config import EnvConfig
 from ..data_classes.config_plot import PlotConfig
@@ -51,34 +52,31 @@ class RideShareEnv(RenderingMixin, OSMnxWrapperMixin, ObservationSpaceMixin, Act
         self.reset_globals()
         # self.reset_debug_and_interim()
 
-        observation = self.reset_observation()
-        return observation, self.info
+        observation_full = self.reset_observation()
+        obs_pruned = prune_obs_dict_gymnasium(observation_full)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            self.observation_space.contains(obs_pruned)
+        return obs_pruned, self.info
 
-    def step(self, action: ActionDict):  # type: ignore
-        try:
-            self._validate_action(action)
-        except Exception as e:
-            self.error_msg = str(e)
-            terminated = True
-            return self.observation_curr, 0.0, terminated, False, self.info
+    def step(self, action: ActionDict | ActionDictTorch):  # type: ignore
+        self._validate_action(action)
+
         reward = 0.0
 
         terminated = False
         truncated = self.current_step >= self.config.max_episode_steps
 
-        observation, reward = self.get_observation(action)
-        obs_gymnasium: dict[str, np.ndarray] = {
-            "globals": observation["globals"],
-            "supply_demand_ratio": observation["supply_demand_ratio"],
-            "vehicles": observation["vehicles"].to_obs_numpy(),
-            "pending_requests": observation["pending_requests"].to_obs_numpy(),
-            "active_rides": observation["active_rides"].to_obs_numpy(),
-            "dispatch_mask": observation["dispatch_mask"],
-            "pricing_mask": observation["pricing_mask"],
-        }
-        try:
-            self.observation_space.contains(obs_gymnasium)
-        except Exception as e:
-            self.error_msg = str(e)
-            terminated = True
-        return obs_gymnasium, reward, terminated, bool(truncated), self.info
+        observation_full, reward = self.get_observation(action)
+        obs_pruned = prune_obs_dict_gymnasium(observation_full)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            self.observation_space.contains(obs_pruned)
+        # try:
+        #     with warnings.catch_warnings():
+        #         warnings.simplefilter("ignore")
+        #         self.observation_space.contains(obs_pruned)
+        # except Exception as e:
+        #     self.error_msg = str(e)
+        #     terminated = True
+        return obs_pruned, reward, terminated, bool(truncated), self.info

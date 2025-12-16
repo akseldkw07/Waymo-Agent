@@ -1,9 +1,10 @@
+import typing as t
 from math import sqrt
+
 import numpy as np
 import pandas as pd
-import typing as t
 
-from waymo_agent.data_classes import EnvConfig, RequestDF, ObservationDict, VehicleDF, SupplyDemandDF
+from waymo_agent.data_classes import EnvConfig, ObservationDict, RequestDF, SupplyDemandDF, VehicleDF
 from waymo_agent.graph_env.ENV import RideShareEnv
 
 

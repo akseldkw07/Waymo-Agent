@@ -1,7 +1,7 @@
 import networkx as nx
 import numpy as np
 import osmnx as ox
-from scipy.spatial.kdtree import cKDTree
+from scipy.spatial import cKDTree  # type: ignore
 
 PRECISION = 6
 import typing as t
@@ -89,7 +89,7 @@ def interpolate_position_on_edge(
         interpolated = src + perc_done * (tgt - src)
         ret_df[val] = interpolated
 
-    return ret_df
+    return ret_df.astype(np.float32)
 
 
 def f_edges_start_end_node(

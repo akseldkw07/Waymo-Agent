@@ -1,6 +1,6 @@
 from waymo_agent.graph_env import *
 
-from waymo_agent.training import *
+from waymo_agent.models import *
 from .constants import *
 from .osmnx import *
 

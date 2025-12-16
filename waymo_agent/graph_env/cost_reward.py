@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import numpy as np
+import pandas as pd
 
 from waymo_agent.data_classes import EnvConfig
 from waymo_agent.data_classes.active_rides import ActiveRideDF
-import pandas as pd
 
 
 def compute_operating_cost(distance_meters: np.ndarray | pd.Series, config: EnvConfig) -> np.ndarray:

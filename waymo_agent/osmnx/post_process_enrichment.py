@@ -61,7 +61,7 @@ def assign_lambda_values(G: nx.MultiDiGraph, config: "EnvConfig"):
     max_centrality = max(degree_centrality.values())
     min_centrality = min(degree_centrality.values())
 
-    total_lambda = config.lambda_per_node * len(G.nodes)
+    target_lambda = config.lambda_per_node * len(G.nodes)
 
     # Normalize degree centrality to [0, 1]
     if max_centrality > min_centrality:
@@ -75,26 +75,33 @@ def assign_lambda_values(G: nx.MultiDiGraph, config: "EnvConfig"):
     # Scale so that the sum of lambda values is total_lambda
     sum_scaled = sum(scaled_centrality.values())
     if sum_scaled > 0:
-        lambda_values = {node: (scaled_centrality[node] / sum_scaled) * total_lambda for node in G.nodes}
+        lambda_values = {node: (scaled_centrality[node] / sum_scaled) * target_lambda for node in G.nodes}
     else:
-        lambda_values = {node: total_lambda / len(G.nodes) for node in G.nodes}
+        lambda_values = {node: target_lambda / len(G.nodes) for node in G.nodes}
 
     # Add noise to lambda values
-    noise_std = config.lambda_variation_coef * (total_lambda / len(G.nodes))
+    noise_std = config.lambda_variation_coef * (target_lambda / len(G.nodes))
     for node in G.nodes:
         noise = 0.0
         # noise = np.random.normal(0, noise_std)
         noise = np.random.uniform(-noise_std, noise_std)
 
-        norm = 0.85
-        lambda_values[node] = max(0.0, lambda_values[node] + noise) * norm
+        lambda_values[node] = max(0.0, lambda_values[node] + noise)
         G.nodes[node]["lambda"] = round(float(lambda_values[node]), PRECISION)
 
     sum_lambda = sum_graph_attr(G, "lambda", "node")
-    print(f"Assigned lambda values to nodes. Total lambda: {sum_lambda:.4f} (target: {total_lambda:.4f})")
+    for node in G.nodes:
+        G.nodes[node]["lambda"] = G.nodes[node]["lambda"] * (target_lambda / sum_lambda)
+
+    sum_lambda = sum_graph_attr(G, "lambda", "node")
+    print(f"Assigned lambda values to nodes. Total lambda: {sum_lambda:.4f} (target: {target_lambda:.4f})")
 
 
 def _calculate_time_edge(G: nx.MultiDiGraph):
+    """
+    TODO this is redundant, should've just used os.routing.add_edge_travel_times()
+    https://osmnx.readthedocs.io/en/stable/user-reference.html#osmnx.routing.add_edge_travel_times
+    """
     for u, v, k, data in G.edges(keys=True, data=True):
         speed = data.get("maxspeed", 30)  # default to 30 km/h if not specified
         length = data.get("length", 0)  # length in meters

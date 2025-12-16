@@ -5,6 +5,7 @@ import typing as t
 
 import numpy as np
 import pandas as pd
+
 from waymo_agent.data_classes.enriched_df_base import EnrichedDF, validate_typed_df_keys
 
 if t.TYPE_CHECKING:
@@ -28,14 +29,14 @@ class VehicleDF(EnrichedDF):
     status: pd.Series  # VehicleStatusEnum value
 
     # Training view: [loc_x_norm, loc_y_norm, battery, status] -> 4 dims
-    cols_to_keep: t.ClassVar[list[str]] = ["loc_x_norm", "loc_y_norm", "battery", "status"]
+    cols_to_pass_to_model: t.ClassVar[list[str]] = ["loc_x_norm", "loc_y_norm", "battery", "status"]
     target_dtypes = {
         "vehicle_id": np.int64,
         "ride_id": np.int64,
         "loc_x_norm": np.float32,
         "loc_y_norm": np.float32,
         "battery": np.float32,
-        "status": np.int8,
+        "status": np.int64,
     }
 
     @property
@@ -70,6 +71,8 @@ class VehicleDF(EnrichedDF):
     def generate_empty(cls, env: ObservationSpaceMixin) -> VehicleDF:
         idx_offset = env.config.no_action_id + 1  # leave space for no-action vehicle if needed
         idx = np.arange(env.num_vehicles) + idx_offset
+        assert (idx == np.arange(idx_offset, idx_offset + env.num_vehicles)).all()
+
         nodes = env.node_df.sample(env.num_vehicles, replace=True).reset_index(drop=True)
         batteries = np.random.uniform(0.6, 1.0, size=env.num_vehicles)
         status = np.full(shape=env.num_vehicles, fill_value=int(VehicleStatusEnum.IDLE), dtype=np.int8)
@@ -81,7 +84,7 @@ class VehicleDF(EnrichedDF):
                 "loc_y_norm": nodes["y_norm"],
                 "battery": batteries,
                 "status": status,
-                "ride_id": -1 * np.ones(env.num_vehicles, dtype=np.int64),
+                "ride_id": env.config.invalid_id * np.ones(env.num_vehicles, dtype=np.int64),
             }
         )
         validate_typed_df_keys(ret, VehicleDF)

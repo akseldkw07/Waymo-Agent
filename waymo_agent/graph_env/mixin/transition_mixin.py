@@ -4,17 +4,19 @@ import warnings
 
 import numpy as np
 import pandas as pd
+import torch
 
 from waymo_agent.data_classes import ActionDict, ObservationDict, RequestDF, price_acceptance_probability
 from waymo_agent.data_classes.active_rides import ActiveRideDF
 from waymo_agent.data_classes.enriched_df_base import validate_typed_df_keys
 from waymo_agent.data_classes.requests import RequestStatusEnum
+from waymo_agent.data_classes.space_dicts import ActionDictTorch, action_torch_to_numpy
 from waymo_agent.data_classes.vehicles import VehicleDF, VehicleStatusEnum
 from waymo_agent.graph_env.cost_reward import compute_amortized_reward
+from waymo_agent.graph_env.df_utils import masked_assign
 from waymo_agent.osmnx.euclidean_L2_embed import interpolate_position_on_edge
 from waymo_agent.osmnx.traverse_graph import step_along_route
 from waymo_agent.simulation.generate_obs_state import get_sd_ratio, init_active_ride_df
-from waymo_agent.graph_env.df_utils import masked_assign
 
 from .interface import GymEnvInterface
 
@@ -70,13 +72,14 @@ class TransitionMixin(RewardMixin):
         self.calc_time_normed()
         self.bc_row.update({"step": self.current_step, "timestamp": self.time_dt})
 
-    def get_observation(self, action: ActionDict) -> tuple[ObservationDict, float]:
+    def get_observation(self, action: ActionDict | ActionDictTorch) -> tuple[ObservationDict, float]:
         """
         Construct the observation dictionary from the current environment state. The returned observaion
         is post-transition, i.e., after all updates have been applied for the current step.
 
         Deterministic
         """
+        action = action_torch_to_numpy(action)
         self.observation_prev = self.observation_curr
         del self.observation_curr  # to avoid accidental usage
         self._rewards = {}
@@ -96,18 +99,18 @@ class TransitionMixin(RewardMixin):
 
         self._assert_state_consistency(action)
         sd_ratio_post_step = get_sd_ratio(self.config, self._req_interim, self._veh_interim)
-        observation = ObservationDict(
+        observation_full = ObservationDict(
             {
                 "globals": self.MetaState,
                 "supply_demand_ratio": sd_ratio_post_step,
-                "vehicles": self._veh_interim,
-                "pending_requests": self._req_interim,
-                "active_rides": self._active_rides_interim,
+                "vehicles": VehicleDF(self._veh_interim.astype(VehicleDF.target_dtypes)),
+                "pending_requests": RequestDF(self._req_interim.astype(RequestDF.target_dtypes)),
+                "active_rides": ActiveRideDF(self._active_rides_interim.astype(ActiveRideDF.target_dtypes)),
                 "dispatch_mask": self._veh_interim.f_idle,
                 "pricing_mask": self._req_interim.f_awaiting_price.astype(np.float32),
             }
         )
-        self.observation_curr = observation
+        self.observation_curr = observation_full
 
         rewards = sum(self._rewards.values())
         self.bc_row.update(
@@ -116,7 +119,7 @@ class TransitionMixin(RewardMixin):
 
         self.append_breadcrumbs()
 
-        return observation, rewards
+        return observation_full, rewards
 
     def _update_requests_from_action(self, action: ActionDict):
         """
@@ -137,9 +140,7 @@ class TransitionMixin(RewardMixin):
             raise ValueError("Supply-demand ratio contains NaN values; cannot compute price acceptance.")
 
         # cust_df = self.cust_df[self.cust_df["cust_id"].isin(requests["cust_id"])]
-        acceptance_prob, z = price_acceptance_probability(
-            self.cust_df, requests, action["prices"], sd_ratio_avg, self.config
-        )
+        acceptance_prob, z = price_acceptance_probability(requests, action["prices"], sd_ratio_avg, self.config)
         await_mask = requests["status"] == RequestStatusEnum.AWAITING_PRICE
         accept_mask = acceptance_prob >= np.random.uniform(0.0, 1.0, size=acceptance_prob.shape)
         new_status = np.select(
@@ -205,7 +206,9 @@ class TransitionMixin(RewardMixin):
         RWD = self.config.shaped_reward_config
         rewards_df = RWD.reward_df_empty(len=len(requests))
 
-        dispatches = action["dispatch"]
+        dispatches = (
+            action["dispatch"].numpy(force=True) if isinstance(action["dispatch"], torch.Tensor) else action["dispatch"]
+        )
         vehicles = self.observation_prev["vehicles"]
 
         vehicle_id = np.full(shape=len(dispatches), fill_value=self.config.no_action_id, dtype=np.int64)
@@ -281,6 +284,7 @@ class TransitionMixin(RewardMixin):
 
         Deterministic
         """
+
         # 1 - Merge new rides into active rides
         prev_rides = self.observation_prev["active_rides"].copy(deep=True)
         active_rides = ActiveRideDF(prev_rides.copy(deep=True))
@@ -357,10 +361,14 @@ class TransitionMixin(RewardMixin):
         # Cleanup indexes
         vehicles.reset_index(drop=True, inplace=True)
         active_rides.reset_index(drop=True, inplace=True)
-        self._active_rides_debug = active_rides.copy(deep=True)
-        self._vehicles_debug = vehicles.copy(deep=True)
+        self._active_rides_debug = active_rides.copy(deep=True).astype(ActiveRideDF.target_dtypes)
+        self._vehicles_debug = vehicles.copy(deep=True).astype(VehicleDF.target_dtypes)
 
-        return VehicleDF(vehicles), ActiveRideDF(active_rides), discard_ride_ids
+        # Cleanup dtypes
+        vehicles = VehicleDF(vehicles.astype(VehicleDF.target_dtypes))
+        active_rides = ActiveRideDF(active_rides.astype(ActiveRideDF.target_dtypes))
+
+        return (vehicles), (active_rides), discard_ride_ids
 
     def _cycle_requests(self, discard_ride_ids: pd.Series) -> RequestDF:
         """
@@ -394,8 +402,9 @@ class TransitionMixin(RewardMixin):
             dr["discard_step"] = self.current_step
 
         self._remove_requests.extend(discarded_requests_ts)
-        validate_typed_df_keys(requests, RequestDF)
-        self._req_interim = RequestDF(requests)
+
+        self._req_interim = RequestDF(requests.astype(RequestDF.target_dtypes))
+
         return self._req_interim
 
     def _assert_state_consistency(self, action: ActionDict):
@@ -420,7 +429,8 @@ class TransitionMixin(RewardMixin):
         """Vehicles and Active Rides"""
 
         # Check that vehicles and active rides are aligned
-        veh_ride_sanity_df["vehicle_id"] = vehicles["vehicle_id"] == active_rides["vehicle_id"]
+        veh_ride_sanity_df["veh_id_eq_req_id"] = vehicles["vehicle_id"] == active_rides["vehicle_id"]
+        veh_ride_sanity_df["veh_idx_start_0"] = vehicles["vehicle_id"].to_numpy() == np.arange(len(vehicles))
         veh_ride_sanity_df["ride_id"] = vehicles["ride_id"] == active_rides["ride_id"]
         veh_ride_sanity_df["validity_veh_ride"] = vehicles.f_should_have_ride_id == active_rides.f_valid
 
